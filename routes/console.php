@@ -2,7 +2,6 @@
 
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\Schedule;
 use App\Models\ChatHistory;
 
 /*
@@ -16,9 +15,7 @@ use App\Models\ChatHistory;
 |
 */
 
-Schedule::call(function () {
-    ChatHistory::where('created_at', '<', now()->subDay())->delete();
-})->hourly();
+
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());

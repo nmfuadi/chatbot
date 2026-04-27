@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\ProductKnowledge;
 use App\Models\ChatHistory;
+use App\Models\ChatSession; // Tambahkan model ini untuk memanggil tabel chat_sessions
 
 class BotController extends Controller {
     
@@ -14,7 +15,8 @@ class BotController extends Controller {
     public function getContext(Request $request) {
         $request->validate([
             'device_id' => 'required',
-            'customer_phone' => 'required'
+            'customer_phone' => 'required',
+            'message' => 'nullable|string' // Menerima isi pesan dari n8n
         ]);
 
         // Cari member berdasarkan device_id dari Wablas
@@ -23,6 +25,24 @@ class BotController extends Controller {
         if (!$member) {
             return response()->json(['error' => 'Member tidak ditemukan'], 404);
         }
+
+        // --- AWAL LOGIKA HOLD/CONTINUE AI ---
+        // Cari sesi chat yang ada, atau buat baru jika belum ada
+        $session = ChatSession::firstOrCreate(
+            ['user_id' => $member->id, 'customer_phone' => $request->customer_phone],
+            ['is_ai_active' => true] // Nilai default jika baru dibuat pertama kali
+        );
+
+        $pesan = strtolower(trim($request->message));
+
+        // Cek apakah pesan berisi kode rahasia admin
+        if ($pesan === '#s') {
+            $session->update(['is_ai_active' => false]);
+        } elseif ($pesan === '#c') {
+            $session->update(['is_ai_active' => true]);
+        }
+        // --- AKHIR LOGIKA HOLD/CONTINUE AI ---
+
 
         // Ambil SOP (Product Knowledge)
         $knowledge = ProductKnowledge::where('user_id', $member->id)
@@ -37,18 +57,22 @@ class BotController extends Controller {
             ->orderBy('created_at', 'asc')
             ->get();
 
-        $historyText = "";
+        // Format history menjadi rapi untuk Groq AI
+        $formattedHistory = [];
         foreach ($histories as $h) {
-            $historyText .= "Customer: " . $h->user_message . "\n";
-            $historyText .= "AI: " . $h->ai_response . "\n";
+            $formattedHistory[] = ['role' => 'user', 'content' => $h->user_message];
+            if ($h->ai_response) {
+                $formattedHistory[] = ['role' => 'assistant', 'content' => $h->ai_response];
+            }
         }
 
         return response()->json([
             'knowledge' => $knowledge,
-            'history' => $historyText,
             'wablas_api_key' => $member->wablas_api_key,
             'wablas_secret_key' => $member->wablas_secret_key,
-            'history' => $histories
+            'history' => $formattedHistory,
+            'is_ai_active' => $session->is_ai_active, // Kirim status aktif/tidak ke n8n
+            'is_command' => in_array($pesan, ['#s', '#c']) // Tandai jika ini sekadar pesan perintah
         ]);
     }
 
