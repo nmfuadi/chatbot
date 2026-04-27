@@ -42,6 +42,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/customers', [CustomerController::class, 'index'])->name('customers.index');
     Route::post('/customers/{id}/toggle', [CustomerController::class, 'toggleAI'])->name('customers.toggle');
     Route::get('/customers/{phone}/history', [CustomerController::class, 'history'])->name('customers.history');
+    Route::get('/customers', [CustomerController::class, 'index'])->name('customers.index');
+    Route::post('/customers/{id}/toggle', [CustomerController::class, 'toggleAI'])->name('customers.toggle');
+    Route::get('/customers/{phone}/history', [CustomerController::class, 'history'])->name('customers.history');
+// Tambahkan baris di bawah ini untuk fitur hapus
+    Route::delete('/customers/{phone}/history/clear', [CustomerController::class, 'clearHistory'])->name('customers.history.clear');
 });
 
 
