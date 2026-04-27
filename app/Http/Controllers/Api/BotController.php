@@ -52,11 +52,14 @@ class BotController extends Controller {
         if(empty($knowledge)) $knowledge = "Tidak ada SOP khusus.";
 
         // Ambil History Chat 24 Jam Terakhir untuk customer ini
-        $histories = ChatHistory::where('user_id', $member->id)
-            ->where('customer_wa', $request->customer_phone)
-            ->where('created_at', '>=', now()->subDay())
-            ->orderBy('created_at', 'asc')
-            ->get();
+       // Ambil History Chat 24 Jam Terakhir, DIBATASI 5 CHAT TERAKHIR
+       $histories = ChatHistory::where('user_id', $member->id)
+       ->where('customer_wa', $request->customer_phone)
+       ->where('created_at', '>=', now()->subDay())
+       ->latest() // Ambil dari yang paling baru (descending)
+       ->take(5)  // Batasi maksimal 5 baris data
+       ->get()
+       ->reverse(); // Balik urutannya agar kronologis dari atas ke bawah
 
         // Format history menjadi rapi untuk Groq AI
         $formattedHistory = [];
