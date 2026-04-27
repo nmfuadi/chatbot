@@ -32,6 +32,9 @@
                         <x-nav-link :href="route('member.pk')" :active="request()->routeIs('member.pk')">
                             {{ __('SOP & Product') }}
                         </x-nav-link>
+                        <x-nav-link :href="route('customers.index')" :active="request()->routeIs('customers.index')">
+                            Data Customer
+                        </x-nav-link>
                     @endif
                 </div>
                         {{ __('Dashboard') }}

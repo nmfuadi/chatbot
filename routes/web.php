@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\MemberController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\CustomerController;
 
 Route::get('/', function () { return view('welcome'); });
 
@@ -35,6 +36,12 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
     Route::get('/members', [AdminController::class, 'members'])->name('admin.members');
     Route::post('/members/{id}/wablas', [AdminController::class, 'updateMemberWablas'])->name('admin.members.wablas');
     Route::post('/payment/approve/{id}', [AdminController::class, 'approvePayment'])->name('admin.payment.approve');
+});
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/customers', [CustomerController::class, 'index'])->name('customers.index');
+    Route::post('/customers/{id}/toggle', [CustomerController::class, 'toggleAI'])->name('customers.toggle');
+    Route::get('/customers/{phone}/history', [CustomerController::class, 'history'])->name('customers.history');
 });
 
 

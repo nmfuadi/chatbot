@@ -30,6 +30,7 @@ class BotController extends Controller {
         // Cari sesi chat yang ada, atau buat baru jika belum ada
         $session = ChatSession::firstOrCreate(
             ['user_id' => $member->id, 'customer_phone' => $request->customer_phone],
+            ['customer_name' => $request->customer_name ?? 'Customer Baru' ],
             ['is_ai_active' => true] // Nilai default jika baru dibuat pertama kali
         );
 
