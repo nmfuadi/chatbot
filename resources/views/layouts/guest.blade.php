@@ -19,7 +19,7 @@
             <div>
                 <a href="/">
                     
-                <x-application-logo class="h-24 w-auto" />
+                <x-application-logo class="h-17 w-auto" />
                 </a>
             </div>
 
