@@ -1,1 +1,1 @@
-<img src="{{ asset('images/logo.png') }}" alt="Terabot Logo" {{ $attributes }}>
+<img src="{{ asset('images/terabot.png') }}" alt="Terabot Logo" {{ $attributes }}>
