@@ -70,72 +70,46 @@ class BotController extends Controller {
             $knowledge .= "Jika pelanggan meminta foto produk di atas, gunakan format: [GAMBAR: url_foto]\n";
         }
 
-        // --- AWAL BACA FOLDER PROJECT MANUAL (SUDAH DIPINDAH KE ATAS RETURN) ---
-        $directories = Storage::disk('public')->directories('projects');
-        
-        if (!empty($directories)) {
-            $knowledge .= "\n\n=== DATA FOTO PROJECT (DARI FOLDER MANUAL) ===\n";
-            $knowledge .= "Berikut adalah daftar nama kost/project beserta kumpulan link foto-fotonya:\n";
-            
-            foreach ($directories as $dir) {
-                $projectName = str_replace('projects/', '', $dir);
-                $projectNameClean = ucwords(str_replace('-', ' ', $projectName));
-                
-                $files = Storage::disk('public')->files($dir);
-                $imageUrls = [];
-                
-                foreach ($files as $file) {
-                    if (preg_match('/\.(jpg|jpeg|png)$/i', $file)) {
-                        $imageUrls[] = asset('storage/' . $file);
-                    }
-                }
-                
-                if (count($imageUrls) > 0) {
-                    $knowledge .= "- Nama Project: {$projectNameClean}\n";
-                    $knowledge .= "  Kumpulan URL Foto: " . implode(" | ", $imageUrls) . "\n";
-                }
-            }
+       // --- AWAL BACA FOLDER PROJECT MANUAL (KAMUS UNTUK N8N) ---
+       $directories = Storage::disk('public')->directories('projects');
+       $projectImages = []; // Variabel baru penampung kamus gambar
+       
+       if (!empty($directories)) {
+           $knowledge .= "\n\n=== DATA PROJECT & KODE FOTO ===\n";
+           $knowledge .= "Jika customer meminta foto project, kamu HANYA PERLU menyisipkan KODE FOTO di awal balasan. JANGAN kirim link manual!\n";
+           
+           foreach ($directories as $dir) {
+               $projectName = str_replace('projects/', '', $dir); // Contoh: griya-permata
+               $projectNameClean = ucwords(str_replace('-', ' ', $projectName));
+               
+               $files = Storage::disk('public')->files($dir);
+               $imageUrls = [];
+               
+               foreach ($files as $file) {
+                   if (preg_match('/\.(jpg|jpeg|png)$/i', $file)) {
+                       $imageUrls[] = asset('storage/' . $file);
+                   }
+               }
+               
+               if (count($imageUrls) > 0) {
+                   $projectImages[$projectName] = $imageUrls; // Simpan kumpulan URL ke dalam kamus
+                   $knowledge .= "- Nama Project: {$projectNameClean} -> KODE FOTO: [FOTO: {$projectName}]\n";
+               }
+           }
 
-            $knowledge .= "\n=== INSTRUKSI MUTLAK PENGIRIMAN GAMBAR ===\n";
-            $knowledge .= "1. Jika customer meminta foto project/kost, kamu WAJIB memberikan SEMUA URL foto yang tersedia di daftar tanpa terkecuali!\n";
-            $knowledge .= "2. DILARANG KERAS meringkas, menyortir, atau menyembunyikan link foto. Kamu adalah sistem otomatis, berikan KESELURUHAN link.\n";
-            $knowledge .= "3. WAJIB gunakan format tag kurung siku dengan pemisah garis vertikal (|) di AWAL balasan.\n";
-            $knowledge .= "4. Format: [GAMBAR: url_foto_1 | url_foto_2 | url_foto_3 | url_foto_4 | dan seterusnya...]\n";
-        }
+           $knowledge .= "\nContoh balasan jika user minta foto: '[FOTO: griya-permata] Tentu kak, ini foto-fotonya. Ada yang ingin ditanyakan?'\n";
+       }
+       // --- AKHIR BACA FOLDER PROJECT MANUAL ---
 
-        // Ambil History
-        $histories = ChatHistory::where('user_id', $member->id)
-            ->where('customer_wa', $request->customer_phone)
-            ->where('created_at', '>=', now()->subDay())
-            ->latest()->take(5)->get()->reverse();
-
-        $formattedHistory = [];
-        foreach ($histories as $h) {
-            $formattedHistory[] = ['role' => 'user', 'content' => $h->user_message];
-            if ($h->ai_response) $formattedHistory[] = ['role' => 'assistant', 'content' => $h->ai_response];
-        }
-
-        // RETURN SEKARANG ADA DI PALING BAWAH
-        return response()->json([
-            'knowledge' => $knowledge,
-            'wablas_api_key' => $member->wablas_api_key,
-            'wablas_secret_key' => $member->wablas_secret_key,
-            'history' => $formattedHistory,
-            'is_ai_active' => $session->is_ai_active,
-            'is_command' => in_array($pesan, ['#s', '#c'])
-        ]);
-    }
-
-    public function saveHistory(Request $request) {
-        $member = User::where('wablas_device_id', $request->device_id)->first();
-        if ($member) {
-            ChatHistory::create([
-                'user_id' => $member->id,
-                'customer_wa' => $request->customer_phone,
-                'user_message' => $request->user_message,
-                'ai_response' => $request->ai_response,
-            ]);
-        }
-        return response()->json(['status' => 'success']);
+       // RETURN JSON KE N8N
+       return response()->json([
+           'knowledge' => $knowledge,
+           'wablas_api_key' => $member->wablas_api_key,
+           'wablas_secret_key' => $member->wablas_secret_key,
+           'history' => $formattedHistory,
+           'is_ai_active' => $session->is_ai_active,
+           'is_command' => in_array($pesan, ['#s', '#c']),
+           'project_images' => $projectImages // KAMUS FOTO DIKIRIM LEWAT SINI
+       ]);
     }
 }
