@@ -9,10 +9,13 @@ use App\Models\ProductKnowledge;
 use App\Models\ChatHistory;
 use App\Models\ChatSession;
 use App\Models\Catalog;
-use Illuminate\Support\Facades\Storage; // WAJIB TAMBAHKAN INI
+use Illuminate\Support\Facades\Storage; // Pastikan ini ada
 
 class BotController extends Controller {
     
+    // ====================================================================
+    // 1. FUNGSI UNTUK MEMBERIKAN KONTEKS & DATA KE N8N / AI
+    // ====================================================================
     public function getContext(Request $request) {
         $request->validate([
             'device_id' => 'required',
@@ -26,7 +29,7 @@ class BotController extends Controller {
             return response()->json(['error' => 'Member tidak ditemukan'], 404);
         }
 
-        // --- AWAL LOGIKA HOLD/CONTINUE AI ---
+        // --- LOGIKA HOLD/CONTINUE AI ---
         $session = ChatSession::firstOrCreate(
             ['user_id' => $member->id, 'customer_phone' => $request->customer_phone],
             ['customer_name' => $request->customer_name ?? 'Customer Baru', 'is_ai_active' => true]
@@ -45,7 +48,7 @@ class BotController extends Controller {
 
         if(empty($knowledge)) $knowledge = "Tidak ada SOP khusus.";
 
-        // --- AWAL INJEKSI DATA KATALOG ---
+        // --- INJEKSI DATA KATALOG ---
         $catalogs = Catalog::with('images')
                         ->where('user_id', $member->id)
                         ->where('is_active', true)
@@ -70,7 +73,7 @@ class BotController extends Controller {
             $knowledge .= "Jika pelanggan meminta foto produk di atas, gunakan format: [GAMBAR: url_foto]\n";
         }
 
-        // --- AWAL BACA FOLDER PROJECT MANUAL (KAMUS UNTUK N8N) ---
+        // --- BACA FOLDER PROJECT MANUAL (KAMUS UNTUK N8N) ---
         $directories = Storage::disk('public')->directories('projects');
         $projectImages = []; 
         
@@ -100,7 +103,7 @@ class BotController extends Controller {
             $knowledge .= "\nContoh balasan jika user minta foto: '[FOTO: griya-permata] Tentu kak, ini foto-fotonya. Ada yang ingin ditanyakan?'\n";
         }
 
-        // --- AWAL LOGIKA HISTORY (YANG TADI SEMPAT TERHAPUS) ---
+        // --- LOGIKA HISTORY CHAT ---
         $histories = ChatHistory::where('user_id', $member->id)
             ->where('customer_wa', $request->customer_phone)
             ->where('created_at', '>=', now()->subDay())
@@ -122,5 +125,24 @@ class BotController extends Controller {
             'is_command' => in_array($pesan, ['#s', '#c']),
             'project_images' => $projectImages
         ]);
+    }
+
+    // ====================================================================
+    // 2. FUNGSI UNTUK MENYIMPAN HISTORY CHAT (YANG TADI HILANG)
+    // ====================================================================
+    public function saveHistory(Request $request) {
+        $member = User::where('wablas_device_id', $request->device_id)->first();
+        
+        if ($member) {
+            ChatHistory::create([
+                'user_id' => $member->id,
+                'customer_wa' => $request->customer_phone,
+                // Mengambil isi pesan user dari input n8n
+                'user_message' => $request->user_message ?? $request->message ?? '',
+                'ai_response' => $request->ai_response,
+            ]);
+        }
+        
+        return response()->json(['status' => 'success']);
     }
 }
