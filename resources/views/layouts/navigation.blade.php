@@ -35,6 +35,9 @@
                         <x-nav-link :href="route('customers.index')" :active="request()->routeIs('customers.index')">
                             Data Customer
                         </x-nav-link>
+                        <x-nav-link :href="route('catalogs.index')" :active="request()->routeIs('catalogs.*')">
+                            {{ __('Katalog Produk') }}
+                        </x-nav-link>
                     @endif
                 </div>
                      
