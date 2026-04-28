@@ -75,6 +75,7 @@ class BotController extends Controller {
             $knowledge .= "2. Teks [REQ_FOTO] ini adalah perintah untuk mesin/sistem. JANGAN PERNAH membahas, menyebutkan, atau menyuruh customer mengetik kode/tag apapun!\n";
             $knowledge .= "3. Jika customer TIDAK meminta foto (misal hanya bilang 'fotonya bagus', 'sudah lihat', atau bertanya hal lain), DILARANG KERAS mengetik [REQ_FOTO].\n";
             $knowledge .= "4. Contoh balasan yang BENAR jika user minta foto: '[REQ_FOTO] Tentu kak, ini foto-foto kamarnya. Silakan dilihat-lihat!'\n";
+            $knowledge .= "5. Jika customer meminta foto lainya (misal bilang 'ada foto yang lain','foto salain ini', atau pertanyaan lain seputar minta kirim foto lagi)!, Katakan saja aku sudah mengirim semua foto seluruh fasilitas dan kama secara detail (tidak ada pengiriman foto ulang)'\n";
         }
 
         // --- BACA FOLDER PROJECT MANUAL (KAMUS UNTUK N8N) ---
