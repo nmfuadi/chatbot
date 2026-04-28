@@ -69,8 +69,12 @@ class BotController extends Controller {
                 }
             }
 
-            $knowledge .= "\n=== INSTRUKSI KHUSUS KIRIM GAMBAR KATALOG ===\n";
-            $knowledge .= "Jika pelanggan meminta foto produk di atas, gunakan format: [GAMBAR: url_foto]\n";
+            // --- MASTER RULE INTENT DETECTION UNTUK AI ---
+        $knowledge .= "\n=== ATURAN WAJIB KIRIM FOTO ===\n";
+        $knowledge .= "Jika customer SECARA EKSPLISIT MEMINTA dikirimkan foto (contoh: 'minta foto', 'ada fotonya?', 'spill kamar', 'lihat dong'), kamu WAJIB menyisipkan kode rahasia [REQ_FOTO] di AWAL balasanmu.\n";
+        $knowledge .= "TETAPI, jika customer hanya menyebut kata foto dalam konteks lain (contoh: 'saya sudah lihat fotonya', 'fotonya bagus', 'terima kasih fotonya'), DILARANG KERAS menggunakan kode [REQ_FOTO].\n";
+        $knowledge .= "Kamu tidak perlu menuliskan link gambar apapun. Biarkan sistem yang mengurus gambarnya. Cukup berikan kalimat pengantar yang ramah.\n";
+        $knowledge .= "Contoh balasan yang benar jika user minta foto: '[REQ_FOTO] Tentu kak, ini foto-foto kamarnya. Silakan dilihat-lihat!'\n";
         }
 
         // --- BACA FOLDER PROJECT MANUAL (KAMUS UNTUK N8N) ---
