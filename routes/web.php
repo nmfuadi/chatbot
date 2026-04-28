@@ -5,6 +5,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\MemberController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\CatalogController;
 
 Route::get('/', function () { return view('welcome'); });
 
@@ -47,6 +48,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/customers/{phone}/history', [CustomerController::class, 'history'])->name('customers.history');
 // Tambahkan baris di bawah ini untuk fitur hapus
     Route::delete('/customers/{phone}/history/clear', [CustomerController::class, 'clearHistory'])->name('customers.history.clear');
+});
+
+
+Route::middleware(['auth'])->group(function () {
+    Route::resource('catalogs', CatalogController::class);
 });
 
 

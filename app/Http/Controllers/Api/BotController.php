@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\ProductKnowledge;
 use App\Models\ChatHistory;
 use App\Models\ChatSession; // Tambahkan model ini untuk memanggil tabel chat_sessions
+use App\Models\Catalog;
 
 class BotController extends Controller {
     
@@ -50,6 +51,27 @@ class BotController extends Controller {
                         ->pluck('content')->implode("\n\n");
 
         if(empty($knowledge)) $knowledge = "Tidak ada SOP khusus.";
+
+        // --- AWAL INJEKSI DATA KATALOG ---
+        $catalogs = Catalog::where('user_id', $member->id)
+                        ->where('is_active', true)
+                        ->get();
+
+        if ($catalogs->isNotEmpty()) {
+            $knowledge .= "\n\n=== DATA KATALOG / KETERSEDIAAN SAAT INI ===\n";
+            $knowledge .= "Berikut adalah data real-time harga dan stok. Gunakan data ini untuk menjawab pertanyaan ketersediaan:\n";
+            
+            foreach ($catalogs as $item) {
+                // Format harga ke Rupiah
+                $hargaRupiah = "Rp " . number_format($item->price, 0, ',', '.');
+                $knowledge .= "- Nama: {$item->item_name} | Harga: {$hargaRupiah} | Ketersediaan/Stok: {$item->stock}\n";
+                
+                if ($item->description) {
+                    $knowledge .= "  Deskripsi/Detail: {$item->description}\n";
+                }
+            }
+        }
+        // --- AKHIR INJEKSI DATA KATALOG ---
 
         // Ambil History Chat 24 Jam Terakhir untuk customer ini
        // Ambil History Chat 24 Jam Terakhir, DIBATASI 5 CHAT TERAKHIR
