@@ -96,10 +96,11 @@ class BotController extends Controller {
                 }
             }
 
-            $knowledge .= "\n=== INSTRUKSI KHUSUS KIRIM MULTIPLE GAMBAR ===\n";
-            $knowledge .= "Jika customer meminta foto project/kost tertentu, gabungkan semua URL menggunakan pemisah (|).\n";
-            $knowledge .= "Format wajib: [GAMBAR: url1 | url2 | url3]\n";
-            $knowledge .= "Contoh: '[GAMBAR: https://web.com/1.jpg | https://web.com/2.jpg] Ini fotonya kak!'\n";
+            $knowledge .= "\n=== INSTRUKSI MUTLAK PENGIRIMAN GAMBAR ===\n";
+            $knowledge .= "1. Jika customer meminta foto project/kost, kamu WAJIB memberikan SEMUA URL foto yang tersedia di daftar tanpa terkecuali!\n";
+            $knowledge .= "2. DILARANG KERAS meringkas, menyortir, atau menyembunyikan link foto. Kamu adalah sistem otomatis, berikan KESELURUHAN link.\n";
+            $knowledge .= "3. WAJIB gunakan format tag kurung siku dengan pemisah garis vertikal (|) di AWAL balasan.\n";
+            $knowledge .= "4. Format: [GAMBAR: url_foto_1 | url_foto_2 | url_foto_3 | url_foto_4 | dan seterusnya...]\n";
         }
 
         // Ambil History
