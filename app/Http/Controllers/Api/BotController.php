@@ -26,7 +26,7 @@ class BotController extends Controller {
             return response()->json(['error' => 'Member tidak ditemukan'], 404);
         }
 
-        // --- LOGIKA HOLD/CONTINUE AI ---
+        // --- AWAL LOGIKA HOLD/CONTINUE AI ---
         $session = ChatSession::firstOrCreate(
             ['user_id' => $member->id, 'customer_phone' => $request->customer_phone],
             ['customer_name' => $request->customer_name ?? 'Customer Baru', 'is_ai_active' => true]
@@ -70,46 +70,57 @@ class BotController extends Controller {
             $knowledge .= "Jika pelanggan meminta foto produk di atas, gunakan format: [GAMBAR: url_foto]\n";
         }
 
-       // --- AWAL BACA FOLDER PROJECT MANUAL (KAMUS UNTUK N8N) ---
-       $directories = Storage::disk('public')->directories('projects');
-       $projectImages = []; // Variabel baru penampung kamus gambar
-       
-       if (!empty($directories)) {
-           $knowledge .= "\n\n=== DATA PROJECT & KODE FOTO ===\n";
-           $knowledge .= "Jika customer meminta foto project, kamu HANYA PERLU menyisipkan KODE FOTO di awal balasan. JANGAN kirim link manual!\n";
-           
-           foreach ($directories as $dir) {
-               $projectName = str_replace('projects/', '', $dir); // Contoh: griya-permata
-               $projectNameClean = ucwords(str_replace('-', ' ', $projectName));
-               
-               $files = Storage::disk('public')->files($dir);
-               $imageUrls = [];
-               
-               foreach ($files as $file) {
-                   if (preg_match('/\.(jpg|jpeg|png)$/i', $file)) {
-                       $imageUrls[] = asset('storage/' . $file);
-                   }
-               }
-               
-               if (count($imageUrls) > 0) {
-                   $projectImages[$projectName] = $imageUrls; // Simpan kumpulan URL ke dalam kamus
-                   $knowledge .= "- Nama Project: {$projectNameClean} -> KODE FOTO: [FOTO: {$projectName}]\n";
-               }
-           }
+        // --- AWAL BACA FOLDER PROJECT MANUAL (KAMUS UNTUK N8N) ---
+        $directories = Storage::disk('public')->directories('projects');
+        $projectImages = []; 
+        
+        if (!empty($directories)) {
+            $knowledge .= "\n\n=== DATA PROJECT & KODE FOTO ===\n";
+            $knowledge .= "Jika customer meminta foto project, kamu HANYA PERLU menyisipkan KODE FOTO di awal balasan. JANGAN kirim link manual!\n";
+            
+            foreach ($directories as $dir) {
+                $projectName = str_replace('projects/', '', $dir); 
+                $projectNameClean = ucwords(str_replace('-', ' ', $projectName));
+                
+                $files = Storage::disk('public')->files($dir);
+                $imageUrls = [];
+                
+                foreach ($files as $file) {
+                    if (preg_match('/\.(jpg|jpeg|png)$/i', $file)) {
+                        $imageUrls[] = asset('storage/' . $file);
+                    }
+                }
+                
+                if (count($imageUrls) > 0) {
+                    $projectImages[$projectName] = $imageUrls; 
+                    $knowledge .= "- Nama Project: {$projectNameClean} -> KODE FOTO: [FOTO: {$projectName}]\n";
+                }
+            }
 
-           $knowledge .= "\nContoh balasan jika user minta foto: '[FOTO: griya-permata] Tentu kak, ini foto-fotonya. Ada yang ingin ditanyakan?'\n";
-       }
-       // --- AKHIR BACA FOLDER PROJECT MANUAL ---
+            $knowledge .= "\nContoh balasan jika user minta foto: '[FOTO: griya-permata] Tentu kak, ini foto-fotonya. Ada yang ingin ditanyakan?'\n";
+        }
 
-       // RETURN JSON KE N8N
-       return response()->json([
-           'knowledge' => $knowledge,
-           'wablas_api_key' => $member->wablas_api_key,
-           'wablas_secret_key' => $member->wablas_secret_key,
-           'history' => $formattedHistory,
-           'is_ai_active' => $session->is_ai_active,
-           'is_command' => in_array($pesan, ['#s', '#c']),
-           'project_images' => $projectImages // KAMUS FOTO DIKIRIM LEWAT SINI
-       ]);
+        // --- AWAL LOGIKA HISTORY (YANG TADI SEMPAT TERHAPUS) ---
+        $histories = ChatHistory::where('user_id', $member->id)
+            ->where('customer_wa', $request->customer_phone)
+            ->where('created_at', '>=', now()->subDay())
+            ->latest()->take(5)->get()->reverse();
+
+        $formattedHistory = [];
+        foreach ($histories as $h) {
+            $formattedHistory[] = ['role' => 'user', 'content' => $h->user_message];
+            if ($h->ai_response) $formattedHistory[] = ['role' => 'assistant', 'content' => $h->ai_response];
+        }
+
+        // RETURN JSON KE N8N
+        return response()->json([
+            'knowledge' => $knowledge,
+            'wablas_api_key' => $member->wablas_api_key,
+            'wablas_secret_key' => $member->wablas_secret_key,
+            'history' => $formattedHistory,
+            'is_ai_active' => $session->is_ai_active,
+            'is_command' => in_array($pesan, ['#s', '#c']),
+            'project_images' => $projectImages
+        ]);
     }
 }
