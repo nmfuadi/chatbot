@@ -48,7 +48,7 @@ class BotController extends Controller {
 
         if(empty($knowledge)) $knowledge = "Tidak ada SOP khusus.";
 
-        // --- INJEKSI DATA KATALOG ---
+        // --- INJEKSI DATA KATALOG (SUDAH DIUPDATE MENGAMBIL SEMUA FOTO) ---
         $catalogs = Catalog::with('images')
                         ->where('user_id', $member->id)
                         ->where('is_active', true)
@@ -63,49 +63,22 @@ class BotController extends Controller {
                 $knowledge .= "- Nama: {$item->item_name} | Harga: {$hargaRupiah} | Stok: {$item->stock}\n";
                 if ($item->description) $knowledge .= "  Deskripsi: {$item->description}\n";
 
+                // Mengambil SEMUA foto dari katalog dan memisahkannya dengan garis vertikal (|)
                 if ($item->images->count() > 0) {
-                    $imageUrl = asset('storage/' . $item->images->first()->image_path);
-                    $knowledge .= "  URL Foto: {$imageUrl}\n";
+                    $allImages = $item->images->map(function($img) {
+                        return asset('storage/' . $img->image_path);
+                    })->implode(' | ');
+                    
+                    $knowledge .= "  KODE GAMBAR: [GAMBAR: {$allImages}]\n";
                 }
             }
 
-            // --- MASTER RULE INTENT DETECTION UNTUK AI ---
-            $knowledge .= "\n=== ATURAN SISTEM TRIGGER FOTO (PENTING) ===\n";
-            $knowledge .= "1. Jika customer meminta foto/gambar (contoh: 'minta foto', 'spill kamar', 'lihat dong'), kamu WAJIB mengetikkan persis teks [REQ_FOTO] di paling awal kalimat balasanmu.\n";
-            $knowledge .= "2. Teks [REQ_FOTO] ini adalah perintah untuk mesin/sistem. JANGAN PERNAH membahas, menyebutkan, atau menyuruh customer mengetik kode/tag apapun!\n";
-            $knowledge .= "3. Jika customer TIDAK meminta foto (misal hanya bilang 'fotonya bagus', 'sudah lihat', atau bertanya hal lain), DILARANG KERAS mengetik [REQ_FOTO].\n";
-            $knowledge .= "4. Contoh balasan yang BENAR jika user minta foto: '[REQ_FOTO] Tentu kak, ini foto-foto kamarnya. Silakan dilihat-lihat!'\n";
-            $knowledge .= "5. Jika customer meminta foto lainya (misal bilang 'ada foto yang lain','foto salain ini', atau pertanyaan lain seputar minta kirim foto lagi)!, Katakan saja aku sudah mengirim semua foto seluruh fasilitas dan kama secara detail (tidak ada pengiriman foto ulang)'\n";
-        }
-
-        // --- BACA FOLDER PROJECT MANUAL (KAMUS UNTUK N8N) ---
-        $directories = Storage::disk('public')->directories('projects');
-        $projectImages = []; 
-        
-        if (!empty($directories)) {
-            $knowledge .= "\n\n=== DATA PROJECT & KODE FOTO ===\n";
-            $knowledge .= "Jika customer meminta foto project, kamu HANYA PERLU menyisipkan KODE FOTO di awal balasan. JANGAN kirim link manual!\n";
-            
-            foreach ($directories as $dir) {
-                $projectName = str_replace('projects/', '', $dir); 
-                $projectNameClean = ucwords(str_replace('-', ' ', $projectName));
-                
-                $files = Storage::disk('public')->files($dir);
-                $imageUrls = [];
-                
-                foreach ($files as $file) {
-                    if (preg_match('/\.(jpg|jpeg|png)$/i', $file)) {
-                        $imageUrls[] = asset('storage/' . $file);
-                    }
-                }
-                
-                if (count($imageUrls) > 0) {
-                    $projectImages[$projectName] = $imageUrls; 
-                    $knowledge .= "- Nama Project: {$projectNameClean} -> KODE FOTO: [FOTO: {$projectName}]\n";
-                }
-            }
-
-            $knowledge .= "\nContoh balasan jika user minta foto: '[FOTO: griya-permata] Tentu kak, ini foto-fotonya. Ada yang ingin ditanyakan?'\n";
+            // --- ATURAN SISTEM TRIGGER FOTO (KATALOG + ANTI SPAM) ---
+            $knowledge .= "\n=== ATURAN SISTEM PENGIRIMAN GAMBAR (PENTING) ===\n";
+            $knowledge .= "1. Jika customer meminta foto/gambar (contoh: 'minta foto', 'spill kamar', 'lihat dong'), kamu WAJIB menyertakan KODE GAMBAR dari data di atas di paling awal kalimat balasanmu (contoh: [GAMBAR: url1 | url2]).\n";
+            $knowledge .= "2. JANGAN PERNAH meringkas atau mengubah link di dalam KODE GAMBAR. Copy-paste persis apa yang ada di data.\n";
+            $knowledge .= "3. Jika customer TIDAK meminta foto (misal hanya bilang 'fotonya bagus', 'sudah lihat', atau bertanya hal lain), DILARANG KERAS menyertakan KODE GAMBAR.\n";
+            $knowledge .= "4. Jika customer meminta foto lainnya (misal bilang 'ada foto yang lain', 'foto selain ini', atau pertanyaan lain seputar minta kirim foto lagi), JANGAN KIRIM KODE GAMBAR LAGI! Katakan saja: 'Aku sudah mengirim semua foto seluruh fasilitas dan kamar secara detail kak (tidak ada pengiriman foto ulang)'.\n";
         }
 
         // --- LOGIKA HISTORY CHAT ---
@@ -128,12 +101,12 @@ class BotController extends Controller {
             'history' => $formattedHistory,
             'is_ai_active' => $session->is_ai_active,
             'is_command' => in_array($pesan, ['#s', '#c']),
-            'project_images' => $projectImages
+            'project_images' => [] // Dikosongkan karena kita sekarang 100% pakai Katalog
         ]);
     }
 
     // ====================================================================
-    // 2. FUNGSI UNTUK MENYIMPAN HISTORY CHAT (YANG TADI HILANG)
+    // 2. FUNGSI UNTUK MENYIMPAN HISTORY CHAT 
     // ====================================================================
     public function saveHistory(Request $request) {
         $member = User::where('wablas_device_id', $request->device_id)->first();
