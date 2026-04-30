@@ -83,16 +83,8 @@ Route::middleware(['auth', 'verified.wa'])->group(function () {
 });
 
 // Rute khusus Admin
-Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
-    // Pastikan user adalah admin sebelum bisa akses rute ini
-    Route::middleware(function ($request, $next) {
-        if (auth()->user()->role !== 'admin') {
-            abort(403, 'Anda bukan Admin.');
-        }
-        return $next($request);
-    })->group(function () {
-        Route::resource('plans', \App\Http\Controllers\Admin\PlanController::class);
-    });
+Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::resource('plans', \App\Http\Controllers\Admin\PlanController::class);
 });
 
 
