@@ -13,22 +13,32 @@ class EnsureProfileAndWaVerified
     {
         $user = Auth::user();
 
-        // 1. Pastikan user sudah login (jaga-jaga)
+        // 1. Pastikan user sudah login
         if (!$user) {
             return redirect()->route('login');
         }
 
-        // 2. Cek apakah user sudah mengisi profil (kita cek dari nomor WA-nya)
+        // ==========================================
+        // 2. JALUR VIP: BYPASS UNTUK ADMIN
+        // ==========================================
+        // Sesuaikan pengecekan ini dengan struktur tabel kamu.
+        // Jika pakai kolom 'role', gunakan: $user->role === 'admin'
+        // Jika pakai email, gunakan: $user->email === 'admin@domain.com'
+        
+        if (isset($user->role) && $user->role === 'admin') {
+            return $next($request); // Langsung masuk, lewati semua pengecekan di bawah!
+        }
+        // ==========================================
+
+        // 3. Cek apakah user (merchant biasa) sudah mengisi profil
         if (empty($user->whatsapp_number)) {
-            // Jika rute saat ini bukan halaman profil, tendang ke halaman profil
             if (!$request->routeIs('onboarding.profile.*')) {
                 return redirect()->route('onboarding.profile.form')
                     ->with('error', 'Akses ditolak! Silakan lengkapi profil bisnis Anda terlebih dahulu.');
             }
         } 
-        // 3. Cek apakah user sudah verifikasi OTP
+        // 4. Cek apakah user (merchant biasa) sudah verifikasi OTP
         elseif (!$user->is_wa_verified) {
-            // Jika rute saat ini bukan halaman OTP atau Profil, tendang ke halaman OTP
             if (!$request->routeIs('onboarding.otp.*') && !$request->routeIs('onboarding.profile.*')) {
                 return redirect()->route('onboarding.otp.form')
                     ->with('error', 'Akses ditolak! Silakan verifikasi nomor WhatsApp Anda terlebih dahulu.');
