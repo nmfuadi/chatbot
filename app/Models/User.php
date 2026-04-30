@@ -55,4 +55,8 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    public function activeSubscription() {
+        return $this->hasOne(Subscription::class)->where('status', 'active')->latestOfMany();
+    }
 }

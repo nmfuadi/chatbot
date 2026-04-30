@@ -28,6 +28,10 @@
                         <x-nav-link :href="route('admin.members')" :active="request()->routeIs('admin.members')">
                             {{ __('Kelola Member') }}
                         </x-nav-link>
+                        <x-nav-link :href="route('admin.plans.index')" :active="request()->routeIs('admin.plans.*')">
+            {{ __('Manajemen Paket') }}
+        </x-nav-link>
+
                     @elseif(Auth::user()->role === 'member')
                         <x-nav-link :href="route('member.payment')" :active="request()->routeIs('member.payment')">
                             {{ __('Pembayaran') }}
