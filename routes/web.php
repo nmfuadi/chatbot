@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CatalogController;
 use App\Http\Controllers\OnboardingController;
+use App\Http\Controllers\DashboardController;
 
 Route::get('/', function () { return view('welcome'); });
 
