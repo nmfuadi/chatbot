@@ -74,7 +74,15 @@ Route::middleware(['auth', 'verified.wa'])->group(function () {
     Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // Tambahkan Rute Pembayaran Kosong (Sementara)
+    Route::get('/payment', function () {
+        return "Halaman Pembayaran Sedang Dibuat"; // Nanti kita ganti dengan view payment
+    })->name('payment.index');
+    
 });
+
+
 
 
 
