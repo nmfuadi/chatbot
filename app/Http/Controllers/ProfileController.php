@@ -57,4 +57,22 @@ class ProfileController extends Controller
 
         return Redirect::to('/');
     }
+
+    public function sendOtp(Request $request) {
+        $otp = rand(1000, 9999);
+        $user = auth()->user();
+        $user->update(['otp_code' => $otp]);
+    
+        // Kirim via Wablas
+        $client = new \GuzzleHttp\Client();
+        $client->post("https://jkt.wablas.com/api/send-message", [
+            'headers' => ['Authorization' => $user->wablas_api_key], // Atau API Key Global Admin
+            'form_params' => [
+                'phone' => $request->whatsapp_number,
+                'message' => "Kode OTP Verifikasi Smart AI Anda adalah: $otp. Jangan berikan kode ini kepada siapapun.",
+            ]
+        ]);
+        
+        return redirect()->route('verification.page');
+    }
 }

@@ -6,6 +6,7 @@ use App\Http\Controllers\MemberController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CatalogController;
+use App\Http\Controllers\OnboardingController;
 
 Route::get('/', function () { return view('welcome'); });
 
@@ -53,6 +54,20 @@ Route::middleware(['auth'])->group(function () {
 
 Route::middleware(['auth'])->group(function () {
     Route::resource('catalogs', CatalogController::class);
+});
+
+Route::middleware(['auth'])->group(function () {
+    // Rute Onboarding (Profil Usaha & OTP)
+    Route::get('/onboarding/profile', [OnboardingController::class, 'profileForm'])->name('onboarding.profile.form');
+    Route::post('/onboarding/profile', [OnboardingController::class, 'submitProfile'])->name('onboarding.profile.submit');
+    
+    Route::get('/onboarding/otp', [OnboardingController::class, 'otpForm'])->name('onboarding.otp.form');
+    Route::post('/onboarding/otp', [OnboardingController::class, 'verifyOtp'])->name('onboarding.otp.verify');
+});
+
+Route::middleware(['auth', 'verified.wa'])->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    // Taruh rute halaman penting lainnya di dalam sini
 });
 
 

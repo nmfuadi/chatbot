@@ -18,8 +18,19 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
-       'name', 'email', 'password', 'phone', 'role', 'status', 
-       'force_password_change', 'wablas_api_key', 'wablas_secret_key', 'wablas_device_id'
+        'name',
+        'email',
+        'password',
+        // --- Tambahan Baru di Bawah Ini ---
+        'whatsapp_number',
+        'otp_code',
+        'otp_expires_at',
+        'is_wa_verified',
+        'business_name',
+        'business_category',
+        'business_address',
+        'business_description',
+        'subscription_status',
     ];
 
     public function payments() { return $this->hasMany(Payment::class); }
