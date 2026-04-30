@@ -64,6 +64,7 @@ Route::middleware(['auth'])->group(function () {
     
     Route::get('/onboarding/otp', [OnboardingController::class, 'otpForm'])->name('onboarding.otp.form');
     Route::post('/onboarding/otp', [OnboardingController::class, 'verifyOtp'])->name('onboarding.otp.verify');
+    Route::get('/invoice/{invoice}', [InvoiceController::class, 'show'])->name('user.invoice.show');
 });
 
 Route::middleware(['auth', 'verified.wa'])->group(function () {

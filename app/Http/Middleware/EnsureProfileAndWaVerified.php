@@ -45,6 +45,28 @@ class EnsureProfileAndWaVerified
             }
         }
 
+        // 5. CEK LANGGANAN & PEMBAYARAN
+$subscription = \App\Models\Subscription::where('user_id', $user->id)->latest()->first();
+
+if (!$subscription) {
+    if (!$request->routeIs('user.plans.*')) {
+        return redirect()->route('user.plans.index');
+    }
+} else {
+    // Jika punya subscription tapi statusnya 'pending' (berbayar tapi belum lunas)
+    if ($subscription->status === 'pending') {
+        $invoice = \App\Models\Invoice::where('subscription_id', $subscription->id)->first();
+        
+        // Paksa ke halaman invoice jika tidak sedang di halaman invoice/payment
+        if (!$request->routeIs('user.invoice.*') && !$request->routeIs('payment.*')) {
+            return redirect()->route('user.invoice.show', $invoice->id)
+                ->with('error', 'Silakan selesaikan pembayaran invoice Anda.');
+        }
+    }
+}
+
+
+
         // Jika semua aman, silakan masuk!
         return $next($request);
     }
