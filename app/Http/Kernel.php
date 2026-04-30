@@ -64,6 +64,7 @@ class Kernel extends HttpKernel
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'verified.wa' => \App\Http\Middleware\EnsureProfileAndWaVerified::class,
+        'is_admin' => \App\Http\Middleware\IsAdmin::class,
         
         // Tambahkan baris ini untuk mendaftarkan CheckRole:
         'role' => \App\Http\Middleware\CheckRole::class,
