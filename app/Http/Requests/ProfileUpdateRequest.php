@@ -18,6 +18,13 @@ class ProfileUpdateRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique(User::class)->ignore($this->user()->id)],
+            
+            // --- Tambahkan validasi data bisnis di bawah ini ---
+            'business_name' => ['nullable', 'string', 'max:255'],
+            'business_category' => ['nullable', 'string', 'max:255'],
+            'business_address' => ['nullable', 'string', 'max:255'],
+            'business_description' => ['nullable', 'string'],
+            'whatsapp_number' => ['nullable', 'numeric', Rule::unique(User::class)->ignore($this->user()->id)],
         ];
     }
 }

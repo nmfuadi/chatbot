@@ -67,8 +67,13 @@ Route::middleware(['auth'])->group(function () {
 });
 
 Route::middleware(['auth', 'verified.wa'])->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    // Taruh rute halaman penting lainnya di dalam sini
+    // Rute untuk melihat rangkuman profil & status
+    Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
+    
+    // Rute bawaan Breeze untuk edit/hapus
+    Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
 

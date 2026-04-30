@@ -11,6 +11,22 @@ use Illuminate\View\View;
 
 class ProfileController extends Controller
 {
+
+    public function index(Request $request): View
+    {
+        $user = $request->user();
+        
+        // Logika penentuan status layanan
+        $serviceStatus = [
+            'label' => $user->subscription_status == 'active' ? 'Aktif' : 'Non-Aktif',
+            'color' => $user->subscription_status == 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800',
+            'icon' => $user->subscription_status == 'active' ? 'check-circle' : 'x-circle'
+        ];
+
+        // Memanggil file view yang kita buat di langkah sebelumnya
+        return view('member.profile', compact('user', 'serviceStatus'));
+    }
+
     /**
      * Display the user's profile form.
      */
