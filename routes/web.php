@@ -8,6 +8,8 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CatalogController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\SubscriptionController;
+use App\Http\Controllers\InvoiceController;
 
 Route::get('/', function () { return view('welcome'); });
 
