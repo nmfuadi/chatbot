@@ -18,6 +18,12 @@
                         {{ __('Dashboard') }}
                     </x-nav-link>
 
+                    {{-- TAMBAHKAN KODE INI DI SINI --}}
+    <x-nav-link :href="route('profile.index')" :active="request()->routeIs('profile.*')">
+        {{ __('Profil & Status') }}
+    </x-nav-link>
+</div>
+
                     @if(Auth::user()->role === 'admin')
                         <x-nav-link :href="route('admin.members')" :active="request()->routeIs('admin.members')">
                             {{ __('Kelola Member') }}
