@@ -1,106 +1,82 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Pembayaran Invoice') }}
+            {{ __('Detail Tagihan') }}
         </h2>
     </x-slot>
 
-    <div class="py-12 bg-gray-100">
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            
-            <div class="bg-white shadow-lg rounded-lg overflow-hidden border border-gray-200">
-                
-                <div class="bg-[#4e73df] p-8 flex justify-between items-center">
-                    <div class="text-white">
-                        <div class="flex items-center gap-2">
-                            <div class="w-8 h-8 bg-white rounded-full flex items-center justify-center">
-                                <svg class="w-5 h-5 text-[#4e73df]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 22h20L12 2z"></path></svg>
-                            </div>
-                            <span class="text-xl font-bold uppercase tracking-wider">Terabot.AI</span>
+    <div class="py-12 bg-gray-50 min-h-screen">
+        <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
+            <div class="bg-white overflow-hidden shadow-xl sm:rounded-2xl border border-gray-100">
+                <div class="p-8 sm:p-12">
+                    
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-200 pb-8 mb-8 gap-4">
+                        <div>
+                            <h1 class="text-3xl font-black text-gray-900 tracking-tight">INVOICE</h1>
+                            <p class="text-sm text-gray-500 mt-1">Nomor: <span class="font-mono font-semibold text-gray-800">{{ $invoice->invoice_number }}</span></p>
+                        </div>
+                        <div>
+                            @if($invoice->status == 'unpaid')
+                                <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-bold bg-amber-100 text-amber-700 border border-amber-200">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    MENUNGGU PEMBAYARAN
+                                </span>
+                            @else
+                                <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-bold bg-green-100 text-green-700 border border-green-200">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    LUNAS
+                                </span>
+                            @endif
                         </div>
                     </div>
-                    <div class="text-white text-right">
-                        <h1 class="text-3xl font-light tracking-widest">INVOICE</h1>
-                    </div>
-                </div>
 
-                <div class="p-10">
-                    <div class="flex flex-col md:flex-row justify-between mb-12 gap-8">
-                        <div class="flex-1">
-                            <p class="text-sm font-bold text-gray-400 uppercase mb-2">Ditagihkan Kepada:</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                        <div class="bg-gray-50 p-6 rounded-xl border border-gray-100">
+                            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Ditagihkan Kepada:</h3>
                             <p class="text-lg font-bold text-gray-900">{{ $invoice->user->name }}</p>
-                            <p class="text-gray-600">{{ $invoice->user->business_name }}</p>
-                            <p class="text-gray-600">{{ $invoice->user->whatsapp_number }}</p>
+                            <p class="text-md text-gray-600 font-medium">{{ $invoice->user->business_name }}</p>
+                            <p class="text-sm text-gray-500 mt-1 flex items-center">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
+                                {{ $invoice->user->whatsapp_number }}
+                            </p>
                         </div>
-
-                        <div class="flex-1 md:text-right">
-                            <div class="space-y-1 text-sm">
-                                <p><span class="font-bold text-gray-900">Nomor Invoice:</span> <span class="text-gray-600">{{ $invoice->invoice_number }}</span></p>
-                                <p><span class="font-bold text-gray-900">Tanggal:</span> <span class="text-gray-600">{{ $invoice->created_at->format('d M Y') }}</span></p>
-                                <p>
-                                    <span class="font-bold text-gray-900">Status:</span> 
-                                    <span class="ml-2 px-2 py-1 bg-red-100 text-red-600 text-[10px] font-bold rounded uppercase">
-                                        {{ $invoice->status }}
-                                    </span>
-                                </p>
-                            </div>
+                        
+                        <div class="bg-blue-50 p-6 rounded-xl border border-blue-100">
+                            <h3 class="text-xs font-bold text-blue-500 uppercase tracking-wider mb-3">Detail Layanan:</h3>
+                            <p class="text-xl font-black text-blue-900">{{ $invoice->subscription->plan->name }}</p>
+                            <p class="text-sm text-blue-700 font-medium mt-2">Masa Aktif: <span class="font-bold">30 Hari</span></p>
+                            <p class="text-sm text-blue-700 font-medium">Limit: <span class="font-bold">{{ $invoice->subscription->plan->is_unlimited_messages ? 'Unlimited' : number_format($invoice->subscription->plan->max_messages, 0, ',', '.') . ' Pesan' }}</span></p>
                         </div>
                     </div>
 
-                    <div class="mb-10 border border-gray-100 rounded-lg overflow-hidden">
-                        <table class="w-full text-left">
-                            <thead class="bg-gray-50 border-b border-gray-200">
-                                <tr class="text-gray-700 text-xs font-bold uppercase tracking-wider">
-                                    <th class="py-4 px-6 text-center w-16">SL.</th>
-                                    <th class="py-4 px-6">Deskripsi Layanan</th>
-                                    <th class="py-4 px-6 text-center">Durasi</th>
-                                    <th class="py-4 px-6 text-right">Harga</th>
-                                    <th class="py-4 px-6 text-right">Total</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-100">
-                                <tr class="text-gray-700 text-sm">
-                                    <td class="py-6 px-6 text-center">1</td>
-                                    <td class="py-6 px-6">
-                                        <p class="font-bold text-gray-900">{{ $invoice->subscription->plan->name }}</p>
-                                        <p class="text-xs text-gray-500 mt-1 italic">Layanan Chatbot AI Assistant</p>
-                                    </td>
-                                    <td class="py-6 px-6 text-center italic">30 Hari</td>
-                                    <td class="py-6 px-6 text-right">Rp {{ number_format($invoice->amount, 0, ',', '.') }}</td>
-                                    <td class="py-6 px-6 text-right font-bold text-gray-900">Rp {{ number_format($invoice->amount, 0, ',', '.') }}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div class="flex justify-end mb-16">
-                        <div class="w-full md:w-72 space-y-3">
-                            <div class="flex justify-between text-sm text-gray-600 px-2">
-                                <span>Subtotal:</span>
-                                <span class="font-semibold">Rp {{ number_format($invoice->amount, 0, ',', '.') }}</span>
-                            </div>
-                            <div class="flex justify-between text-sm text-gray-600 px-2 border-b border-gray-100 pb-3">
-                                <span>Biaya Admin / Pajak:</span>
-                                <span class="font-semibold text-green-600">Rp 0</span>
-                            </div>
-                            <div class="flex justify-between items-center bg-gray-50 p-4 rounded-lg">
-                                <span class="text-sm font-bold text-gray-800 uppercase">Total:</span>
-                                <span class="text-2xl font-black text-[#4e73df]">Rp {{ number_format($invoice->amount, 0, ',', '.') }}</span>
-                            </div>
+                    <div class="border-t border-gray-200 pt-6 mb-8">
+                        <div class="flex justify-between items-center py-3">
+                            <span class="text-gray-600 font-medium">Subtotal</span>
+                            <span class="text-gray-900 font-semibold">Rp {{ number_format($invoice->amount, 0, ',', '.') }}</span>
+                        </div>
+                        <div class="flex justify-between items-center py-3 border-b border-gray-200 mb-6">
+                            <span class="text-gray-600 font-medium">PPN / Biaya Admin Sistem</span>
+                            <span class="text-green-600 font-bold">Gratis</span>
+                        </div>
+                        
+                        <div class="flex flex-col sm:flex-row justify-between items-center bg-gray-900 text-white p-6 sm:p-8 rounded-xl shadow-inner">
+                            <span class="text-lg font-medium text-gray-300 mb-2 sm:mb-0">Total Pembayaran</span>
+                            <span class="text-4xl font-black text-blue-400 tracking-tight">Rp {{ number_format($invoice->amount, 0, ',', '.') }}</span>
                         </div>
                     </div>
 
-                    <div class="flex flex-col items-center justify-center pt-8 border-t border-gray-100">
-                        <a href="{{ route('payment.index') }}" 
-                           class="inline-block bg-[#4e73df] hover:bg-[#3751a3] text-white font-extrabold py-4 px-12 rounded-lg shadow-md transition-all uppercase tracking-widest text-sm text-center">
-                            Lanjutkan Pembayaran
+                    <div class="mt-8">
+                        <a href="{{ route('payment.index') }}" class="w-full flex justify-center items-center bg-blue-600 hover:bg-blue-700 text-white text-lg font-bold py-4 px-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-1">
+                            <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                            Lanjutkan Pembayaran Sekarang
                         </a>
-                        <p class="mt-4 text-[10px] text-gray-400 font-medium">Terima kasih atas kepercayaan Anda menggunakan layanan Terabot.AI</p>
+                        <p class="text-center text-sm text-gray-400 mt-4 flex justify-center items-center">
+                            <svg class="w-4 h-4 mr-1 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                            Sistem akan otomatis mengaktifkan AI Anda setelah pembayaran berhasil.
+                        </p>
                     </div>
-
+                    
                 </div>
-                
-                <div class="bg-[#4e73df] h-2"></div>
             </div>
         </div>
     </div>
