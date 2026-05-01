@@ -58,14 +58,16 @@
                             <span class="text-lg font-bold mb-2 sm:mb-0 tracking-wide">Total Pembayaran</span>
                             <span class="text-3xl font-bold tracking-tight">Rp {{ number_format($invoice->amount, 0, ',', '.') }}</span>
                         </div>
-                    </div>
 
-                    <div class="mt-8 text-center border-t border-slate-100 pt-8">
+                        <div class="mt-8 text-center border-t border-slate-100 pt-8">
                         <div class="flex justify-center">
                             <a href="{{ route('payment.index') }}" class="inline-block bg-blue-600 hover:bg-blue-700 text-white text-lg font-extrabold py-4 px-12 rounded-xl shadow-lg transition duration-200 transform hover:-translate-y-1">
                                 Bayar Sekarang
                             </a>
                         </div>
+                    </div>
+
+                  
                         <p class="text-xs text-slate-400 mt-5">Invoice ini diterbitkan secara otomatis oleh sistem.</p>
                     </div>
 
