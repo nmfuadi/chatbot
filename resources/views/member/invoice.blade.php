@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+        <h2 class="font-semibold text-xl text-slate-800 leading-tight">
             {{ __('Detail Tagihan') }}
         </h2>
     </x-slot>
@@ -20,9 +20,13 @@
                                 <span class="px-4 py-2 rounded-full text-sm font-bold bg-yellow-100 text-yellow-700">
                                     MENUNGGU PEMBAYARAN
                                 </span>
-                            @else
+                            @elseif($invoice->status == 'paid')
                                 <span class="px-4 py-2 rounded-full text-sm font-bold bg-green-100 text-green-700">
                                     LUNAS
+                                </span>
+                            @else
+                                <span class="px-4 py-2 rounded-full text-sm font-bold bg-slate-100 text-slate-500">
+                                    KADALUARSA
                                 </span>
                             @endif
                         </div>
@@ -60,13 +64,32 @@
                         </div>
                     </div>
 
-                    <div class="mt-100 text-center border-t border-slate-100 pt-100">
+                    <div class="mt-8 text-center border-t border-slate-100 pt-8">
                         <div class="flex justify-center">
-                            <a href="{{ route('payment.methods', $invoice->id) }}" class="w-full bg-indigo-600 text-white px-4 py-2 rounded shadow hover:bg-indigo-700">
-                                Bayar Sekarang
-                            </a>
+                            @if($invoice->status == 'unpaid')
+                                <a href="{{ route('payment.methods', $invoice->id) }}" class="inline-block bg-blue-600 hover:bg-blue-700 text-white text-lg font-extrabold py-4 px-12 rounded-xl shadow-lg transition duration-200 transform hover:-translate-y-1">
+                                    Bayar Sekarang
+                                </a>
+                            @elseif($invoice->status == 'paid')
+                                <button disabled class="inline-flex items-center justify-center bg-emerald-500 text-white text-lg font-extrabold py-4 px-12 rounded-xl shadow opacity-80 cursor-not-allowed">
+                                    <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    Tagihan Lunas
+                                </button>
+                            @else
+                                <button disabled class="inline-flex items-center justify-center bg-slate-400 text-white text-lg font-extrabold py-4 px-12 rounded-xl shadow opacity-70 cursor-not-allowed">
+                                    <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    Tagihan Kadaluarsa
+                                </button>
+                            @endif
                         </div>
-                        <p class="text-xs text-slate-400 mt-5">Invoice ini diterbitkan secara otomatis oleh sistem.</p>
+                        
+                        @if($invoice->status == 'paid')
+                            <p class="text-xs text-emerald-600 font-bold mt-5">Terima kasih! Layanan AI Anda sudah aktif.</p>
+                        @elseif($invoice->status == 'unpaid')
+                            <p class="text-xs text-slate-400 mt-5">Invoice ini diterbitkan secara otomatis oleh sistem.</p>
+                        @else
+                            <p class="text-xs text-red-400 mt-5">Batas waktu pembayaran telah habis. Silakan buat langganan baru.</p>
+                        @endif
                     </div>
 
                 </div>
