@@ -122,11 +122,124 @@ class PaymentController extends Controller
     }
 
     /**
-     * Fungsi kosong untuk tahap Request Transaction (kita buat kerangkanya dulu)
+     * Memproses request transaksi pembayaran ke Duitku (Inquiry)
      */
     public function requestTransaction(Request $request, Invoice $invoice)
     {
-        // Nanti kita isi ini di tahap selanjutnya
-        return "Memproses metode: " . $request->payment_method;
+        // 1. Validasi pilihan metode pembayaran
+        $request->validate([
+            'payment_method' => 'required|string'
+        ]);
+
+        // 2. Keamanan: Pastikan invoice milik user yang login dan belum lunas
+        if ($invoice->user_id !== auth()->id() || $invoice->status !== 'unpaid') {
+            abort(403, 'Akses ditolak atau tagihan sudah lunas.');
+        }
+
+        $user = $invoice->user;
+
+        // 3. Persiapkan Kredensial & Detail Transaksi
+        $merchantCode = env('DUITKU_MERCHANT_CODE');
+        $apiKey = env('DUITKU_API_KEY');
+        
+        $paymentAmount = (int) $invoice->amount;
+        $paymentMethod = $request->payment_method;
+        $merchantOrderId = $invoice->invoice_number; 
+        $productDetails = 'Pembayaran Paket: ' . $invoice->subscription->plan->name;
+        
+        // Data Pelanggan (Otomatis ditarik dari database)
+        $email = $user->email ?? 'no-email@terabot.ai'; // Default jika email kosong
+        $phoneNumber = $user->whatsapp_number;
+        $customerVaName = $user->name;
+        
+        // URL Konfigurasi
+        $callbackUrl = url('/api/duitku/callback'); 
+        $returnUrl = route('user.invoice.show', $invoice->id); 
+        $expiryPeriod = 60; // Waktu kadaluarsa dalam hitungan menit
+
+        // 4. Buat Signature sesuai rumus Duitku
+        $signature = md5($merchantCode . $merchantOrderId . $paymentAmount . $apiKey);
+
+        // 5. Susun Array Data Alamat Pelanggan
+        $address = [
+            'firstName' => $user->name,
+            'lastName' => '', 
+            'address' => $user->business_address ?? 'Alamat tidak diisi', 
+            'city' => 'Jakarta', // Duitku mewajibkan field ini terisi
+            'postalCode' => '10000',
+            'phone' => $phoneNumber,
+            'countryCode' => 'ID'
+        ];
+
+        $customerDetail = [
+            'firstName' => $user->name,
+            'lastName' => '',
+            'email' => $email,
+            'phoneNumber' => $phoneNumber,
+            'billingAddress' => $address,
+            'shippingAddress' => $address
+        ];
+
+        // 6. Susun Array Item Pembelian
+        $itemDetails = [
+            [
+                'name' => $invoice->subscription->plan->name,
+                'price' => $paymentAmount,
+                'quantity' => 1
+            ]
+        ];
+
+        // 7. Bungkus Semua Payload Sesuai Format cURL Duitku
+        $params = [
+            'merchantCode' => $merchantCode,
+            'paymentAmount' => $paymentAmount,
+            'paymentMethod' => $paymentMethod,
+            'merchantOrderId' => $merchantOrderId,
+            'productDetails' => $productDetails,
+            'additionalParam' => '',
+            'merchantUserInfo' => '',
+            'customerVaName' => $customerVaName,
+            'email' => $email,
+            'phoneNumber' => $phoneNumber,
+            'itemDetails' => $itemDetails,
+            'customerDetail' => $customerDetail,
+            'callbackUrl' => $callbackUrl,
+            'returnUrl' => $returnUrl,
+            'signature' => $signature,
+            'expiryPeriod' => $expiryPeriod
+        ];
+
+        // 8. Tentukan URL (Sandbox atau Production)
+        $url = env('DUITKU_ENV') === 'sandbox' 
+            ? 'https://sandbox.duitku.com/webapi/api/merchant/v2/inquiry'
+            : 'https://passport.duitku.com/webapi/api/merchant/v2/inquiry';
+
+        try {
+            // 9. Kirim POST Request menggunakan Http Laravel
+            $response = \Illuminate\Support\Facades\Http::withHeaders([
+                'Content-Type' => 'application/json'
+            ])->post($url, $params);
+
+            $result = $response->json();
+
+            // 10. Evaluasi Response dari Duitku
+            if (isset($result['statusCode']) && $result['statusCode'] === '00') {
+                
+                // BERHASIL! Langsung arahkan user ke URL Pembayaran Duitku
+                return redirect()->away($result['paymentUrl']);
+                
+            } else {
+                // Tangani jika terjadi penolakan dari Duitku (misal: nominal kurang, signature salah)
+                \Illuminate\Support\Facades\Log::error('Duitku Inquiry Failed:', $result ?? []);
+                $errorMessage = $result['statusMessage'] ?? 'Unknown Error';
+                
+                return back()->with('error', 'Gagal memproses pembayaran: ' . $errorMessage);
+            }
+
+        } catch (\Exception $e) {
+            // Tangani jika koneksi ke server Duitku terputus
+            \Illuminate\Support\Facades\Log::error('Duitku Exception: ' . $e->getMessage());
+            return back()->with('error', 'Terjadi kesalahan sistem saat menghubungi payment gateway.');
+        }
     }
 }
