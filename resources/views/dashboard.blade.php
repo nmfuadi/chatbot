@@ -66,7 +66,7 @@
                             
                             <p class="text-sm text-gray-600 mb-6">Anda belum memiliki paket aktif. Fitur AI Chatbot tidak dapat digunakan saat ini.</p>
                             
-                            <a href="{{ route('user.plans.index') }}" class="block w-full bg-blue-600 hover:bg-blue-700 text-white text-center px-4 py-3 rounded-xl text-sm font-bold shadow transition duration-200">
+                            <a href="{{ route('user.plans.index') }}" class="mt-4 w-full text-center bg-blue-600 text-white text-sm py-2 rounded-lg font-semibold hover:bg-blue-700">
                                 Pilih Paket Sekarang
                             </a>
                         @endif
