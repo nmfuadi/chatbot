@@ -83,7 +83,7 @@ public function cancelPlan(Request $request)
     $user = auth()->user();
 
     // 1. Reset Status Langganan di Tabel User
-    $user->update(['subscription_status' => 'inactive']);
+    $user->update(['subscription_status' => null]);
 
     // 2. Batalkan Subscription yang sedang berjalan (Active)
     $activeSubscriptions = \App\Models\Subscription::where('user_id', $user->id)
