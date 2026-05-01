@@ -33,9 +33,9 @@
         </x-nav-link>
 
                     @elseif(Auth::user()->role === 'member')
-                        <x-nav-link :href="route('member.payment')" :active="request()->routeIs('member.payment')">
-                            {{ __('Pembayaran') }}
-                        </x-nav-link>
+                    <x-nav-link :href="route('user.invoice.index')" :active="request()->routeIs('user.invoice.index')">
+    {{ __('Tagihan') }}
+</x-nav-link>
                         <x-nav-link :href="route('member.wablas')" :active="request()->routeIs('member.wablas')">
                             {{ __('Setup Wablas') }}
                         </x-nav-link>

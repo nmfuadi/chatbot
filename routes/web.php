@@ -39,6 +39,8 @@ Route::middleware(['auth'])->group(function () {
     // Rute untuk Return URL Duitku
     Route::get('/payment/return', [PaymentController::class, 'paymentReturn'])->name('payment.return');
 
+    Route::get('/invoices', [PaymentController::class, 'index'])->name('user.invoice.index');
+
 });
 
 

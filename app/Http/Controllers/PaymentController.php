@@ -9,6 +9,19 @@ use Illuminate\Support\Facades\Http; // Tambahkan ini
 
 class PaymentController extends Controller
 {
+
+    public function index()
+    {
+        // Mengambil semua invoice milik user, urutkan dari yang terbaru
+        $invoices = \App\Models\Invoice::where('user_id', auth()->id())
+                    ->with('subscription.plan')
+                    ->latest()
+                    ->get();
+    
+        return view('member.invoices.index', compact('invoices'));
+    }
+
+
     /**
      * Menangani Callback dari Duitku
      */
