@@ -36,6 +36,8 @@ Route::middleware(['auth'])->group(function () {
     
     // Rute POST untuk memproses pilihan metode pembayaran (Tahap selanjutnya)
     Route::post('/invoice/{invoice}/request-transaction', [PaymentController::class, 'requestTransaction'])->name('payment.request');
+    // Rute untuk Return URL Duitku
+    Route::get('/payment/return', [PaymentController::class, 'paymentReturn'])->name('payment.return');
 
 });
 

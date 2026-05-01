@@ -154,7 +154,7 @@ class PaymentController extends Controller
         
         // URL Konfigurasi
         $callbackUrl = url('/api/duitku/callback'); 
-        $returnUrl = route('user.invoice.show', $invoice->id); 
+        $returnUrl = route('payment.return'); // <-- Sudah mengarah ke Return URL yang benar
         $expiryPeriod = 60; // Waktu kadaluarsa dalam hitungan menit
 
         // 4. Buat Signature sesuai rumus Duitku
@@ -240,6 +240,40 @@ class PaymentController extends Controller
             // Tangani jika koneksi ke server Duitku terputus
             \Illuminate\Support\Facades\Log::error('Duitku Exception: ' . $e->getMessage());
             return back()->with('error', 'Terjadi kesalahan sistem saat menghubungi payment gateway.');
+        }
+    }
+
+    /**
+     * Menangani Return/Redirect URL dari Duitku setelah user berinteraksi dengan halaman pembayaran
+     */
+    public function paymentReturn(Request $request)
+    {
+        // Tangkap data yang dikirim oleh Duitku via URL parameter (GET)
+        $merchantOrderId = $request->query('merchantOrderId');
+        $resultCode = $request->query('resultCode');
+        $reference = $request->query('reference');
+
+        // Cari invoice berdasarkan nomor order
+        $invoice = \App\Models\Invoice::where('invoice_number', $merchantOrderId)->first();
+
+        // Jika invoice tidak ditemukan, lempar ke dashboard
+        if (!$invoice) {
+            return redirect()->route('dashboard')->with('error', 'Tagihan tidak ditemukan.');
+        }
+
+        // Evaluasi hasil kembalian dari Duitku
+        if ($resultCode == '00') {
+            // Sukses (Sudah Dibayar)
+            // Kita arahkan ke Dashboard karena status DB-nya akan di-update oleh fungsi Callback di background
+            return redirect()->route('dashboard')->with('success', 'Hore! Pembayaran berhasil. Sistem sedang mengaktifkan layanan AI Anda.');
+            
+        } elseif ($resultCode == '01') {
+            // Gagal / Dibatalkan
+            return redirect()->route('user.invoice.show', $invoice->id)->with('error', 'Pembayaran gagal atau dibatalkan. Silakan coba metode lain.');
+            
+        } else {
+            // Kode '02' atau lainnya (Pending / Menunggu Pembayaran via ATM/Minimarket)
+            return redirect()->route('user.invoice.show', $invoice->id)->with('success', 'Instruksi pembayaran berhasil dibuat! Silakan selesaikan pembayaran Anda.');
         }
     }
 }
