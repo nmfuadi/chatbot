@@ -65,16 +65,39 @@
                     </div>
 
                     <div class="mt-8 text-center border-t border-slate-100 pt-8">
-                        <div class="flex justify-center">
+                        
+                        <div class="flex flex-col sm:flex-row justify-center items-center gap-4">
                             @if($invoice->status == 'unpaid')
-                                <a href="{{ route('payment.methods', $invoice->id) }}" class="w-full bg-indigo-600 text-white px-4 py-2 rounded shadow hover:bg-indigo-700">
+                                
+                                <a href="{{ route('payment.methods', $invoice->id) }}" class="w-full sm:w-auto bg-indigo-600 text-white px-4 py-2 rounded shadow hover:bg-indigo-700 text-center">
                                     Bayar Sekarang
                                 </a>
+                                
+                                <form action="{{ route('user.plans.cancel') }}" method="POST" class="w-full sm:w-auto">
+                                    @csrf
+                                    <button type="submit" onclick="return confirm('Apakah Anda yakin ingin membatalkan tagihan ini dan memilih paket lain?')" class="w-full sm:w-auto bg-white text-red-500 border border-red-400 px-4 py-2 rounded shadow hover:bg-red-50 transition duration-200 text-center">
+                                        Batalkan Paket
+                                    </button>
+                                </form>
+
                             @elseif($invoice->status == 'paid')
-                                <button disabled class="inline-flex items-center justify-center bg-emerald-500 text-white text-lg font-extrabold py-4 px-12 rounded-xl shadow opacity-80 cursor-not-allowed">
-                                    <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                                    Tagihan Lunas
-                                </button>
+                                
+                                <div class="flex flex-col items-center w-full">
+                                    <button disabled class="inline-flex items-center justify-center bg-emerald-500 text-white text-lg font-extrabold py-4 px-12 rounded-xl shadow opacity-80 cursor-not-allowed">
+                                        <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                        Tagihan Lunas
+                                    </button>
+
+                                    <form action="{{ route('user.plans.cancel') }}" method="POST" class="mt-4">
+                                        @csrf
+                                        <button type="submit" 
+                                                onclick="return confirm('PERHATIAN: Membatalkan paket yang sudah aktif akan menghanguskan sisa masa aktif Anda. Lanjutkan?')" 
+                                                class="text-sm font-bold text-red-500 hover:text-red-700 underline decoration-dotted transition">
+                                            Ingin ganti paket lain? Batalkan & Pilih Ulang
+                                        </button>
+                                    </form>
+                                </div>
+
                             @else
                                 <button disabled class="inline-flex items-center justify-center bg-slate-400 text-white text-lg font-extrabold py-4 px-12 rounded-xl shadow opacity-70 cursor-not-allowed">
                                     <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
