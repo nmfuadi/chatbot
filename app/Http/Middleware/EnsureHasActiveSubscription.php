@@ -13,8 +13,8 @@ class EnsureHasActiveSubscription
         // Jika user sudah login TAPI status langganannya BUKAN active
         if (auth()->check() && auth()->user()->subscription_status !== 'active') {
             
-            // Lempar ke halaman pemilihan paket
-            return redirect()->route('packages.index') // Ganti dengan nama route halaman paketmu
+            // Lempar ke halaman pemilihan paket yang benar (user.plans.index)
+            return redirect()->route('user.plans.index') 
                 ->with('error', 'Silakan berlangganan paket terlebih dahulu untuk mengakses fitur premium ini.');
         }
 
