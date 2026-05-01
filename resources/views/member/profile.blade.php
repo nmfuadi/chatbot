@@ -1,74 +1,124 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+        <h2 class="text-2xl font-bold text-gray-800">
             {{ __('Profil Saya & Status Layanan') }}
         </h2>
+        <p class="text-sm text-gray-500 mt-1">Kelola informasi bisnis dan status layanan AI Anda</p>
     </x-slot>
 
-    <div class="py-12">
+    <div class="py-10 bg-gray-50 min-h-screen">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                
+
+                <!-- LEFT: STATUS -->
                 <div class="md:col-span-1">
-                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-                        <h2 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Status Layanan AI</h2>
-                        <div class="flex flex-col items-center py-4">
-                            <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-bold {{ $serviceStatus['color'] }}">
-                                {{ $serviceStatus['label'] }}
-                            </span>
-                            
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+
+                        <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-6">
+                            Status Layanan AI
+                        </h2>
+
+                        <div class="flex flex-col items-center text-center space-y-4">
+
+                            <!-- STATUS BADGE -->
+                            <div class="flex items-center gap-2">
+                                <span class="w-2.5 h-2.5 rounded-full {{ $serviceStatus['color'] }}"></span>
+                                <span class="px-4 py-1.5 rounded-full text-sm font-semibold {{ $serviceStatus['color'] }}">
+                                    {{ $serviceStatus['label'] }}
+                                </span>
+                            </div>
+
                             @if($user->subscription_status != 'active')
-                                <p class="text-xs text-gray-500 mt-4 text-center">Layanan AI Anda belum aktif. Silakan lakukan pembayaran untuk mulai menggunakan bot.</p>
-                                <a href="route('user.invoice.index')" class="mt-4 w-full text-center bg-blue-600 text-white text-sm py-2 rounded-lg font-semibold hover:bg-blue-700">
+                                <p class="text-sm text-gray-500 leading-relaxed">
+                                    Layanan AI Anda belum aktif.<br>
+                                    Aktifkan sekarang untuk mulai menggunakan chatbot.
+                                </p>
+
+                                <a href="route('user.invoice.index')" 
+                                   class="w-full bg-blue-600 text-white text-sm py-2.5 rounded-lg font-semibold hover:bg-blue-700 transition">
                                     Aktivasi Sekarang
                                 </a>
                             @else
-                                <p class="text-xs text-green-600 mt-4 text-center font-medium">Chatbot AI Anda siap melayani pelanggan 24/7.</p>
+                                <div class="bg-green-50 text-green-700 text-sm px-4 py-3 rounded-lg">
+                                    Chatbot AI Anda aktif dan siap melayani pelanggan 24/7 🚀
+                                </div>
                             @endif
+
                         </div>
                     </div>
                 </div>
 
+                <!-- RIGHT: PROFILE -->
                 <div class="md:col-span-2">
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                        <div class="px-6 py-4 border-b border-gray-50 flex justify-between items-center">
-                            <h2 class="font-bold text-gray-800">Detail Bisnis</h2>
-                            <span class="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded">WA Terverifikasi</span>
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+
+                        <!-- HEADER -->
+                        <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-center">
+                            <div>
+                                <h2 class="text-lg font-semibold text-gray-800">Detail Bisnis</h2>
+                                <p class="text-xs text-gray-400">Informasi yang digunakan oleh AI chatbot Anda</p>
+                            </div>
+
+                            <span class="text-xs font-medium text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
+                                WA Terverifikasi
+                            </span>
                         </div>
-                        
+
+                        <!-- CONTENT -->
                         <div class="p-6 space-y-6">
-                            <div class="grid grid-cols-2 gap-4">
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <label class="block text-xs font-medium text-gray-400">Nama Usaha</label>
-                                    <p class="text-gray-800 font-semibold">{{ $user->business_name }}</p>
+                                    <label class="text-xs text-gray-400">Nama Usaha</label>
+                                    <p class="mt-1 text-gray-800 font-semibold text-base">
+                                        {{ $user->business_name }}
+                                    </p>
                                 </div>
+
                                 <div>
-                                    <label class="block text-xs font-medium text-gray-400">Kategori</label>
-                                    <p class="text-gray-800">{{ $user->business_category }}</p>
+                                    <label class="text-xs text-gray-400">Kategori</label>
+                                    <p class="mt-1 text-gray-700">
+                                        {{ $user->business_category }}
+                                    </p>
                                 </div>
                             </div>
 
                             <div>
-                                <label class="block text-xs font-medium text-gray-400">Nomor WhatsApp Bot</label>
-                                <p class="text-gray-800 font-mono">{{ $user->whatsapp_number }}</p>
+                                <label class="text-xs text-gray-400">Nomor WhatsApp Bot</label>
+                                <p class="mt-1 text-gray-800 font-mono bg-gray-50 px-3 py-2 rounded-lg inline-block">
+                                    {{ $user->whatsapp_number }}
+                                </p>
                             </div>
 
                             <div>
-                                <label class="block text-xs font-medium text-gray-400">Alamat</label>
-                                <p class="text-gray-800">{{ $user->business_address }}</p>
+                                <label class="text-xs text-gray-400">Alamat</label>
+                                <p class="mt-1 text-gray-700 leading-relaxed">
+                                    {{ $user->business_address }}
+                                </p>
                             </div>
 
                             <div>
-                                <label class="block text-xs font-medium text-gray-400">Deskripsi / SOP AI</label>
-                                <div class="mt-1 p-3 bg-gray-50 rounded-lg text-sm text-gray-600 italic">
+                                <label class="text-xs text-gray-400">Deskripsi / SOP AI</label>
+                                <div class="mt-2 p-4 bg-gray-50 rounded-xl text-sm text-gray-600 italic leading-relaxed border border-gray-100">
                                     "{{ $user->business_description }}"
                                 </div>
                             </div>
+
                         </div>
 
-                        <div class="px-6 py-4 bg-gray-50 text-right">
-                            <a href="{{ route('profile.edit') }}" class="text-sm font-semibold text-blue-600 hover:text-blue-800">Edit Data Diri (Password/Email)</a>
+                        <!-- FOOTER -->
+                        <div class="px-6 py-4 bg-gray-50 flex justify-between items-center">
+                            <p class="text-xs text-gray-400">
+                                Pastikan data selalu update agar AI bekerja optimal
+                            </p>
+
+                            <a href="{{ route('profile.edit') }}" 
+                               class="text-sm font-semibold text-blue-600 hover:text-blue-800">
+                                Edit Profil →
+                            </a>
                         </div>
+
                     </div>
                 </div>
 
