@@ -6,12 +6,14 @@ use Illuminate\Http\Request;
 use App\Models\ChatSession;
 use App\Models\ChatHistory;
 use Illuminate\Support\Facades\Auth;
-use App\Models\Customer;
 
 class CustomerController extends Controller {
+    
     public function index() {
-        // Angka 10 berarti menampilkan 10 customer per halaman (silakan ubah sesuai kebutuhan)
-        $customers = Customer::where('user_id', auth()->id())->paginate(10);
+        // PERBAIKAN: Gunakan model ChatSession, bukan Customer
+        // Angka 10 berarti menampilkan 10 customer per halaman
+        $customers = ChatSession::where('user_id', auth()->id())->paginate(10);
+        
         return view('customers.index', compact('customers'));
     }
 
@@ -21,8 +23,6 @@ class CustomerController extends Controller {
         return back()->with('success', 'Status AI berhasil diubah');
     }
 
-
-    
     public function history($phone) {
         // Ambil data history, urutkan dari yang paling lama ke terbaru (asc) agar enak dibaca seperti chat biasa
         $histories = ChatHistory::where('user_id', Auth::id())
