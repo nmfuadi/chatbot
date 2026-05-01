@@ -19,7 +19,7 @@
                             
                             @if($user->subscription_status != 'active')
                                 <p class="text-xs text-gray-500 mt-4 text-center">Layanan AI Anda belum aktif. Silakan lakukan pembayaran untuk mulai menggunakan bot.</p>
-                                <a href="{{ route('payment.index') }}" class="mt-4 w-full text-center bg-blue-600 text-white text-sm py-2 rounded-lg font-semibold hover:bg-blue-700">
+                                <a href="route('user.invoice.index')" class="mt-4 w-full text-center bg-blue-600 text-white text-sm py-2 rounded-lg font-semibold hover:bg-blue-700">
                                     Aktivasi Sekarang
                                 </a>
                             @else
