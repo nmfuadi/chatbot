@@ -25,38 +25,37 @@
                                 Pilih Metode Pembayaran
                             </h3>
 
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                @foreach($paymentMethods as $method)
-                                    <label class="group relative flex cursor-pointer rounded-xl border-2 border-slate-100 bg-white p-4 shadow-sm focus:outline-none hover:border-blue-200 transition-all has-[:checked]:border-blue-600 has-[:checked]:bg-blue-50">
-                                        <input type="radio" name="payment_method" value="{{ $method['paymentMethod'] }}" class="sr-only" required>
-                                        
-                                        <div class="flex w-full items-center justify-between">
-                                            <div class="flex items-center gap-4">
-                                                <div class="shrink-0">
-                                                    <img src="{{ $method['paymentImage'] }}" alt="{{ $method['paymentName'] }}" class="h-10 w-12 object-contain">
-                                                </div>
-                                                <div class="text-sm">
-                                                    <p class="font-bold text-slate-900">{{ $method['paymentName'] }}</p>
-                                                    @if($method['totalFee'] > 0)
-                                                        <p class="text-slate-500">+ Biaya Rp {{ number_format($method['totalFee'], 0, ',', '.') }}</p>
-                                                    @else
-                                                        <p class="text-green-600 font-medium">Gratis Biaya Admin</p>
-                                                    @endif
-                                                </div>
-                                            </div>
-                                            
-                                            <div class="h-5 w-5 rounded-full border-2 border-slate-200 flex items-center justify-center group-hover:border-blue-400 peer-checked:border-blue-600">
-                                                <div class="h-2.5 w-2.5 rounded-full bg-blue-600 scale-0 transition-transform duration-200 peer-checked:scale-100"></div>
-                                            </div>
-                                        </div>
-
-                                        <style>
-                                            input:checked ~ div .h-5 { border-color: #2563eb; }
-                                            input:checked ~ div .bg-blue-600 { transform: scale(1); }
-                                        </style>
-                                    </label>
-                                @endforeach
+                            <div class="mb-6">
+                                <label for="payment_method" class="block text-sm font-medium text-slate-700 mb-2">Metode Pembayaran Tersedia</label>
+                                <select id="payment_method" name="payment_method" class="block w-full rounded-lg border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-base py-3" required onchange="showPaymentPreview()">
+                                    <option value="" disabled selected>-- Klik untuk memilih bank / dompet digital --</option>
+                                    @foreach($paymentMethods as $method)
+                                        <option value="{{ $method['paymentMethod'] }}" 
+                                                data-image="{{ $method['paymentImage'] }}" 
+                                                data-fee="{{ $method['totalFee'] }}"
+                                                data-name="{{ $method['paymentName'] }}">
+                                            {{ $method['paymentName'] }}
+                                        </option>
+                                    @endforeach
+                                </select>
                             </div>
+
+                            <div id="payment-preview" class="hidden mt-6 p-6 border-2 border-blue-500 bg-blue-50 rounded-xl flex items-center justify-between transition-all duration-300">
+                                <div class="flex items-center gap-4">
+                                    <div class="bg-white p-2 rounded-lg shadow-sm border border-slate-100">
+                                        <img id="preview-image" src="" alt="Payment Logo" class="h-12 w-16 object-contain">
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-blue-600 font-bold uppercase tracking-wider mb-1">Metode Terpilih:</p>
+                                        <p id="preview-name" class="font-bold text-slate-900 text-lg"></p>
+                                        <p id="preview-fee" class="text-sm mt-1"></p>
+                                    </div>
+                                </div>
+                                <div class="text-blue-600 hidden sm:block">
+                                    <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                                </div>
+                            </div>
+                            
                         </div>
                     </div>
 
@@ -79,13 +78,13 @@
                                 </div>
                             </div>
 
-                            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-extrabold py-4 px-6 rounded-xl shadow-lg transition-all transform hover:-translate-y-1 flex items-center justify-center">
-                                <span>Bayar Sekarang</span>
+                            <button type="submit" id="btn-submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-extrabold py-4 px-6 rounded-xl shadow-lg transition-all transform hover:-translate-y-1 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed">
+                                <span>Lanjutkan Pembayaran</span>
                                 <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                             </button>
                             
                             <p class="text-[10px] text-slate-400 mt-4 text-center">
-                                Dengan mengklik tombol di atas, Anda setuju dengan Syarat & Ketentuan layanan kami.
+                                Secured by Duitku Payment Gateway
                             </p>
                         </div>
                     </div>
@@ -95,4 +94,34 @@
 
         </div>
     </div>
+
+    <script>
+        function showPaymentPreview() {
+            const select = document.getElementById('payment_method');
+            const selectedOption = select.options[select.selectedIndex];
+
+            if (selectedOption.value) {
+                // Ambil data dari tag option
+                const imageSrc = selectedOption.getAttribute('data-image');
+                const fee = selectedOption.getAttribute('data-fee');
+                const name = selectedOption.getAttribute('data-name');
+
+                // Update gambar dan teks preview
+                document.getElementById('preview-image').src = imageSrc;
+                document.getElementById('preview-name').textContent = name;
+
+                const feeElement = document.getElementById('preview-fee');
+                if (parseInt(fee) > 0) {
+                    feeElement.textContent = '+ Biaya Admin Rp ' + parseInt(fee).toLocaleString('id-ID');
+                    feeElement.className = 'text-sm mt-1 text-slate-600';
+                } else {
+                    feeElement.textContent = 'Gratis Biaya Admin';
+                    feeElement.className = 'text-sm mt-1 text-green-600 font-bold';
+                }
+
+                // Tampilkan kotak preview yang sebelumnya disembunyikan
+                document.getElementById('payment-preview').classList.remove('hidden');
+            }
+        }
+    </script>
 </x-app-layout>
