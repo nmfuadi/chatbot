@@ -67,7 +67,7 @@
                     <div class="mt-8 text-center border-t border-slate-100 pt-8">
                         <div class="flex justify-center">
                             @if($invoice->status == 'unpaid')
-                                <a href="{{ route('payment.methods', $invoice->id) }}" class="inline-block bg-blue-600 hover:bg-blue-700 text-white text-lg font-extrabold py-4 px-12 rounded-xl shadow-lg transition duration-200 transform hover:-translate-y-1">
+                                <a href="{{ route('payment.methods', $invoice->id) }}" class="w-full bg-indigo-600 text-white px-4 py-2 rounded shadow hover:bg-indigo-700">
                                     Bayar Sekarang
                                 </a>
                             @elseif($invoice->status == 'paid')
