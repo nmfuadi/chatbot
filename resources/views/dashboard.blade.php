@@ -19,7 +19,7 @@
             
             <div class="bg-blue-600 bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl shadow-lg p-8 sm:p-10 text-white flex flex-col md:flex-row items-center justify-between gap-6">
                 <div>
-                    <h1 class="text-3xl font-extrabold mb-2 text-white">Halo, {{ $user->name }}! 👋</h1>
+                    <h1 class="text-3xl font-extrabold mb-2 text-white">Halo, {{ $user->name }}! </h1>
                     <p class="text-blue-100 text-sm md:text-base">Selamat datang di pusat kendali AI untuk <span class="font-bold text-white">{{ $user->business_name ?? 'Bisnis Anda' }}</span>.</p>
                 </div>
                 <div class="shrink-0 bg-white/10 backdrop-blur-sm p-4 rounded-xl border border-white/20 text-center w-full md:w-auto">
@@ -61,7 +61,7 @@
                         @else
                             <div class="flex items-center gap-3 mb-4">
                                 <span class="relative inline-flex rounded-full h-4 w-4 bg-yellow-500"></span>
-                                <span class="font-bold text-yellow-600 uppercase tracking-wider text-sm">Belum Aktif</span>
+                                <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-bold {{ $serviceStatus['color'] }}">Belum Aktif</span>
                             </div>
                             
                             <p class="text-sm text-gray-600 mb-6">Anda belum memiliki paket aktif. Fitur AI Chatbot tidak dapat digunakan saat ini.</p>
