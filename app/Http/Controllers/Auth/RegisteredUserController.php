@@ -46,6 +46,8 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        return redirect(RouteServiceProvider::HOME);
+       
+            // Di dalam Controller Login atau Register setelah sukses
+        return redirect()->route('dashboard');
     }
 }
