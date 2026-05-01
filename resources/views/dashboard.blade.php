@@ -1,7 +1,10 @@
 @php
     $user = auth()->user();
     // Mengambil data langganan yang sedang aktif beserta relasi nama paketnya
-    $activeSub = \App\Models\Subscription::with('plan')->where('user_id', $user->id)->where('status', 'active')->first();
+    $activeSub = \App\Models\Subscription::with('plan')
+                    ->where('user_id', $user->id)
+                    ->where('status', 'active')
+                    ->first();
 @endphp
 
 <x-app-layout>
@@ -42,7 +45,7 @@
                             
                             <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 mb-6">
                                 <p class="text-xs text-slate-500 font-bold uppercase mb-1">Paket Saat Ini:</p>
-                                <p class="text-xl font-black text-blue-900">{{ $activeSub->plan->name }}</p>
+                                <p class="text-xl font-black text-blue-900">{{ $activeSub->plan->name ?? 'Paket Premium' }}</p>
                                 <p class="text-xs text-slate-500 mt-2">Berlaku s/d: <span class="font-bold text-slate-700">{{ \Carbon\Carbon::parse($activeSub->ends_at)->format('d M Y') }}</span></p>
                             </div>
 
@@ -101,6 +104,34 @@
                             <p class="text-sm text-slate-500">Hubungkan nomor Anda dan scan QR Code untuk mengaktifkan AI.</p>
                         </a>
 
-                        <a href="{{ route('customers.index') }}" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md hover:blue-300 transition group relative overflow-hidden">
+                        <a href="{{ route('customers.index') }}" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md hover:border-indigo-300 transition group relative overflow-hidden">
                             <div class="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                            </div>
+                            <h4 class="text-lg font-bold text-slate-900 mb-1">Database Customer</h4>
+                            <p class="text-sm text-slate-500">Kelola data pelanggan, histori chat, dan matikan/nyalakan AI per nomor.</p>
+                        </a>
+
+                        <a href="{{ route('catalogs.index') }}" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md hover:border-emerald-300 transition group relative overflow-hidden">
+                            <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                            </div>
+                            <h4 class="text-lg font-bold text-slate-900 mb-1">Katalog Produk</h4>
+                            <p class="text-sm text-slate-500">Atur produk/jasa yang akan ditawarkan oleh AI kepada pelanggan Anda.</p>
+                        </a>
+
+                        <div class="bg-slate-100 p-6 rounded-2xl border border-slate-200 border-dashed flex flex-col items-center justify-center text-center">
+                            <div class="w-12 h-12 bg-slate-200 text-slate-400 rounded-full flex items-center justify-center mb-3">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                            </div>
+                            <h4 class="text-sm font-bold text-slate-500 mb-1">Statistik Penggunaan AI</h4>
+                            <p class="text-xs text-slate-400">Fitur analitik segera hadir.</p>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</x-app-layout>
