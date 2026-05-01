@@ -13,65 +13,61 @@ class PaymentController extends Controller
      * Menangani Callback dari Duitku
      */
     public function callback(Request $request)
-    {
-        $apiKey = env('DUITKU_API_KEY');
+{
+    // 1. LOG SEMUA DATA MASUK (Untuk cek apakah Duitku benar-benar kirim)
+    \Log::info('Duitku Callback Masuk:', $request->all());
+
+    $apiKey = env('DUITKU_API_KEY');
+    $merchantCode = $request->input('merchantCode');
+    $amount = $request->input('amount');
+    $merchantOrderId = $request->input('merchantOrderId');
+    $signature = $request->input('signature');
+    $resultCode = $request->input('resultCode');
+    $reference = $request->input('reference');
+
+    if (!empty($merchantCode) && !empty($amount) && !empty($merchantOrderId) && !empty($signature)) {
         
-        $merchantCode = $request->input('merchantCode');
-        $amount = $request->input('amount');
-        $merchantOrderId = $request->input('merchantOrderId'); // Ini adalah Nomor Invoice kita
-        $signature = $request->input('signature');
-        $resultCode = $request->input('resultCode'); // '00' artinya sukses
-        $reference = $request->input('reference');
+        // 2. HITUNG SIGNATURE (Penting: nominal harus persis sama dengan saat request)
+        $params = $merchantCode . $amount . $merchantOrderId . $apiKey;
+        $calcSignature = md5($params);
 
-        // Pastikan parameter penting tidak kosong
-        if (!empty($merchantCode) && !empty($amount) && !empty($merchantOrderId) && !empty($signature)) {
-            
-            // Rumus MD5 dari Duitku
-            $params = $merchantCode . $amount . $merchantOrderId . $apiKey;
-            $calcSignature = md5($params);
+        if ($signature == $calcSignature) {
+            if ($resultCode == '00') {
+                $invoice = \App\Models\Invoice::where('invoice_number', $merchantOrderId)->first();
 
-            // Validasi Keaslian Data
-            if ($signature == $calcSignature) {
-                
-                // Jika Duitku menyatakan pembayaran sukses ('00')
-                if ($resultCode == '00') {
-                    
-                    // Cari invoice berdasarkan nomor
-                    $invoice = Invoice::where('invoice_number', $merchantOrderId)->first();
-
-                    if ($invoice && $invoice->status === 'unpaid') {
-                        
-                        // 1. Ubah status Invoice jadi Lunas
+                if ($invoice) {
+                    // Cek jika status memang belum lunas
+                    if ($invoice->status !== 'paid') {
                         $invoice->update(['status' => 'paid']);
 
-                        // 2. Aktifkan paket langganan (Subscription)
                         $subscription = $invoice->subscription;
                         $subscription->update([
                             'status' => 'active',
                             'starts_at' => now(),
-                            'ends_at' => now()->addDays(30), // Asumsi langganan 30 hari
-                            'payment_id' => $reference // Simpan nomor referensi Duitku
+                            'ends_at' => now()->addDays(30),
+                            'payment_id' => $reference
                         ]);
 
-                        // 3. Update status user agar bisa masuk dashboard
                         $invoice->user->update(['subscription_status' => 'active']);
                         
-                        Log::info("Pembayaran Sukses: Invoice {$merchantOrderId} telah dilunasi.");
+                        \Log::info("Invoice {$merchantOrderId} BERHASIL DIUPDATE via Callback.");
                     }
+                } else {
+                    \Log::warning("Invoice {$merchantOrderId} TIDAK DITEMUKAN di database.");
                 }
-
-                // Wajib mengembalikan HTTP 200 OK agar Duitku tidak mengirim ulang datanya
-                return response()->json(['status' => 'success', 'message' => 'Callback diterima'], 200);
-
-            } else {
-                Log::error("Duitku Callback: Bad Signature untuk Order {$merchantOrderId}");
-                return response()->json(['status' => 'error', 'message' => 'Bad Signature'], 400);
             }
+            
+            // Duitku butuh respon 200 OK
+            return response()->json(['status' => 'success'], 200);
+
         } else {
-            Log::error("Duitku Callback: Parameter tidak lengkap.");
-            return response()->json(['status' => 'error', 'message' => 'Bad Parameter'], 400);
+            \Log::error("SIGNATURE SALAH. Diterima: $signature, Dihitung: $calcSignature");
+            return response()->json(['status' => 'error', 'message' => 'Bad Signature'], 400);
         }
     }
+    
+    return response()->json(['status' => 'error', 'message' => 'Bad Parameter'], 400);
+}
 
     public function getPaymentMethods(Invoice $invoice)
     {
