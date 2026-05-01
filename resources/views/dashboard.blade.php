@@ -61,7 +61,7 @@
                         @else
                             <div class="flex items-center gap-3 mb-4">
                                 <span class="relative inline-flex rounded-full h-4 w-4 bg-yellow-500"></span>
-                                <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-bold {{ $serviceStatus['color'] }}">Belum Aktif</span>
+                                <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-bold red">Belum Aktif</span>
                             </div>
                             
                             <p class="text-sm text-gray-600 mb-6">Anda belum memiliki paket aktif. Fitur AI Chatbot tidak dapat digunakan saat ini.</p>
