@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\ChatSession;
 use App\Models\ChatHistory;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Customer;
 
 class CustomerController extends Controller {
     public function index() {
