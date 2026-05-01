@@ -24,6 +24,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // --- TAMBAHKAN RUTE INI (Pilih Paket & Invoice) ---
+    Route::get('/select-plan', [SubscriptionController::class, 'index'])->name('user.plans.index');
+    Route::post('/select-plan/{plan}', [SubscriptionController::class, 'subscribe'])->name('user.plans.subscribe');
+    Route::get('/invoice/{invoice}', [InvoiceController::class, 'show'])->name('user.invoice.show');
 });
 
 
