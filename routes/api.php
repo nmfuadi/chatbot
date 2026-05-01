@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\WebhookController;
 use App\Http\Controllers\Api\BotController;
+use App\Http\Controllers\PaymentController;
 
 
 /*
@@ -24,3 +25,5 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
     
 });
+// URL Callback untuk diinput di Dashboard Duitku: https://domainkamu.com/api/duitku/callback
+Route::post('/duitku/callback', [PaymentController::class, 'callback']);
