@@ -10,6 +10,7 @@ use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\PaymentController;
 
 Route::get('/', function () { return view('welcome'); });
 
@@ -29,6 +30,13 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/select-plan', [SubscriptionController::class, 'index'])->name('user.plans.index');
     Route::post('/select-plan/{plan}', [SubscriptionController::class, 'subscribe'])->name('user.plans.subscribe');
     Route::get('/invoice/{invoice}', [InvoiceController::class, 'show'])->name('user.invoice.show');
+
+    // Rute untuk menampilkan metode pembayaran Duitku
+    Route::get('/invoice/{invoice}/payment-methods', [PaymentController::class, 'getPaymentMethods'])->name('payment.methods');
+    
+    // Rute POST untuk memproses pilihan metode pembayaran (Tahap selanjutnya)
+    Route::post('/invoice/{invoice}/request-transaction', [PaymentController::class, 'requestTransaction'])->name('payment.request');
+
 });
 
 

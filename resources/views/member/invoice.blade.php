@@ -62,7 +62,7 @@
 
                     <div class="mt-100 text-center border-t border-slate-100 pt-100">
                         <div class="flex justify-center">
-                            <a href="{{ route('payment.index') }}" class="w-full bg-indigo-600 text-white px-4 py-2 rounded shadow hover:bg-indigo-700">
+                            <a href="{{ route('payment.methods', $invoice->id) }}" class="w-full bg-indigo-600 text-white px-4 py-2 rounded shadow hover:bg-indigo-700">
                                 Bayar Sekarang
                             </a>
                         </div>
