@@ -67,7 +67,7 @@
                         <div class="grid grid-cols-2 gap-4">
                             <div class="p-4 rounded-2xl bg-gray-50/50 ring-1 ring-gray-100">
                                 <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Kuota Pesan</p>
-                                <p class="text-lg font-extrabold text-gray-900">{{ $deviceInfo['quota'] === -1 ? 'Unlimited' : number_format($deviceInfo['quota']) }}</p>
+                                <p class="text-lg font-extrabold text-gray-900">{{ $deviceInfo['quota'] == -1 ? 'Unlimited' : $deviceInfo['quota'] }}</p>
                             </div>
                             <div class="p-4 rounded-2xl bg-gray-50/50 ring-1 ring-gray-100">
                                 <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Masa Aktif</p>
