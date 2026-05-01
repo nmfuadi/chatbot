@@ -9,7 +9,8 @@ use Illuminate\Support\Facades\Auth;
 
 class CustomerController extends Controller {
     public function index() {
-        $customers = ChatSession::where('user_id', Auth::id())->latest()->get();
+        // Angka 10 berarti menampilkan 10 customer per halaman (silakan ubah sesuai kebutuhan)
+        $customers = Customer::where('user_id', auth()->id())->paginate(10);
         return view('customers.index', compact('customers'));
     }
 
