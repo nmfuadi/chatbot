@@ -17,7 +17,7 @@
     <div class="py-12 bg-gray-50 min-h-screen">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
             
-            <div class="bg-blue-600 bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl shadow-lg p-8 sm:p-10 text-white flex flex-col md:flex-row items-center justify-between gap-6">
+            <div class="bg-blue-600 bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl shadow-lg p-8 sm:p-10 text-white flex flex-col md:flex-row itext-center w-full md:w-auto">
                 <div>
                     <h1 class="text-3xl font-extrabold mb-2 text-white">Halo, {{ $user->name }}! </h1>
                     <p class="text-blue-100 text-sm md:text-base">Selamat datang di pusat kendali AI untuk <span class="font-bold text-white">{{ $user->business_name ?? 'Bisnis Anda' }}</span>.</p>
