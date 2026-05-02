@@ -1,10 +1,28 @@
 @php
     $user = auth()->user();
-    // Mengambil data langganan yang sedang aktif beserta relasi nama paketnya
-    $activeSub = \App\Models\Subscription::with('plan')
+    
+    // 1. Ambil paket langganan PALING TERAKHIR (meskipun sudah expired) untuk menampilkan riwayat
+    $latestSub = \App\Models\Subscription::with('plan')
                     ->where('user_id', $user->id)
-                    ->where('status', 'active')
+                    ->orderBy('created_at', 'desc')
                     ->first();
+
+    // 2. Tentukan apakah langganan terakhir tersebut MASIH AKTIF
+    $activeSub = null;
+    if ($latestSub && $latestSub->status === 'active' && $latestSub->ends_at > now()) {
+        $activeSub = $latestSub;
+    }
+
+    // 3. Hitung pemakaian kuota berdasarkan paket terakhir
+    $usageCount = 0;
+    $maxMessages = 0;
+
+    if ($latestSub) {
+        $maxMessages = $latestSub->plan->max_messages ?? 0;
+        $usageCount = \App\Models\ChatHistory::where('user_id', $user->id)
+                        ->where('created_at', '>=', $latestSub->starts_at)
+                        ->count();
+    }
 @endphp
 
 <x-app-layout>
@@ -43,7 +61,6 @@
                             <svg class="w-5 h-5 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                             Informasi Paket
                         </h3>
-
                         
                         @if($user->subscription_status === 'active' && $activeSub)
                             <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-50 border border-green-100 mb-5">
@@ -70,60 +87,56 @@
                                     Berhenti & Ganti Paket
                                 </button>
                             </form>
-
                         @else
                             <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-yellow-50 border border-yellow-100 mb-5">
                                 <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-yellow-500"></span>
-                                <span class="text-xs font-bold text-yellow-700 uppercase tracking-wide">Belum Aktif</span>
+                                <span class="text-xs font-bold text-yellow-700 uppercase tracking-wide">Belum Aktif / Expired</span>
                             </div>
                             
-                            <p class="text-sm text-gray-500 leading-relaxed mb-6">Anda belum memiliki paket layanan. Aktifkan sekarang untuk mulai menggunakan asisten AI.</p>
+                            <p class="text-sm text-gray-500 leading-relaxed mb-6">Masa aktif layanan Anda telah habis atau Anda belum memiliki paket. Aktifkan sekarang untuk menggunakan AI.</p>
                             
-                            <a href="{{ route('user.plans.index') }}" class="w-full flex justify-center items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-center px-4 py-3.5 rounded-2xl text-sm font-bold shadow-md shadow-blue-500/20 transition-all duration-200">
-                                Pilih Paket Sekarang
+                            <a href="{{ route('user.invoice.index') }}" class="w-full flex justify-center items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-center px-4 py-3.5 rounded-2xl text-sm font-bold shadow-md shadow-blue-500/20 transition-all duration-200">
+                                Selesaikan Pembayaran
                             </a>
                         @endif
                     </div>
-                    @php
+
                     @if($latestSub)
-    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mt-6 max-w-2xl">
-        <div class="flex items-center justify-between mb-4">
-            <div>
-                <h3 class="text-sm font-bold text-slate-900 uppercase tracking-widest">Pemakaian Kuota AI</h3>
-                <p class="text-xs text-slate-500 mt-1">Paket: <strong>{{ $latestSub->plan->name }}</strong></p>
-            </div>
-            
-            <div class="text-right">
-                @if($maxMessages > 0)
-                    <span class="text-2xl font-black text-blue-600">{{ number_format($usageCount) }}</span>
-                    <span class="text-sm font-bold text-slate-400">/ {{ number_format($maxMessages) }}</span>
-                @else
-                    <span class="text-sm font-black text-green-500 uppercase tracking-widest bg-green-50 px-3 py-1 rounded-full">Unlimited</span>
-                @endif
-            </div>
-        </div>
+                        <div class="bg-white p-7 rounded-3xl shadow-sm ring-1 ring-gray-900/5">
+                            <div class="flex items-center justify-between mb-4">
+                                <div>
+                                    <h3 class="text-sm font-bold text-gray-900 uppercase tracking-widest">Pemakaian Kuota</h3>
+                                </div>
+                                <div class="text-right">
+                                    @if($maxMessages > 0)
+                                        <span class="text-xl font-black text-blue-600">{{ number_format($usageCount) }}</span>
+                                        <span class="text-xs font-bold text-gray-400">/ {{ number_format($maxMessages) }}</span>
+                                    @else
+                                        <span class="text-[10px] font-black text-green-600 uppercase tracking-widest bg-green-50 px-3 py-1 rounded-full ring-1 ring-green-100">Unlimited</span>
+                                    @endif
+                                </div>
+                            </div>
 
-        @if($maxMessages > 0)
-            <div class="w-full bg-slate-100 rounded-full h-3 mb-2 overflow-hidden shadow-inner">
-                @php 
-                    $percentage = ($usageCount / $maxMessages) * 100;
-                    // Warna merah jika sudah > 95%, kuning jika > 75%, biru jika normal
-                    $colorClass = $percentage >= 95 ? 'bg-rose-500' : ($percentage >= 75 ? 'bg-amber-400' : 'bg-blue-500');
-                @endphp
-                <div class="{{ $colorClass }} h-3 rounded-full transition-all duration-1000" style="width: {{ min($percentage, 100) }}%"></div>
-            </div>
+                            @if($maxMessages > 0)
+                                <div class="w-full bg-gray-100 rounded-full h-2.5 mb-2 overflow-hidden shadow-inner">
+                                    @php 
+                                        $percentage = ($maxMessages > 0) ? ($usageCount / $maxMessages) * 100 : 0;
+                                        $colorClass = $percentage >= 95 ? 'bg-rose-500' : ($percentage >= 75 ? 'bg-amber-400' : 'bg-blue-500');
+                                    @endphp
+                                    <div class="{{ $colorClass }} h-2.5 rounded-full transition-all duration-1000" style="width: {{ min($percentage, 100) }}%"></div>
+                                </div>
 
-            @if($latestSub->status === 'expired' || $percentage >= 100)
-                <div class="mt-4 p-3 bg-rose-50 border border-rose-100 rounded-xl flex items-center gap-3">
-                    <svg class="w-5 h-5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                    <p class="text-xs font-bold text-rose-700">Kuota telah habis atau masa aktif berakhir. AI berhenti membalas pesan.</p>
-                </div>
-            @elseif($percentage >= 80)
-                <p class="text-[10px] font-bold text-amber-500 text-right mt-1">Hampir mencapai batas kuota.</p>
-            @endif
-        @endif
-    </div>
-@endif
+                                @if($latestSub->status === 'expired' || $percentage >= 100)
+                                    <div class="mt-4 p-3 bg-rose-50 border border-rose-100 rounded-xl flex items-start gap-2.5">
+                                        <svg class="w-4 h-4 text-rose-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                                        <p class="text-[11px] font-bold text-rose-700 leading-snug">Kuota telah habis atau paket kedaluwarsa. AI berhenti membalas pesan.</p>
+                                    </div>
+                                @elseif($percentage >= 80)
+                                    <p class="text-[10px] font-bold text-amber-500 text-right mt-1">Hampir mencapai batas kuota.</p>
+                                @endif
+                            @endif
+                        </div>
+                    @endif
 
                     <div class="bg-white rounded-3xl p-7 shadow-sm ring-1 ring-gray-900/5">
                         <h3 class="text-base font-bold text-gray-900 mb-5">Pintasan Cepat</h3>
