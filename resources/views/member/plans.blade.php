@@ -34,11 +34,39 @@
         </p>
         
         <ul class="mt-6 space-y-4 mb-8 flex-1">
-            <li class="flex items-center text-sm text-slate-600">
-                <svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                Kuota {{ number_format($plan->max_messages) }} Pesan AI
+            
+            <li class="flex items-start text-sm text-slate-700">
+                <svg class="w-5 h-5 text-green-500 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                <span>
+                    @if($plan->max_messages > 0)
+                        Kuota <strong>{{ number_format($plan->max_messages, 0, ',', '.') }}</strong> Pesan AI
+                    @else
+                        Kuota <strong>Unlimited</strong> Pesan AI
+                    @endif
+                </span>
             </li>
-            </ul>
+
+            <li class="flex items-start text-sm text-slate-700">
+                <svg class="w-5 h-5 text-green-500 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                <span>Integrasi WhatsApp Webhook</span>
+            </li>
+
+            <li class="flex items-start text-sm text-slate-700">
+                <svg class="w-5 h-5 text-green-500 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                <span>Katalog Produk & Kirim Gambar</span>
+            </li>
+
+            <li class="flex items-start text-sm text-slate-700">
+                <svg class="w-5 h-5 text-green-500 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                <span>Custom SOP & Knowledge Base</span>
+            </li>
+
+            <li class="flex items-start text-sm text-slate-700">
+                <svg class="w-5 h-5 text-green-500 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                <span>Manajemen Database Pelanggan</span>
+            </li>
+
+        </ul>
 
         @if($plan->price == 0)
             @if($hasUsedTrial)
