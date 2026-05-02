@@ -24,7 +24,7 @@ class SubscriptionController extends Controller
                             $query->where('price', 0);
                         })->exists();
     
-        return view('member.plans.index', compact('plans', 'hasUsedTrial'));
+        return view('member.plans', compact('plans', 'hasUsedTrial'));
     }
 
     // Memproses pilihan paket (Versi Baru dengan Invoice)
