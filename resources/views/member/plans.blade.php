@@ -52,7 +52,7 @@
                     </p>
                 </div>
             @else
-                <form action="{{ route('user.subscribe', $plan->id) }}" method="POST">
+                <form action="{{ route('user.plans.subscribe', $plan->id) }}" method="POST">
                     @csrf
                     <button type="submit" class="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200">
                         Ambil Uji Coba Gratis
@@ -60,7 +60,7 @@
                 </form>
             @endif
         @else
-            <form action="{{ route('user.subscribe', $plan->id) }}" method="POST">
+            <form action="{{ route('user.plans.subscribe', $plan->id) }}" method="POST">
                 @csrf
                 <button type="submit" class="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold hover:bg-black transition-colors shadow-lg shadow-slate-200">
                     Pilih Paket Premium
