@@ -19,9 +19,8 @@
 
     if ($latestSub) {
         $maxMessages = $latestSub->plan->max_messages ?? 0;
-        $usageCount = \App\Models\ChatHistory::where('user_id', $user->id)
-                        ->where('created_at', '>=', $latestSub->starts_at)
-                        ->count();
+        $// --- KODE BARU: Langsung ambil dari database, bukan menghitung history ---
+        $usageCount = $latestSub->usage_count ?? 0;
     }
 @endphp
 

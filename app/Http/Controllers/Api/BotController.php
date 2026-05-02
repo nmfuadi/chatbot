@@ -63,10 +63,8 @@ class BotController extends Controller {
             $maxMessages = $activeSub->plan->max_messages ?? 0;
             
             if ($maxMessages > 0) {
-                // Hitung riwayat chat sejak masa paket ini dimulai
-                $usageCount = ChatHistory::where('user_id', $member->id)
-                                ->where('created_at', '>=', $activeSub->starts_at)
-                                ->count();
+                // --- KODE BARU: Langsung ambil dari kolom usage_count ---
+                $usageCount = $activeSub->usage_count;
 
                 if ($usageCount >= $maxMessages) {
                     // Kuota habis! Ubah status langganan menjadi expired
@@ -182,16 +180,12 @@ class BotController extends Controller {
 
             // --- DETEKSI SANDI RAHASIA DARI AI ---
             if (str_contains($aiResponse, '[AUTO_STOP]')) {
-                
-                // 1. Matikan sesi AI untuk nomor WhatsApp customer ini
                 \App\Models\ChatSession::where('user_id', $member->id)
                     ->where('customer_phone', $request->customer_phone)
                     ->update(['is_ai_active' => false]);
                 
-                // 2. Bersihkan sandi rahasia dari teks agar tidak masuk ke database (biar terlihat rapi)
                 $aiResponse = str_replace('[AUTO_STOP]', '', $aiResponse);
-                
-                \Log::info("KILL SWITCH AKTIF: Percakapan keluar konteks. AI dimatikan untuk nomor {$request->customer_phone}.");
+                \Log::info("KILL SWITCH AKTIF: Percakapan keluar konteks.");
             }
 
             // --- SIMPAN KE DATABASE SEPERTI BIASA ---
@@ -201,6 +195,18 @@ class BotController extends Controller {
                 'user_message' => $request->user_message ?? $request->message ?? '',
                 'ai_response' => trim($aiResponse),
             ]);
+
+            // ==========================================================
+            // --- TAMBAHAN BARU: TAMBAH +1 KE USAGE COUNT SUBSCRIPTION ---
+            // ==========================================================
+            if (!empty(trim($aiResponse))) {
+                $activeSub = \App\Models\Subscription::where('user_id', $member->id)
+                                ->where('status', 'active')
+                                ->first();
+                if ($activeSub) {
+                    $activeSub->increment('usage_count');
+                }
+            }
         }
         
         return response()->json(['status' => 'success']);
