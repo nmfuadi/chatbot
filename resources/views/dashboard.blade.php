@@ -1,7 +1,8 @@
+HTML
 @php
     $user = auth()->user();
     
-    // 1. Ambil paket langganan PALING TERAKHIR (meskipun sudah expired) untuk menampilkan riwayat
+    // 1. Ambil paket langganan PALING TERAKHIR (meskipun sudah expired)
     $latestSub = \App\Models\Subscription::with('plan')
                     ->where('user_id', $user->id)
                     ->orderBy('created_at', 'desc')
@@ -13,14 +14,15 @@
         $activeSub = $latestSub;
     }
 
-    // 3. Hitung pemakaian kuota berdasarkan paket terakhir
+    // 3. AMBIL DATA DARI KOLOM usage_count (Bukan menghitung ChatHistory lagi)
     $usageCount = 0;
     $maxMessages = 0;
 
     if ($latestSub) {
         $maxMessages = $latestSub->plan->max_messages ?? 0;
-        $// --- KODE BARU: Langsung ambil dari database, bukan menghitung history ---
-        $usageCount = $latestSub->usage_count ?? 0;
+        
+        // --- INI PERUBAHANNYA: Ambil langsung dari kolom database ---
+        $usageCount = $latestSub->usage_count; 
     }
 @endphp
 
