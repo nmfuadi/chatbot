@@ -3,9 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Invoice;
+use App\Models\Subscription;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http; // Tambahkan ini
+use Illuminate\Support\Str;
 
 class PaymentController extends Controller
 {
@@ -22,65 +25,73 @@ class PaymentController extends Controller
     }
 
 
-    /**
+  /**
      * Menangani Callback dari Duitku
      */
     public function callback(Request $request)
-{
-    // 1. LOG SEMUA DATA MASUK (Untuk cek apakah Duitku benar-benar kirim)
-    \Log::info('Duitku Callback Masuk:', $request->all());
+    {
+        // 1. LOG SEMUA DATA MASUK (Untuk cek apakah Duitku benar-benar kirim)
+        \Log::info('Duitku Callback Masuk:', $request->all());
 
-    $apiKey = env('DUITKU_API_KEY');
-    $merchantCode = $request->input('merchantCode');
-    $amount = $request->input('amount');
-    $merchantOrderId = $request->input('merchantOrderId');
-    $signature = $request->input('signature');
-    $resultCode = $request->input('resultCode');
-    $reference = $request->input('reference');
+        $apiKey = env('DUITKU_API_KEY');
+        $merchantCode = $request->input('merchantCode');
+        $amount = $request->input('amount');
+        $merchantOrderId = $request->input('merchantOrderId');
+        $signature = $request->input('signature');
+        $resultCode = $request->input('resultCode');
+        $reference = $request->input('reference');
 
-    if (!empty($merchantCode) && !empty($amount) && !empty($merchantOrderId) && !empty($signature)) {
-        
-        // 2. HITUNG SIGNATURE (Penting: nominal harus persis sama dengan saat request)
-        $params = $merchantCode . $amount . $merchantOrderId . $apiKey;
-        $calcSignature = md5($params);
-
-        if ($signature == $calcSignature) {
-            if ($resultCode == '00') {
-                $invoice = \App\Models\Invoice::where('invoice_number', $merchantOrderId)->first();
-
-                if ($invoice) {
-                    // Cek jika status memang belum lunas
-                    if ($invoice->status !== 'paid') {
-                        $invoice->update(['status' => 'paid']);
-
-                        $subscription = $invoice->subscription;
-                        $subscription->update([
-                            'status' => 'active',
-                            'starts_at' => now(),
-                            'ends_at' => now()->addDays(30),
-                            'payment_id' => $reference
-                        ]);
-
-                        $invoice->user->update(['subscription_status' => 'active']);
-                        
-                        \Log::info("Invoice {$merchantOrderId} BERHASIL DIUPDATE via Callback.");
-                    }
-                } else {
-                    \Log::warning("Invoice {$merchantOrderId} TIDAK DITEMUKAN di database.");
-                }
-            }
+        if (!empty($merchantCode) && !empty($amount) && !empty($merchantOrderId) && !empty($signature)) {
             
-            // Duitku butuh respon 200 OK
-            return response()->json(['status' => 'success'], 200);
+            // 2. HITUNG SIGNATURE (Penting: nominal harus persis sama dengan saat request)
+            $params = $merchantCode . $amount . $merchantOrderId . $apiKey;
+            $calcSignature = md5($params);
 
-        } else {
-            \Log::error("SIGNATURE SALAH. Diterima: $signature, Dihitung: $calcSignature");
-            return response()->json(['status' => 'error', 'message' => 'Bad Signature'], 400);
+            if ($signature == $calcSignature) {
+                if ($resultCode == '00') {
+                    $invoice = \App\Models\Invoice::where('invoice_number', $merchantOrderId)->first();
+
+                    if ($invoice) {
+                        // Cek jika status memang belum lunas
+                        if ($invoice->status !== 'paid') {
+                            $invoice->update(['status' => 'paid']);
+
+                            $subscription = $invoice->subscription;
+                            $subscription->update([
+                                'status' => 'active',
+                                'starts_at' => now(),
+                                'ends_at' => now()->addDays(30),
+                                'payment_id' => $reference
+                            ]);
+
+                            $invoice->user->update(['subscription_status' => 'active']);
+                            
+                            // --- TAMBAHAN BARU: BATALKAN INVOICE PENDING LAINNYA ---
+                            \App\Models\Invoice::where('user_id', $invoice->user_id)
+                                ->where('id', '!=', $invoice->id)
+                                ->where('status', 'pending') // Atau 'unpaid' jika di DB Anda memakai kata itu
+                                ->update(['status' => 'expired']);
+                            // ---------------------------------------------------------
+                            
+                            \Log::info("Invoice {$merchantOrderId} BERHASIL DIUPDATE via Callback. Invoice pending lain telah dibatalkan.");
+                        }
+                    } else {
+                        \Log::warning("Invoice {$merchantOrderId} TIDAK DITEMUKAN di database.");
+                    }
+                }
+                
+                // Duitku butuh respon 200 OK
+                return response()->json(['status' => 'success'], 200);
+
+            } else {
+                \Log::error("SIGNATURE SALAH. Diterima: $signature, Dihitung: $calcSignature");
+                return response()->json(['status' => 'error', 'message' => 'Bad Signature'], 400);
+            }
         }
+        
+        return response()->json(['status' => 'error', 'message' => 'Bad Parameter'], 400);
     }
     
-    return response()->json(['status' => 'error', 'message' => 'Bad Parameter'], 400);
-}
 
     public function getPaymentMethods(Invoice $invoice)
     {
@@ -284,5 +295,40 @@ class PaymentController extends Controller
             // Kode '02' atau lainnya (Pending / Menunggu Pembayaran via ATM/Minimarket)
             return redirect()->route('user.invoice.show', $invoice->id)->with('success', 'Instruksi pembayaran berhasil dibuat! Silakan selesaikan pembayaran Anda.');
         }
+    }
+
+    /**
+     * FUNGSI OTOMATIS: Menerbitkan invoice perpanjangan saat paket user habis
+     */
+    public static function generateRenewalInvoice(User $user)
+    {
+        // 1. Cari riwayat langganan (subscription) terakhir yang pernah dimiliki user
+        $lastSub = Subscription::where('user_id', $user->id)
+                    ->orderBy('created_at', 'desc')
+                    ->first();
+
+        // Jika user belum pernah langganan sama sekali, hentikan proses (jangan buat tagihan)
+        if (!$lastSub) return null;
+
+        // 2. Cek apakah sistem sudah pernah membuatkan invoice 'unpaid' untuk paket ini
+        // Ini MENCEGAH sistem membuat invoice dobel jika user me-refresh halaman berkali-kali
+        $existingInvoice = Invoice::where('user_id', $user->id)
+                            ->where('status', 'unpaid') // Sesuaikan dengan status default di database Anda ('unpaid' atau 'pending')
+                            ->where('plan_id', $lastSub->plan_id)
+                            ->first();
+
+        // 3. Jika belum ada tagihan yang menggantung, buat tagihan baru!
+        if (!$existingInvoice) {
+            return Invoice::create([
+                'user_id' => $user->id,
+                'plan_id' => $lastSub->plan_id,
+                'amount'  => $lastSub->plan->price ?? 0, // Ambil harga dari relasi tabel plan
+                'status'  => 'unpaid', // Status awal tagihan
+                'invoice_number' => 'INV-' . strtoupper(Str::random(10)), // Hasil: INV-AB12CD34EF
+            ]);
+        }
+
+        // Jika tagihan sudah ada, kembalikan data tagihan tersebut
+        return $existingInvoice;
     }
 }
