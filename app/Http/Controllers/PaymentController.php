@@ -300,35 +300,42 @@ class PaymentController extends Controller
     /**
      * FUNGSI OTOMATIS: Menerbitkan invoice perpanjangan saat paket user habis
      */
+    /**
+     * FUNGSI OTOMATIS: Menerbitkan invoice perpanjangan saat paket user habis
+     */
     public static function generateRenewalInvoice(User $user)
     {
-        // 1. Cari riwayat langganan (subscription) terakhir yang pernah dimiliki user
-        $lastSub = Subscription::where('user_id', $user->id)
+        // 1. Cari riwayat langganan (subscription) terakhir
+        $lastSub = \App\Models\Subscription::where('user_id', $user->id)
                     ->orderBy('created_at', 'desc')
                     ->first();
 
-        // Jika user belum pernah langganan sama sekali, hentikan proses (jangan buat tagihan)
         if (!$lastSub) return null;
 
-        // 2. Cek apakah sistem sudah pernah membuatkan invoice 'unpaid' untuk paket ini
-        // Ini MENCEGAH sistem membuat invoice dobel jika user me-refresh halaman berkali-kali
-        $existingInvoice = Invoice::where('user_id', $user->id)
-                            ->where('status', 'unpaid') // Sesuaikan dengan status default di database Anda ('unpaid' atau 'pending')
-                            ->where('plan_id', $lastSub->plan_id)
+        // --- TAMBAHAN BARU: CEK PAKET GRATIS ---
+        // Jika harga paketnya 0 (Gratis), JANGAN buat tagihan. 
+        // Biarkan sistem menendang user ke halaman pilih paket nanti.
+        if ($lastSub->plan->price <= 0) {
+            return null;
+        }
+
+        // 2. Cek tagihan menggantung menggunakan subscription_id
+        $existingInvoice = \App\Models\Invoice::where('user_id', $user->id)
+                            ->where('status', 'unpaid') 
+                            ->where('subscription_id', $lastSub->id)
                             ->first();
 
-        // 3. Jika belum ada tagihan yang menggantung, buat tagihan baru!
+        // 3. Jika belum ada tagihan, buat baru!
         if (!$existingInvoice) {
-            return Invoice::create([
+            return \App\Models\Invoice::create([
                 'user_id' => $user->id,
-                'plan_id' => $lastSub->plan_id,
-                'amount'  => $lastSub->plan->price ?? 0, // Ambil harga dari relasi tabel plan
-                'status'  => 'unpaid', // Status awal tagihan
-                'invoice_number' => 'INV-' . strtoupper(Str::random(10)), // Hasil: INV-AB12CD34EF
+                'subscription_id' => $lastSub->id, 
+                'amount'  => $lastSub->plan->price ?? 0, 
+                'status'  => 'unpaid', 
+                'invoice_number' => 'INV-' . strtoupper(\Illuminate\Support\Str::random(10)), 
             ]);
         }
 
-        // Jika tagihan sudah ada, kembalikan data tagihan tersebut
         return $existingInvoice;
     }
 }
