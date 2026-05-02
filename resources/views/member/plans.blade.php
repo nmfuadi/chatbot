@@ -34,25 +34,32 @@
         </p>
         
         <ul class="mt-6 space-y-4 mb-8 flex-1">
-            @if(!empty($plan->features))
-                @php
-                    // Memecah teks dari database berdasarkan garis baru (Enter)
-                    // Gunakan PHP_EOL atau "\n" untuk mendeteksi baris baru
-                    $featuresList = preg_split('/\r\n|\r|\n/', $plan->features);
-                @endphp
+            @php
+                $featuresList = [];
+                if (!empty($plan->features)) {
+                    // Cek apakah data berupa string JSON, jika ya kita ubah (decode) jadi array PHP
+                    if (is_string($plan->features)) {
+                        $decoded = json_decode($plan->features, true);
+                        // Jika berhasil jadi array, gunakan. Jika bukan JSON valid, coba pisah pakai Enter
+                        $featuresList = is_array($decoded) ? $decoded : explode("\n", $plan->features);
+                    } elseif (is_array($plan->features)) {
+                        // Jika di Model Plan sudah di-cast otomatis ke array
+                        $featuresList = $plan->features;
+                    }
+                }
+            @endphp
 
-                @foreach($featuresList as $feature)
-                    @if(trim($feature) !== '') <li class="flex items-start text-sm text-slate-700">
-                            <svg class="w-5 h-5 text-green-500 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                            <span>{{ trim($feature) }}</span>
-                        </li>
-                    @endif
-                @endforeach
-            @else
+            @forelse($featuresList as $feature)
+                @if(trim($feature) !== '') <li class="flex items-start text-sm text-slate-700">
+                        <svg class="w-5 h-5 text-green-500 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        <span>{{ trim($feature) }}</span>
+                    </li>
+                @endif
+            @empty
                 <li class="flex items-start text-sm text-slate-400 italic">
                     Deskripsi fitur belum tersedia.
                 </li>
-            @endif
+            @endforelse
         </ul>
 
         @if($plan->price == 0)
