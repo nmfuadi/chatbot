@@ -26,55 +26,49 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             
-            @foreach($plans as $plan)
-            <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden flex flex-col hover:shadow-xl transition-shadow duration-300 relative">
-                
-                @if($plan->price == 0)
-                    <div class="absolute top-0 right-0 bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">Terpopuler</div>
-                @endif
+        @foreach($plans as $plan)
+    <div class="bg-white rounded-3xl p-8 shadow-sm border border-slate-100 flex flex-col">
+        <h3 class="text-xl font-bold text-slate-900">{{ $plan->name }}</h3>
+        <p class="text-3xl font-black text-slate-900 mt-4">
+            Rp {{ number_format($plan->price, 0, ',', '.') }}
+        </p>
+        
+        <ul class="mt-6 space-y-4 mb-8 flex-1">
+            <li class="flex items-center text-sm text-slate-600">
+                <svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                Kuota {{ number_format($plan->max_messages) }} Pesan AI
+            </li>
+            </ul>
 
-                <div class="p-8 text-center border-b border-gray-100">
-                    <h3 class="text-xl font-bold text-gray-900">{{ $plan->name }}</h3>
-                    <div class="mt-4 flex items-baseline justify-center text-4xl font-extrabold text-blue-600">
-                        @if($plan->price == 0)
-                            Gratis
-                        @else
-                            <span class="text-xl font-medium text-gray-500 mr-1">Rp</span>
-                            {{ number_format($plan->price, 0, ',', '.') }}
-                        @endif
-                    </div>
-                    <p class="mt-2 text-sm text-gray-500">
-                        @if($plan->price == 0)
-                            Akses 7 Hari
-                        @else
-                            Per Bulan
-                        @endif
+        @if($plan->price == 0)
+            @if($hasUsedTrial)
+                <div class="space-y-2">
+                    <button disabled class="w-full py-4 bg-slate-100 text-slate-400 rounded-2xl font-bold cursor-not-allowed flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                        Sudah Digunakan
+                    </button>
+                    <p class="text-[10px] text-center text-rose-500 font-bold uppercase tracking-wider">
+                        Paket uji coba hanya bisa diklaim 1x
                     </p>
                 </div>
-                
-                <div class="p-8 flex-1 bg-gray-50">
-                    <ul class="space-y-4">
-                        @if(is_array($plan->features))
-                            @foreach($plan->features as $feature)
-                                <li class="flex items-start">
-                                    <svg class="h-5 w-5 text-green-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                                    <span class="ml-3 text-sm text-gray-700">{{ $feature }}</span>
-                                </li>
-                            @endforeach
-                        @endif
-                    </ul>
-                </div>
-
-                <div class="p-8 bg-gray-50 pt-0 mt-auto">
-                    <form action="{{ route('user.plans.subscribe', $plan->id) }}" method="POST">
-                        @csrf
-                        <button type="submit" class="w-full block text-center rounded-lg px-6 py-3 font-semibold text-white transition-colors duration-200 {{ $plan->price == 0 ? 'bg-green-600 hover:bg-green-700' : 'bg-blue-600 hover:bg-blue-700' }}">
-                            {{ $plan->price == 0 ? 'Mulai Uji Coba' : 'Pilih Paket' }}
-                        </button>
-                    </form>
-                </div>
-            </div>
-            @endforeach
+            @else
+                <form action="{{ route('user.subscribe', $plan->id) }}" method="POST">
+                    @csrf
+                    <button type="submit" class="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200">
+                        Ambil Uji Coba Gratis
+                    </button>
+                </form>
+            @endif
+        @else
+            <form action="{{ route('user.subscribe', $plan->id) }}" method="POST">
+                @csrf
+                <button type="submit" class="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold hover:bg-black transition-colors shadow-lg shadow-slate-200">
+                    Pilih Paket Premium
+                </button>
+            </form>
+        @endif
+    </div>
+@endforeach
 
         </div>
     </div>

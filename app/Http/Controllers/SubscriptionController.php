@@ -15,9 +15,16 @@ class SubscriptionController extends Controller
     // Menampilkan daftar paket ke user
     public function index()
     {
-        // Ambil semua paket yang aktif
-        $plans = Plan::where('is_active', true)->get();
-        return view('member.plans', compact('plans'));
+        $user = auth()->user();
+        $plans = \App\Models\Plan::all();
+        
+        // CEK: Apakah user ini sudah pernah mengambil paket gratis (price = 0) sebelumnya?
+        $hasUsedTrial = \App\Models\Subscription::where('user_id', $user->id)
+                        ->whereHas('plan', function($query) {
+                            $query->where('price', 0);
+                        })->exists();
+    
+        return view('member.plans.index', compact('plans', 'hasUsedTrial'));
     }
 
     // Memproses pilihan paket (Versi Baru dengan Invoice)
