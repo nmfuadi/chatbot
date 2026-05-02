@@ -197,15 +197,19 @@ class BotController extends Controller {
             ]);
 
             // ==========================================================
-            // --- TAMBAHAN BARU: TAMBAH +1 KE USAGE COUNT SUBSCRIPTION ---
+            // --- DIPERBAIKI: TAMBAH +1 KE USAGE COUNT TANPA SYARAT ---
             // ==========================================================
-            if (!empty(trim($aiResponse))) {
-                $activeSub = \App\Models\Subscription::where('user_id', $member->id)
-                                ->where('status', 'active')
-                                ->first();
-                if ($activeSub) {
-                    $activeSub->increment('usage_count');
-                }
+            $activeSub = \App\Models\Subscription::where('user_id', $member->id)
+                            ->where('status', 'active')
+                            ->first();
+                            
+            if ($activeSub) {
+                $activeSub->increment('usage_count');
+                
+                // Tambahkan log ini agar kita bisa cek di storage/logs/laravel.log
+                \Log::info("✅ USAGE BERTAMBAH: User ID {$member->id} sekarang menggunakan {$activeSub->usage_count} pesan.");
+            } else {
+                \Log::warning("⚠️ GAGAL MENAMBAH USAGE: User ID {$member->id} tidak memiliki langganan 'active'.");
             }
         }
         
