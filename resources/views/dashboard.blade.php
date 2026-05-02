@@ -84,7 +84,7 @@
                             </a>
                         @endif
                     </div>
-
+                    @php
                     @if($latestSub)
     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mt-6 max-w-2xl">
         <div class="flex items-center justify-between mb-4">
