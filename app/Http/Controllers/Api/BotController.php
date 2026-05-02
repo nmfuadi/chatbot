@@ -101,7 +101,7 @@ class BotController extends Controller {
             
             foreach ($catalogs as $item) {
                 $hargaRupiah = "Rp " . number_format($item->price, 0, ',', '.');
-                $knowledge .= "- Nama: {$item->item_name} | Harga: {$hargaRupiah} | Stok: {$item->stock}\n";
+                $knowledge .= "- Nama: {$item->item_name} | Harga: {$hargaRupiah} | Stok/Availability/Ketersediaan/jumlah: {$item->stock}\n";
                 if ($item->description) $knowledge .= "  Deskripsi: {$item->description}\n";
 
                 // Mengambil SEMUA foto dari katalog dan memisahkannya dengan garis vertikal (|)
