@@ -1,4 +1,3 @@
-HTML
 @php
     $user = auth()->user();
     
