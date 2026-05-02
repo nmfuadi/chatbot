@@ -122,6 +122,26 @@ class BotController extends Controller {
             $knowledge .= "2. JANGAN PERNAH meringkas atau mengubah link di dalam KODE GAMBAR. Copy-paste persis apa yang ada di data.\n";
             $knowledge .= "3. Jika customer TIDAK meminta foto (misal hanya bilang 'fotonya bagus', 'sudah lihat', atau bertanya hal lain), DILARANG KERAS menyertakan KODE GAMBAR.\n";
             $knowledge .= "4. Jika customer meminta foto lainnya (misal bilang 'ada foto yang lain', 'foto selain ini', atau pertanyaan lain seputar minta kirim foto lagi), JANGAN KIRIM KODE GAMBAR LAGI! Katakan saja: 'Aku sudah mengirim semua foto seluruh fasilitas dan kamar secara detail kak (tidak ada pengiriman foto ulang)'.\n";
+
+            // ... (kode sebelumnya)
+
+        // --- ATURAN SISTEM TRIGGER FOTO (KATALOG + ANTI SPAM) ---
+        // (kode aturan foto Anda yang sudah ada di sini...)
+
+        // ====================================================================
+        // --- TAMBAHAN BARU: ATURAN BATASAN KONTEKS (PERHALUS / CLOSING) ---
+        // ====================================================================
+        $knowledge .= "\n=== BATASAN KONTEKS & PERINTAH AUTO-STOP ===\n";
+        $knowledge .= "Kamu adalah Asisten Bisnis profesional. Tolong perhatikan riwayat obrolan sebelumnya. Jika customer membahas hal yang SAMA SEKALI TIDAK RELEVAN dengan bisnis/produk (seperti ngobrol santai, curhat, minta coding, dll), ikuti 2 tahapan ini secara ketat:\n";
+        
+        $knowledge .= "TAHAP 1 (Peringatan & Closing Statement): \n";
+        $knowledge .= "Jika customer baru pertama kali melenceng dari topik, tolak dengan sangat sopan dan berikan closing statement. \n";
+        $knowledge .= "Contoh balasan Tahap 1: 'Maaf kak, aku hanya asisten virtual untuk melayani pesanan dan info produk. Jika sudah tidak ada yang bisa aku bantu seputar produk kami, aku izin mengakhiri sesi chat ini ya kak 🙏'\n\n";
+
+        $knowledge .= "TAHAP 2 (Eksekusi Penghentian): \n";
+        $knowledge .= "Jika di chat selanjutnya customer MASIH membalas hal di luar konteks, atau sekadar membalas closing statement-mu tanpa ada niat bertanya soal produk, kamu WAJIB membalas HANYA dengan SATU KATA ini: [AUTO_STOP]\n";
+        $knowledge .= "PENTING: Pada Tahap 2, JANGAN tambahkan kata maaf atau kata-kata lainnya. CUKUP KETIK: [AUTO_STOP]\n";
+        // ====================================================================
         }
 
         // --- LOGIKA HISTORY CHAT ---
@@ -151,16 +171,35 @@ class BotController extends Controller {
     // ====================================================================
     // 2. FUNGSI UNTUK MENYIMPAN HISTORY CHAT 
     // ====================================================================
+    // ====================================================================
+    // 2. FUNGSI UNTUK MENYIMPAN HISTORY CHAT 
+    // ====================================================================
     public function saveHistory(Request $request) {
         $member = User::where('wablas_device_id', $request->device_id)->first();
         
         if ($member) {
+            $aiResponse = $request->ai_response ?? '';
+
+            // --- DETEKSI SANDI RAHASIA DARI AI ---
+            if (str_contains($aiResponse, '[AUTO_STOP]')) {
+                
+                // 1. Matikan sesi AI untuk nomor WhatsApp customer ini
+                \App\Models\ChatSession::where('user_id', $member->id)
+                    ->where('customer_phone', $request->customer_phone)
+                    ->update(['is_ai_active' => false]);
+                
+                // 2. Bersihkan sandi rahasia dari teks agar tidak masuk ke database (biar terlihat rapi)
+                $aiResponse = str_replace('[AUTO_STOP]', '', $aiResponse);
+                
+                \Log::info("KILL SWITCH AKTIF: Percakapan keluar konteks. AI dimatikan untuk nomor {$request->customer_phone}.");
+            }
+
+            // --- SIMPAN KE DATABASE SEPERTI BIASA ---
             ChatHistory::create([
                 'user_id' => $member->id,
                 'customer_wa' => $request->customer_phone,
-                // Mengambil isi pesan user dari input n8n
                 'user_message' => $request->user_message ?? $request->message ?? '',
-                'ai_response' => $request->ai_response,
+                'ai_response' => trim($aiResponse),
             ]);
         }
         
