@@ -43,6 +43,7 @@
                             <svg class="w-5 h-5 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                             Informasi Paket
                         </h3>
+
                         
                         @if($user->subscription_status === 'active' && $activeSub)
                             <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-50 border border-green-100 mb-5">
@@ -83,6 +84,46 @@
                             </a>
                         @endif
                     </div>
+
+                    @if($latestSub)
+    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mt-6 max-w-2xl">
+        <div class="flex items-center justify-between mb-4">
+            <div>
+                <h3 class="text-sm font-bold text-slate-900 uppercase tracking-widest">Pemakaian Kuota AI</h3>
+                <p class="text-xs text-slate-500 mt-1">Paket: <strong>{{ $latestSub->plan->name }}</strong></p>
+            </div>
+            
+            <div class="text-right">
+                @if($maxMessages > 0)
+                    <span class="text-2xl font-black text-blue-600">{{ number_format($usageCount) }}</span>
+                    <span class="text-sm font-bold text-slate-400">/ {{ number_format($maxMessages) }}</span>
+                @else
+                    <span class="text-sm font-black text-green-500 uppercase tracking-widest bg-green-50 px-3 py-1 rounded-full">Unlimited</span>
+                @endif
+            </div>
+        </div>
+
+        @if($maxMessages > 0)
+            <div class="w-full bg-slate-100 rounded-full h-3 mb-2 overflow-hidden shadow-inner">
+                @php 
+                    $percentage = ($usageCount / $maxMessages) * 100;
+                    // Warna merah jika sudah > 95%, kuning jika > 75%, biru jika normal
+                    $colorClass = $percentage >= 95 ? 'bg-rose-500' : ($percentage >= 75 ? 'bg-amber-400' : 'bg-blue-500');
+                @endphp
+                <div class="{{ $colorClass }} h-3 rounded-full transition-all duration-1000" style="width: {{ min($percentage, 100) }}%"></div>
+            </div>
+
+            @if($latestSub->status === 'expired' || $percentage >= 100)
+                <div class="mt-4 p-3 bg-rose-50 border border-rose-100 rounded-xl flex items-center gap-3">
+                    <svg class="w-5 h-5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                    <p class="text-xs font-bold text-rose-700">Kuota telah habis atau masa aktif berakhir. AI berhenti membalas pesan.</p>
+                </div>
+            @elseif($percentage >= 80)
+                <p class="text-[10px] font-bold text-amber-500 text-right mt-1">Hampir mencapai batas kuota.</p>
+            @endif
+        @endif
+    </div>
+@endif
 
                     <div class="bg-white rounded-3xl p-7 shadow-sm ring-1 ring-gray-900/5">
                         <h3 class="text-base font-bold text-gray-900 mb-5">Pintasan Cepat</h3>

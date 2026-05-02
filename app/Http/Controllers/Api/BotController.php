@@ -9,7 +9,11 @@ use App\Models\ProductKnowledge;
 use App\Models\ChatHistory;
 use App\Models\ChatSession;
 use App\Models\Catalog;
-use Illuminate\Support\Facades\Storage; // Pastikan ini ada
+use Illuminate\Support\Facades\Storage;
+// --- TAMBAHAN BARU: Import Model Subscription & PaymentController ---
+use App\Models\Subscription;
+use App\Http\Controllers\PaymentController;
+// ------------------------------------------------------------------
 
 class BotController extends Controller {
     
@@ -41,6 +45,45 @@ class BotController extends Controller {
         } elseif ($pesan === '#c') {
             $session->update(['is_ai_active' => true]);
         }
+
+        // ====================================================================
+        // --- TAMBAHAN BARU: LOGIKA PENGECEKAN SUBSCRIPTION & KUOTA AI ---
+        // ====================================================================
+        $activeSub = Subscription::where('user_id', $member->id)
+                        ->where('status', 'active')
+                        ->where('ends_at', '>', now())
+                        ->with('plan')
+                        ->first();
+
+        if (!$activeSub) {
+            // Jika tidak punya paket aktif, paksa AI mati
+            $session->update(['is_ai_active' => false]);
+        } else {
+            // Ambil limit dari paket (misal 0 atau -1 berarti unlimited)
+            $maxMessages = $activeSub->plan->max_messages ?? 0;
+            
+            if ($maxMessages > 0) {
+                // Hitung riwayat chat sejak masa paket ini dimulai
+                $usageCount = ChatHistory::where('user_id', $member->id)
+                                ->where('created_at', '>=', $activeSub->starts_at)
+                                ->count();
+
+                if ($usageCount >= $maxMessages) {
+                    // Kuota habis! Ubah status langganan menjadi expired
+                    $activeSub->update(['status' => 'expired']);
+                    $member->update(['subscription_status' => 'expired']);
+                    
+                    // Terbitkan invoice baru secara otomatis
+                    PaymentController::generateRenewalInvoice($member);
+                    
+                    \Log::info("BotController: Member {$member->id} kehabisan kuota ({$maxMessages} pesan). Langganan di-expired-kan & AI dihentikan.");
+                    
+                    // Paksa matikan AI meskipun member mencoba ketik #c sebelumnya
+                    $session->update(['is_ai_active' => false]);
+                }
+            }
+        }
+        // ====================================================================
 
         // Ambil SOP
         $knowledge = ProductKnowledge::where('user_id', $member->id)
@@ -99,7 +142,7 @@ class BotController extends Controller {
             'wablas_api_key' => $member->wablas_api_key,
             'wablas_secret_key' => $member->wablas_secret_key,
             'history' => $formattedHistory,
-            'is_ai_active' => $session->is_ai_active,
+            'is_ai_active' => $session->is_ai_active, // <-- Jika kuota habis, ini akan terkirim FALSE ke n8n
             'is_command' => in_array($pesan, ['#s', '#c']),
             'project_images' => [] // Dikosongkan karena kita sekarang 100% pakai Katalog
         ]);
