@@ -19,23 +19,23 @@
                     </x-nav-link>
 
                     {{-- TAMBAHKAN KODE INI DI SINI --}}
-    <x-nav-link :href="route('profile.index')" :active="request()->routeIs('profile.*')">
-        {{ __('Profil & Status') }}
-    </x-nav-link>
-                    
-
-                    @if(Auth::user()->role === 'admin')
-                        <x-nav-link :href="route('admin.members')" :active="request()->routeIs('admin.members')">
-                            {{ __('Kelola Member') }}
+                        <x-nav-link :href="route('profile.index')" :active="request()->routeIs('profile.*')">
+                            {{ __('Profil & Status') }}
                         </x-nav-link>
-                        <x-nav-link :href="route('admin.plans.index')" :active="request()->routeIs('admin.plans.*')">
-            {{ __('Manajemen Paket') }}
-        </x-nav-link>
+                                        
 
-                    @elseif(Auth::user()->role === 'member')
-                    <x-nav-link :href="route('user.invoice.index')" :active="request()->routeIs('user.invoice.index')">
-    {{ __('Tagihan') }}
-</x-nav-link>
+                                        @if(Auth::user()->role === 'admin')
+                                            <x-nav-link :href="route('admin.members')" :active="request()->routeIs('admin.members')">
+                                                {{ __('Kelola Member') }}
+                                            </x-nav-link>
+                                            <x-nav-link :href="route('admin.plans.index')" :active="request()->routeIs('admin.plans.*')">
+                                {{ __('Manajemen Paket') }}
+                            </x-nav-link>
+
+                                        @elseif(Auth::user()->role === 'member')
+                     <x-nav-link :href="route('user.invoice.index')" :active="request()->routeIs('user.invoice.index')">
+                        {{ __('Tagihan') }}
+                    </x-nav-link>
                         <x-nav-link :href="route('member.wablas')" :active="request()->routeIs('member.wablas')">
                             {{ __('Setup Wablas') }}
                         </x-nav-link>
@@ -82,6 +82,36 @@
                             Logout
                         </button>
                     </form>
+                    <x-nav-link :href="route('profile.index')" :active="request()->routeIs('profile.*')">
+                            {{ __('Profil & Status') }}
+                        </x-nav-link>
+                                        
+
+                                        @if(Auth::user()->role === 'admin')
+                                            <x-nav-link :href="route('admin.members')" :active="request()->routeIs('admin.members')">
+                                                {{ __('Kelola Member') }}
+                                            </x-nav-link>
+                                            <x-nav-link :href="route('admin.plans.index')" :active="request()->routeIs('admin.plans.*')">
+                                {{ __('Manajemen Paket') }}
+                            </x-nav-link>
+
+                                        @elseif(Auth::user()->role === 'member')
+                     <x-nav-link :href="route('user.invoice.index')" :active="request()->routeIs('user.invoice.index')">
+                        {{ __('Tagihan') }}
+                    </x-nav-link>
+                        <x-nav-link :href="route('member.wablas')" :active="request()->routeIs('member.wablas')">
+                            {{ __('Setup Wablas') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('member.pk')" :active="request()->routeIs('member.pk')">
+                            {{ __('SOP & Product') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('customers.index')" :active="request()->routeIs('customers.index')">
+                            Data Customer
+                        </x-nav-link>
+                        <x-nav-link :href="route('catalogs.index')" :active="request()->routeIs('catalogs.*')">
+                            {{ __('Katalog Produk') }}
+                        </x-nav-link>
+                    @endif
                     </x-slot>
                 </x-dropdown>
             </div>
