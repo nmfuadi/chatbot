@@ -120,58 +120,68 @@
                 <p class="text-slate-500">Tingkatkan performa tim support Anda hari ini.</p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
-                <div class="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm hover:shadow-xl transition">
-                    <h3 class="text-xl font-bold text-slate-800 text-center mb-2">CS AI 1.0</h3>
-                    <div class="text-center mb-6">
-                        <span class="text-4xl font-extrabold text-blue-600">Rp 350.000</span>
-                        <span class="text-slate-500">/bulan</span>
-                    </div>
-                    <ul class="space-y-4 mb-8 text-sm text-slate-600">
-                        <li class="flex items-center gap-2"><svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Sampai 1.000 Chat</li>
-                        <li class="flex items-center gap-2"><svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> 1 Nomor WhatsApp</li>
-                        <li class="flex items-center gap-2"><svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Basic SOP</li>
-                    </ul>
-                    <a href="{{ route('register') }}" class="block text-center w-full py-3 bg-slate-100 text-slate-800 font-bold rounded-xl hover:bg-slate-200 transition">Pilih Paket</a>
-                </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
+                @if(isset($plans) && $plans->count() > 0)
+                    @foreach($plans as $plan)
+                        <div class="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm hover:shadow-xl transition flex flex-col">
+                            <h3 class="text-xl font-bold text-slate-800 text-center mb-2">{{ $plan->name }}</h3>
+                            <div class="text-center mb-6">
+                                <span class="text-4xl font-extrabold text-blue-600">
+                                    Rp {{ number_format($plan->price, 0, ',', '.') }}
+                                </span>
+                                <span class="text-slate-500">/bulan</span>
+                            </div>
+                            
+                            <ul class="space-y-4 mb-8 text-sm text-slate-600 flex-1">
+                                <li class="flex items-start text-sm text-slate-700">
+                                    <svg class="w-5 h-5 text-green-500 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    <span>
+                                        @if($plan->max_messages > 0)
+                                            Kuota <strong>{{ number_format($plan->max_messages, 0, ',', '.') }}</strong> Pesan AI
+                                        @else
+                                            Kuota <strong>Unlimited</strong> Pesan AI
+                                        @endif
+                                    </span>
+                                </li>
 
-                <div class="bg-blue-50 rounded-3xl p-8 border-2 border-blue-500 shadow-2xl relative transform md:-translate-y-4">
-                    <div class="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-blue-500 text-white px-4 py-1 rounded-full text-xs font-bold uppercase tracking-wide">
-                        Paling Populer
-                    </div>
-                    <h3 class="text-xl font-bold text-slate-800 text-center mb-2">CS AI 2.0</h3>
-                    <div class="text-center mb-6">
-                        <span class="text-4xl font-extrabold text-blue-600">Rp 650.000</span>
-                        <span class="text-slate-500">/bulan</span>
-                    </div>
-                    <ul class="space-y-4 mb-8 text-sm text-slate-600">
-                        <li class="flex items-center gap-2"><svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Sampai 5.000 Chat</li>
-                        <li class="flex items-center gap-2"><svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> 2 Nomor WhatsApp</li>
-                        <li class="flex items-center gap-2"><svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Custom SOP Detail</li>
-                        <li class="flex items-center gap-2"><svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Auto Follow Up</li>
-                    </ul>
-                    <a href="{{ route('register') }}" class="block text-center w-full py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition shadow-lg">Beli Paket</a>
-                </div>
+                                @php
+                                    $featuresList = [];
+                                    if (!empty($plan->features)) {
+                                        if (is_string($plan->features)) {
+                                            $decoded = json_decode($plan->features, true);
+                                            $featuresList = is_array($decoded) ? $decoded : explode("\n", $plan->features);
+                                        } elseif (is_array($plan->features)) {
+                                            $featuresList = $plan->features;
+                                        }
+                                    }
+                                @endphp
 
-                <div class="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm hover:shadow-xl transition">
-                    <h3 class="text-xl font-bold text-slate-800 text-center mb-2">CS AI 3.0</h3>
-                    <div class="text-center mb-6">
-                        <span class="text-4xl font-extrabold text-blue-600">Rp 950.000</span>
-                        <span class="text-slate-500">/bulan</span>
+                                @foreach($featuresList as $feature)
+                                    @if(trim($feature) !== '')
+                                        <li class="flex items-start text-sm text-slate-700">
+                                            <svg class="w-5 h-5 text-green-500 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                            <span>{{ trim($feature) }}</span>
+                                        </li>
+                                    @endif
+                                @endforeach
+                            </ul>
+                            
+                            <a href="{{ route('register') }}" class="block text-center w-full py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition shadow-lg mt-auto">
+                                Daftar & Pilih Paket
+                            </a>
+                        </div>
+                    @endforeach
+                @else
+                    <div class="col-span-full text-center text-slate-500">
+                        Paket berlangganan belum tersedia saat ini.
                     </div>
-                    <ul class="space-y-4 mb-8 text-sm text-slate-600">
-                        <li class="flex items-center gap-2"><svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Unlimited Chat</li>
-                        <li class="flex items-center gap-2"><svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Multi Nomor WhatsApp</li>
-                        <li class="flex items-center gap-2"><svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Integrasi API Khusus</li>
-                    </ul>
-                    <a href="{{ route('register') }}" class="block text-center w-full py-3 bg-slate-100 text-slate-800 font-bold rounded-xl hover:bg-slate-200 transition">Pilih Paket</a>
-                </div>
+                @endif
             </div>
 
             <div class="mt-12 bg-gradient-to-r from-purple-600 to-blue-600 rounded-3xl p-8 text-center text-white shadow-xl">
                 <h3 class="text-2xl font-bold mb-2">CS AI Custom</h3>
                 <p class="mb-6 text-purple-100">Butuh fitur untuk skala enterprise dengan keamanan tingkat tinggi?</p>
-                <a href="#" class="inline-block px-8 py-2 bg-white text-blue-600 font-bold rounded-full hover:bg-gray-50 transition">Hubungi Kami</a>
+                <a href="https://wa.me/6285295955580" target="_blank" class="inline-block px-8 py-2 bg-white text-blue-600 font-bold rounded-full hover:bg-gray-50 transition">Hubungi Kami</a>
             </div>
         </div>
     </section>
@@ -185,21 +195,21 @@
                 <div class="bg-white/10 p-6 rounded-2xl border border-white/20 backdrop-blur-sm">
                     <div class="text-2xl mb-2">📱</div>
                     <h4 class="font-bold">WhatsApp</h4>
-                    <p class="text-sm text-purple-200">+62 812-3456-7890</p>
+                    <p class="text-sm text-purple-200 mt-2">085295955580</p>
                 </div>
                 <div class="bg-white/10 p-6 rounded-2xl border border-white/20 backdrop-blur-sm">
                     <div class="text-2xl mb-2">✉️</div>
                     <h4 class="font-bold">Email</h4>
-                    <p class="text-sm text-purple-200">hello@terabot.ai</p>
+                    <p class="text-sm text-purple-200 mt-2">nmfuadi@gmail.com</p>
                 </div>
                 <div class="bg-white/10 p-6 rounded-2xl border border-white/20 backdrop-blur-sm">
                     <div class="text-2xl mb-2">📍</div>
                     <h4 class="font-bold">Kantor</h4>
-                    <p class="text-sm text-purple-200">Jakarta, Indonesia</p>
+                    <p class="text-sm text-purple-200 mt-2">Jl. Kemiri Jaya, Beji,<br>Kecamatan Beji, Kota Depok,<br>Jawa Barat 16421, Indonesia</p>
                 </div>
             </div>
 
-            <a href="#" class="inline-block px-8 py-3 bg-green-500 text-white font-bold rounded-full hover:bg-green-600 transition shadow-lg">
+            <a href="https://wa.me/6285295955580" target="_blank" class="inline-block px-8 py-3 bg-green-500 text-white font-bold rounded-full hover:bg-green-600 transition shadow-lg">
                 Chat WhatsApp Sekarang
             </a>
         </div>

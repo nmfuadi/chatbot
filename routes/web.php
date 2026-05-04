@@ -12,6 +12,7 @@ use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Middleware\EnsureWaVerified;
 use App\Http\Middleware\EnsureHasActiveSubscription;
+use App\Models\Plan;
 
 Route::get('/', function () { return view('welcome'); });
 
@@ -98,6 +99,12 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     
     Route::resource('plans', \App\Http\Controllers\Admin\PlanController::class);
 
+});
+
+Route::get('/', function () {
+    // Ambil data paket untuk ditampilkan di landing page
+    $plans = Plan::all();
+    return view('welcome', compact('plans'));
 });
 
 require __DIR__.'/auth.php'; // Rute Login/Register bawaan Breeze
