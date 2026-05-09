@@ -72,7 +72,8 @@ Route::middleware(['auth'])->group(function () {
             // --- AREA PREMIUM (Fitur Utama AI & Bot) ---
             
             // Setup Bot / Wablas
-            Route::get('/member/wablas', [MemberController::class, 'wablasPairing'])->name('member.wablas');
+           // Route::get('/member/wablas', [MemberController::class, 'wablasPairing'])->name('member.wablas');
+           Route::get('/member/whatsapp', [App\Http\Controllers\MemberController::class, 'whatsappPairing'])->name('member.whatsapp.setup');
 
             // Manajemen Customer / Chat History
             Route::get('/customers', [CustomerController::class, 'index'])->name('customers.index');
