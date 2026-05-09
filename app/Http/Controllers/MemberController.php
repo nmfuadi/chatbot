@@ -11,53 +11,76 @@ use Illuminate\Support\Facades\Http;
 
 class MemberController extends Controller
 {
-    // A. Halaman Pairing Wablas
-    public function wablasPairing()
+    // A. Halaman Pairing WhatsApp (Evolution API)
+    public function whatsappPairing()
     {
-        $user = \Illuminate\Support\Facades\Auth::user();
-        $token = $user->wablas_api_key;
-        $deviceInfo = null;
-        $qrUrl = null;
+        $user = Auth::user();
+        
+        // Kita jadikan ID user sebagai nama instance agar otomatis multi-tenant
+        // Contoh: member_1, member_2
+        $instanceName = 'member_' . $user->id; 
 
-        if ($token) {
-            // 1. Cek Status Device Wablas menggunakan cURL
-            $curl = curl_init();
-            curl_setopt($curl, CURLOPT_URL,  "https://jkt.wablas.com/api/device/info?token=$token");
-            curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "GET");
-            curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
-            curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
-            $result = curl_exec($curl);
-            curl_close($curl);
+        // URL dan Global API Key Server Evolution Anda
+        // Idealnya ini ditaruh di file .env: EVOLUTION_URL=http://103.150.196.172:8080
+        $evolutionUrl = env('EVOLUTION_URL', 'http://103.150.196.172:8080'); 
+        $globalApiKey = env('EVOLUTION_API_KEY', 'terabot123');
 
-            $response = json_decode($result, true);
+        $headers = [
+            'apikey' => $globalApiKey,
+            'Content-Type' => 'application/json'
+        ];
 
-            if (isset($response['status']) && $response['status'] == true) {
-                $deviceInfo = $response['data'];
+        $deviceInfo = ['status' => 'disconnected'];
+        $qrBase64 = null;
 
-                // 2. Jika status disconnected, ambil link QR Code sekalian
-                if ($deviceInfo['status'] === 'disconnected') {
-                    $qrResponse = \Illuminate\Support\Facades\Http::get("https://jkt.wablas.com/api/device/scan?token={$token}");
-                    if ($qrResponse->successful()) {
-                        $qrUrl = $qrResponse->json(); 
-                    }
+        // 1. Cek apakah instance (sesi) sudah pernah dibuat sebelumnya
+        $checkState = Http::withHeaders($headers)
+            ->get("{$evolutionUrl}/instance/connectionState/{$instanceName}");
+
+        if ($checkState->successful()) {
+            $stateData = $checkState->json();
+            $state = $stateData['instance']['state'] ?? 'close';
+
+            if ($state === 'open') {
+                $deviceInfo['status'] = 'connected';
+            } else {
+                // 2. Jika instance ada tapi terputus (disconnected), minta QR Code baru
+                $getQr = Http::withHeaders($headers)
+                    ->get("{$evolutionUrl}/instance/connect/{$instanceName}");
+                
+                if ($getQr->successful()) {
+                    $qrBase64 = $getQr->json('base64');
                 }
+            }
+        } elseif ($checkState->status() == 404) {
+            // 3. Jika instance belum ada sama sekali (Member Baru), buat otomatis!
+            $createInstance = Http::withHeaders($headers)
+                ->post("{$evolutionUrl}/instance/create", [
+                    'instanceName' => $instanceName,
+                    'qrcode' => true
+                ]);
+
+            if ($createInstance->successful()) {
+                $responseCreate = $createInstance->json();
+                // Mengambil Base64 dari response Evolution API v1.8.2
+                $qrBase64 = $responseCreate['hash']['base64'] ?? $responseCreate['qrcode']['base64'] ?? null;
             }
         }
 
-        return view('member.wablas-setup', compact('deviceInfo', 'qrUrl', 'token'));
+        // Saya mengganti nama view menjadi whatsapp-setup agar lebih relevan
+        return view('member.whatsapp-setup', compact('deviceInfo', 'qrBase64', 'instanceName'));
     }
 
-    // Tambahkan method ini di dalam MemberController
-public function showProductKnowledge()
-{
-    // Mengambil data product knowledge milik user yang sedang login
-    $pk = ProductKnowledge::where('user_id', \Illuminate\Support\Facades\Auth::id())->first();
-    
-    return view('member.product-knowledge', compact('pk'));
-}
+    // =====================================================================
+    // KODE DI BAWAH INI TETAP SAMA, TIDAK ADA YANG DIUBAH
+    // =====================================================================
 
-    // B. Konfirmasi Pembayaran
+    public function showProductKnowledge()
+    {
+        $pk = ProductKnowledge::where('user_id', Auth::id())->first();
+        return view('member.product-knowledge', compact('pk'));
+    }
+
     public function showPayment()
     {
         $banks = BankAccount::all();
@@ -82,7 +105,6 @@ public function showProductKnowledge()
         return back()->with('success', 'Konfirmasi berhasil dikirim. Menunggu approval Admin.');
     }
 
-    // C. Setup Product Knowledge
     public function saveProductKnowledge(Request $request)
     {
         ProductKnowledge::updateOrCreate(
