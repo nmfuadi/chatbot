@@ -179,7 +179,7 @@
                     
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 md:gap-6">
                         
-                        <a href="{{ route('member.wablas') }}" class="group block bg-white p-7 rounded-3xl shadow-sm ring-1 ring-gray-900/5 hover:ring-blue-500/30 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+                        <a href="{{ route('member.whatsapp.setup') }}" class="group block bg-white p-7 rounded-3xl shadow-sm ring-1 ring-gray-900/5 hover:ring-blue-500/30 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
                             <div class="w-14 h-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mb-5 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
                                 <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
                             </div>
