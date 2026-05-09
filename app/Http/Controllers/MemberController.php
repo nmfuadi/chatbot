@@ -43,6 +43,12 @@ class MemberController extends Controller
 
             if ($state === 'open') {
                 $deviceInfo['status'] = 'connected';
+                
+                // Opsional: Pastikan DB juga terupdate jika instance sudah open tapi DB kosong
+                if (empty($user->wablas_device_id)) {
+                    $user->update(['wablas_device_id' => $instanceName]);
+                }
+                
             } else {
                 // 2. Jika instance ada tapi terputus (disconnected), minta QR Code baru
                 $getQr = Http::withHeaders($headers)
@@ -62,8 +68,15 @@ class MemberController extends Controller
 
             if ($createInstance->successful()) {
                 $responseCreate = $createInstance->json();
+                
                 // Mengambil Base64 dari response Evolution API v1.8.2
                 $qrBase64 = $responseCreate['hash']['base64'] ?? $responseCreate['qrcode']['base64'] ?? null;
+
+                // --- TAMBAHAN BARU: SIMPAN NAMA INSTANCE KE DATABASE ---
+                $user->update([
+                    'wablas_device_id' => $instanceName
+                ]);
+                // -------------------------------------------------------
             }
         }
 
