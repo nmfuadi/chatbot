@@ -29,7 +29,7 @@
                         <x-nav-link :href="route('user.invoice.index')" :active="request()->routeIs('user.invoice.index')">
                             {{ __('Tagihan') }}
                         </x-nav-link>
-                        <x-nav-link :href="route('member.whatsapp')" :active="request()->routeIs('member.whatsapp')">
+                        <x-nav-link :href="route('member.whatsapp.setup')" :active="request()->routeIs('member.whatsapp.setup')">
                             {{ __('Setup whatsapp') }}
                         </x-nav-link>
                         <x-nav-link :href="route('member.pk')" :active="request()->routeIs('member.pk')">
@@ -107,7 +107,7 @@
                 <x-responsive-nav-link :href="route('user.invoice.index')" :active="request()->routeIs('user.invoice.index')">
                     {{ __('Tagihan') }}
                 </x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('member.whatsapp')" :active="request()->routeIs('member.whatsapp')">
+                <x-responsive-nav-link :href="route('member.whatsapp.setup')" :active="request()->routeIs('member.whatsapp.setup')">
                     {{ __('Setup whatsapp') }}
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('member.pk')" :active="request()->routeIs('member.pk')">
