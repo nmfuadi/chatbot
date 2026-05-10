@@ -14,14 +14,12 @@ class MemberController extends Controller
     // A. Halaman Pairing WhatsApp (Evolution API)
     public function whatsappPairing()
     {
-        $user = Auth::user();
+        $user = \Illuminate\Support\Facades\Auth::user();
         
         // Kita jadikan ID user sebagai nama instance agar otomatis multi-tenant
-        // Contoh: member_1, member_2
         $instanceName = 'member_' . $user->id; 
 
         // URL dan Global API Key Server Evolution Anda
-        // Idealnya ini ditaruh di file .env: EVOLUTION_URL=http://103.150.196.172:8080
         $evolutionUrl = env('EVOLUTION_URL', 'http://103.150.196.172:8080'); 
         $globalApiKey = env('EVOLUTION_API_KEY', 'terabot123');
 
@@ -34,7 +32,7 @@ class MemberController extends Controller
         $qrBase64 = null;
 
         // 1. Cek apakah instance (sesi) sudah pernah dibuat sebelumnya
-        $checkState = Http::withHeaders($headers)
+        $checkState = \Illuminate\Support\Facades\Http::withHeaders($headers)
             ->get("{$evolutionUrl}/instance/connectionState/{$instanceName}");
 
         if ($checkState->successful()) {
@@ -44,23 +42,33 @@ class MemberController extends Controller
             if ($state === 'open') {
                 $deviceInfo['status'] = 'connected';
                 
-                // Opsional: Pastikan DB juga terupdate jika instance sudah open tapi DB kosong
+                // Pastikan DB juga terupdate jika instance sudah open tapi DB kosong
                 if (empty($user->wablas_device_id)) {
                     $user->update(['wablas_device_id' => $instanceName]);
                 }
                 
             } else {
                 // 2. Jika instance ada tapi terputus (disconnected), minta QR Code baru
-                $getQr = Http::withHeaders($headers)
+                $getQr = \Illuminate\Support\Facades\Http::withHeaders($headers)
                     ->get("{$evolutionUrl}/instance/connect/{$instanceName}");
                 
                 if ($getQr->successful()) {
-                    $qrBase64 = $getQr->json('base64');
+                    // Coba ambil dari root response atau dari dalam object
+                    $qrResponse = $getQr->json();
+                    $qrBase64 = $qrResponse['base64'] ?? $qrResponse['qrcode']['base64'] ?? null;
+                    
+                    // --- DETEKTIF 1: Jika sukses tapi QR tetap kosong ---
+                    if (empty($qrBase64)) {
+                        dd('SUKSES HIT API CONNECT, TAPI QR KOSONG. Balasan Server:', $qrResponse);
+                    }
+                } else {
+                    // --- DETEKTIF 2: Jika Evolution API menolak memberikan QR ---
+                    dd('GAGAL MINTA QR. Error dari Server:', $getQr->status(), $getQr->body());
                 }
             }
         } elseif ($checkState->status() == 404) {
             // 3. Jika instance belum ada sama sekali (Member Baru), buat otomatis SEKALIGUS SETTING WEBHOOK!
-            $createInstance = Http::withHeaders($headers)
+            $createInstance = \Illuminate\Support\Facades\Http::withHeaders($headers)
                 ->post("{$evolutionUrl}/instance/create", [
                     'instanceName' => $instanceName,
                     'token' => 'terabot123',
@@ -81,18 +89,24 @@ class MemberController extends Controller
             if ($createInstance->successful()) {
                 $responseCreate = $createInstance->json();
                 
-                // Mengambil Base64 dari response Evolution API v1.8.2
-                $qrBase64 = $responseCreate['hash']['base64'] ?? $responseCreate['qrcode']['base64'] ?? null;
+                // Mengambil Base64 (Mendukung Evolution API v1 dan v2)
+                $qrBase64 = $responseCreate['hash']['base64'] ?? $responseCreate['qrcode']['base64'] ?? $responseCreate['base64'] ?? null;
 
-                // --- TAMBAHAN BARU: SIMPAN NAMA INSTANCE KE DATABASE ---
+                // Simpan nama instance ke database
                 $user->update([
                     'wablas_device_id' => $instanceName
                 ]);
-                // -------------------------------------------------------
+
+                // --- DETEKTIF 3: Jika Create Instance sukses tapi QR kosong ---
+                if (empty($qrBase64)) {
+                    dd('INSTANCE DIBUAT, TAPI QR KOSONG. Balasan Server:', $responseCreate);
+                }
+            } else {
+                // --- DETEKTIF 4: Jika gagal membuat instance ---
+                dd('GAGAL BUAT INSTANCE. Error dari Server:', $createInstance->status(), $createInstance->body());
             }
         }
 
-        // Saya mengganti nama view menjadi whatsapp-setup agar lebih relevan
         return view('member.whatsapp-setup', compact('deviceInfo', 'qrBase64', 'instanceName'));
     }
 
