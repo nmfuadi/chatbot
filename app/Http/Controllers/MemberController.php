@@ -71,7 +71,7 @@ class MemberController extends Controller
             $createInstance = \Illuminate\Support\Facades\Http::withHeaders($headers)
                 ->post("{$evolutionUrl}/instance/create", [
                     'instanceName' => $instanceName,
-                    'token' => 'terabot123',
+                    'token' => 'terabot'.$instanceName,
                     'qrcode' => true,
                     'webhook' => 'https://n8n.chatbotnew.web.id/webhook/terabot',
                     'webhook_by_events' => false,
