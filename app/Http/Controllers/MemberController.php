@@ -65,7 +65,7 @@ class MemberController extends Controller
             $createInstance = \Illuminate\Support\Facades\Http::withHeaders($headers)
                 ->post("{$evolutionUrl}/instance/create", [
                     'instanceName' => $instanceName,
-                    'token' => 'terabot_' .$instanceName, // Token unik per user
+                    'token' => 'terabot123_' . $user->id, // Token unik per user
                     'qrcode' => true,
                     'webhook' => 'https://n8n.chatbotnew.web.id/webhook/terabot',
                     'webhook_by_events' => false,
@@ -83,49 +83,6 @@ class MemberController extends Controller
                 $user->update([
                     'wablas_device_id' => $instanceName
                 ]);
-            }
-        }
-
-        return view('member.whatsapp-setup', compact('deviceInfo', 'qrBase64', 'instanceName'));
-    }
-        } elseif ($checkState->status() == 404) {
-            // 3. Jika instance belum ada sama sekali (Member Baru), buat otomatis SEKALIGUS SETTING WEBHOOK!
-            $createInstance = \Illuminate\Support\Facades\Http::withHeaders($headers)
-                ->post("{$evolutionUrl}/instance/create", [
-                    'instanceName' => $instanceName,
-                    'token' => 'terabot_'.$instanceName,
-                    'qrcode' => true,
-                    'webhook' => 'https://n8n.chatbotnew.web.id/webhook/terabot',
-                    'webhook_by_events' => false,
-                    'events' => [
-                        'QRCODE_UPDATED',
-                        'MESSAGES_UPSERT',
-                        'MESSAGES_UPDATE',
-                        'MESSAGES_DELETE',
-                        'SEND_MESSAGE',
-                        'CONNECTION_UPDATE',
-                        'CALL'
-                    ]
-                ]);
-
-            if ($createInstance->successful()) {
-                $responseCreate = $createInstance->json();
-                
-                // Mengambil Base64 (Mendukung Evolution API v1 dan v2)
-                $qrBase64 = $responseCreate['hash']['base64'] ?? $responseCreate['qrcode']['base64'] ?? $responseCreate['base64'] ?? null;
-
-                // Simpan nama instance ke database
-                $user->update([
-                    'wablas_device_id' => $instanceName
-                ]);
-
-                // --- DETEKTIF 3: Jika Create Instance sukses tapi QR kosong ---
-                if (empty($qrBase64)) {
-                    dd('INSTANCE DIBUAT, TAPI QR KOSONG. Balasan Server:', $responseCreate);
-                }
-            } else {
-                // --- DETEKTIF 4: Jika gagal membuat instance ---
-                dd('GAGAL BUAT INSTANCE. Error dari Server:', $createInstance->status(), $createInstance->body());
             }
         }
 
