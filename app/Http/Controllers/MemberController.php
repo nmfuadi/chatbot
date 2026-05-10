@@ -59,11 +59,23 @@ class MemberController extends Controller
                 }
             }
         } elseif ($checkState->status() == 404) {
-            // 3. Jika instance belum ada sama sekali (Member Baru), buat otomatis!
+            // 3. Jika instance belum ada sama sekali (Member Baru), buat otomatis SEKALIGUS SETTING WEBHOOK!
             $createInstance = Http::withHeaders($headers)
                 ->post("{$evolutionUrl}/instance/create", [
                     'instanceName' => $instanceName,
-                    'qrcode' => true
+                    'token' => 'terabot123',
+                    'qrcode' => true,
+                    'webhook' => 'https://n8n.chatbotnew.web.id/webhook/terabot',
+                    'webhook_by_events' => false,
+                    'events' => [
+                        'QRCODE_UPDATED',
+                        'MESSAGES_UPSERT',
+                        'MESSAGES_UPDATE',
+                        'MESSAGES_DELETE',
+                        'SEND_MESSAGE',
+                        'CONNECTION_UPDATE',
+                        'CALL'
+                    ]
                 ]);
 
             if ($createInstance->successful()) {

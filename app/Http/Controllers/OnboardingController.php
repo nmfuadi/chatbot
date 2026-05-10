@@ -40,18 +40,32 @@ class OnboardingController extends Controller
             'otp_expires_at' => Carbon::now()->addMinutes(5), // Kedaluwarsa dalam 5 menit
         ]);
 
-        // Kirim OTP via API Wablas Admin
-        // Pastikan tambahkan WABLAS_ADMIN_TOKEN="token_wablas_kamu" di file .env
-        $adminToken = env('WABLAS_ADMIN_TOKEN'); 
-        
-        Http::withHeaders([
-            'Authorization' => $adminToken
-        ])->post('https://jkt.wablas.com/api/send-message', [
-            'phone' => $request->whatsapp_number,
-            'message' => "*Smart AI Assistant*\n\nKode OTP Verifikasi Anda adalah: *$otp*.\nKode ini akan kedaluwarsa dalam 5 menit. JANGAN berikan kode ini kepada siapapun."
-        ]);
+       // Kredensial Evolution API
+       $evolutionUrl = env('EVOLUTION_URL', 'http://103.150.196.172:8080');
+       $globalApiKey = env('EVOLUTION_API_KEY', 'terabot123');
+       
+       // Nama instance pusat yang Anda gunakan khusus untuk mengirim OTP (pastikan sudah di-scan WA-nya)
+       $adminInstance = env('EVOLUTION_ADMIN_INSTANCE', 'terabot_admin'); 
 
-        return redirect()->route('onboarding.otp.form')->with('success', 'OTP telah dikirim ke WhatsApp Anda!');
+       // Pesan OTP
+       $messageText = "*terabot.AI*\n\nKode OTP Verifikasi Anda adalah: *$otp*.\nKode ini akan kedaluwarsa dalam 5 menit. JANGAN berikan kode ini kepada siapapun.";
+
+       // Kirim OTP via Evolution API
+       Http::withHeaders([
+           'apikey' => $globalApiKey,
+           'Content-Type' => 'application/json'
+       ])->post("{$evolutionUrl}/message/sendText/{$adminInstance}", [
+           'number' => $request->whatsapp_number,
+           'options' => [
+               'delay' => 1200,
+               'presence' => 'composing' // Memberikan efek "sedang mengetik..."
+           ],
+           'textMessage' => [
+               'text' => $messageText
+           ]
+       ]);
+
+       return redirect()->route('onboarding.otp.form')->with('success', 'OTP telah dikirim ke WhatsApp Anda!');
     }
 
     // 3. Tampilkan Halaman Input OTP
