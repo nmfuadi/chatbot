@@ -15,9 +15,8 @@ class MemberController extends Controller
     public function whatsappPairing()
     {
         $user = \Illuminate\Support\Facades\Auth::user();
-        
-        // Nama instance unik berdasarkan ID user
-        $instanceName = 'member_' . $user->id; 
+        $userId = $user->id;
+        $instanceName = 'member_' . $userId; 
 
         $evolutionUrl = env('EVOLUTION_URL', 'http://103.150.196.172:8080'); 
         $globalApiKey = env('EVOLUTION_API_KEY', 'terabot123');
@@ -30,7 +29,7 @@ class MemberController extends Controller
         $deviceInfo = ['status' => 'disconnected'];
         $qrBase64 = null;
 
-        // 1. Cek status koneksi ke server Evolution
+        // 1. Cek status koneksi
         $checkState = \Illuminate\Support\Facades\Http::withHeaders($headers)
             ->get("{$evolutionUrl}/instance/connectionState/{$instanceName}");
 
@@ -41,17 +40,13 @@ class MemberController extends Controller
             if ($state === 'open') {
                 $deviceInfo['status'] = 'connected';
                 
-                // --- LOGIC PENYELAMAT ---
-                // Jika server sudah CONNECTED tapi di database Laravel masih kosong, langsung SAVE.
-                if (empty($user->wablas_device_id)) {
-                    $user->update([
-                        'wablas_device_id' => $instanceName
-                    ]);
-                }
-                // ------------------------
+                // --- FORCE UPDATE JIKA KONEK ---
+                \App\Models\User::where('id', $userId)->update([
+                    'wablas_device_id' => $instanceName
+                ]);
                 
             } else {
-                // 2. Jika instance ada tapi terputus/close, minta QR Code baru
+                // 2. Minta QR Code baru
                 $getQr = \Illuminate\Support\Facades\Http::withHeaders($headers)
                     ->get("{$evolutionUrl}/instance/connect/{$instanceName}");
                 
@@ -61,11 +56,11 @@ class MemberController extends Controller
                 }
             }
         } elseif ($checkState->status() == 404) {
-            // 3. Jika instance belum ada sama sekali, buat baru dengan webhook
+            // 3. Buat Instance Baru
             $createInstance = \Illuminate\Support\Facades\Http::withHeaders($headers)
                 ->post("{$evolutionUrl}/instance/create", [
                     'instanceName' => $instanceName,
-                    'token' => 'terabot123_' . $user->id, // Token unik per user
+                    'token' => 'terabot123_' . $userId,
                     'qrcode' => true,
                     'webhook' => 'https://n8n.chatbotnew.web.id/webhook/terabot',
                     'webhook_by_events' => false,
@@ -79,8 +74,8 @@ class MemberController extends Controller
                 $responseCreate = $createInstance->json();
                 $qrBase64 = $responseCreate['hash']['base64'] ?? $responseCreate['qrcode']['base64'] ?? $responseCreate['base64'] ?? null;
 
-                // Langsung save saat berhasil dibuat
-                $user->update([
+                // --- FORCE UPDATE SAAT BERHASIL CREATE ---
+                \App\Models\User::where('id', $userId)->update([
                     'wablas_device_id' => $instanceName
                 ]);
             }
