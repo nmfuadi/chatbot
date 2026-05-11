@@ -13,76 +13,85 @@ class MemberController extends Controller
 {
     // A. Halaman Pairing WhatsApp (Evolution API)
     public function whatsappPairing()
-    {
-        $user = \Illuminate\Support\Facades\Auth::user();
-        $userId = $user->id;
-        $instanceName = 'member_' . $userId; 
+{
+    $user = \Illuminate\Support\Facades\Auth::user();
+    $userId = $user->id;
+    $instanceName = 'member_' . $userId; 
 
-        $evolutionUrl = env('EVOLUTION_URL', 'http://103.150.196.172:8080'); 
-        $globalApiKey = env('EVOLUTION_API_KEY', 'terabot123');
+    $evolutionUrl = env('EVOLUTION_URL', 'http://103.150.196.172:8080'); 
+    $globalApiKey = env('EVOLUTION_API_KEY', 'terabot123');
 
-        $headers = [
-            'apikey' => $globalApiKey,
-            'Content-Type' => 'application/json'
-        ];
+    $headers = [
+        'apikey' => $globalApiKey,
+        'Content-Type' => 'application/json'
+    ];
 
-        $deviceInfo = ['status' => 'disconnected'];
-        $qrBase64 = null;
+    $deviceInfo = ['status' => 'disconnected'];
+    $qrBase64 = null;
 
-        // 1. Cek status koneksi
-        $checkState = \Illuminate\Support\Facades\Http::withHeaders($headers)
-            ->get("{$evolutionUrl}/instance/connectionState/{$instanceName}");
+    // 1. Cek status koneksi
+    $checkState = \Illuminate\Support\Facades\Http::withHeaders($headers)
+        ->get("{$evolutionUrl}/instance/connectionState/{$instanceName}");
 
-        if ($checkState->successful()) {
-            $stateData = $checkState->json();
-            $state = $stateData['instance']['state'] ?? 'close';
+    if ($checkState->successful()) {
+        $stateData = $checkState->json();
+        // Di v2, format JSON respons bisa sedikit berbeda, kita gunakan fallback
+        $state = $stateData['instance']['state'] ?? $stateData['state'] ?? 'close';
 
-            if ($state === 'open') {
-                $deviceInfo['status'] = 'connected';
-                
-                // --- FORCE UPDATE JIKA KONEK ---
-                \App\Models\User::where('id', $userId)->update([
-                    'wablas_device_id' => $instanceName
-                ]);
-                
-            } else {
-                // 2. Minta QR Code baru
-                $getQr = \Illuminate\Support\Facades\Http::withHeaders($headers)
-                    ->get("{$evolutionUrl}/instance/connect/{$instanceName}");
-                
-                if ($getQr->successful()) {
-                    $qrResponse = $getQr->json();
-                    $qrBase64 = $qrResponse['base64'] ?? $qrResponse['qrcode']['base64'] ?? null;
-                }
-            }
-        } elseif ($checkState->status() == 404) {
-            // 3. Buat Instance Baru
-            $createInstance = \Illuminate\Support\Facades\Http::withHeaders($headers)
-                ->post("{$evolutionUrl}/instance/create", [
-                    'instanceName' => $instanceName,
-                    'token' => 'terabot123_' . $userId,
-                    'qrcode' => true,
-                    'webhook' => 'https://n8n.chatbotnew.web.id/webhook/terabot',
-                    'webhook_by_events' => false,
-                    'events' => [
-                        'QRCODE_UPDATED', 'MESSAGES_UPSERT', 'MESSAGES_UPDATE', 
-                        'MESSAGES_DELETE', 'SEND_MESSAGE', 'CONNECTION_UPDATE', 'CALL'
-                    ]
-                ]);
-
-            if ($createInstance->successful()) {
-                $responseCreate = $createInstance->json();
-                $qrBase64 = $responseCreate['hash']['base64'] ?? $responseCreate['qrcode']['base64'] ?? $responseCreate['base64'] ?? null;
-
-                // --- FORCE UPDATE SAAT BERHASIL CREATE ---
-                \App\Models\User::where('id', $userId)->update([
-                    'wablas_device_id' => $instanceName
-                ]);
+        if ($state === 'open') {
+            $deviceInfo['status'] = 'connected';
+            
+            // --- FORCE UPDATE JIKA KONEK ---
+            \App\Models\User::where('id', $userId)->update([
+                'wablas_device_id' => $instanceName
+            ]);
+            
+        } else {
+            // 2. Minta QR Code baru (Jika instance ada tapi terputus)
+            $getQr = \Illuminate\Support\Facades\Http::withHeaders($headers)
+                ->get("{$evolutionUrl}/instance/connect/{$instanceName}");
+            
+            if ($getQr->successful()) {
+                $qrResponse = $getQr->json();
+                $qrBase64 = $qrResponse['base64'] ?? $qrResponse['qrcode']['base64'] ?? null;
             }
         }
+    } elseif ($checkState->status() == 404) {
+        // 3. Buat Instance Baru (SUDAH DIUPDATE KE FORMAT V2.x)
+        $createInstance = \Illuminate\Support\Facades\Http::withHeaders($headers)
+            ->post("{$evolutionUrl}/instance/create", [
+                'instanceName' => $instanceName,
+                'token' => 'terabot123_' . $userId,
+                'qrcode' => true,
+                'integration' => 'WHATSAPP-BAILEYS', // Parameter wajib di v2.x
+                'webhook' => [
+                    'url' => 'https://n8n.chatbotnew.web.id/webhook/terabot',
+                    'byEvents' => false,
+                    'base64' => false, // Penting: agar n8n tidak crash menerima file Base64 gambar
+                    'headers' => [
+                        'Content-Type' => 'application/json'
+                    ],
+                    'events' => [
+                        'APPLICATION_STARTUP',
+                        'MESSAGES_UPSERT'
+                    ]
+                ]
+            ]);
 
-        return view('member.whatsapp-setup', compact('deviceInfo', 'qrBase64', 'instanceName'));
+        if ($createInstance->successful()) {
+            $responseCreate = $createInstance->json();
+            // Menangkap QR Code dari respons v2.x
+            $qrBase64 = $responseCreate['qrcode']['base64'] ?? $responseCreate['base64'] ?? null;
+
+            // --- FORCE UPDATE SAAT BERHASIL CREATE ---
+            \App\Models\User::where('id', $userId)->update([
+                'wablas_device_id' => $instanceName
+            ]);
+        }
     }
+
+    return view('member.whatsapp-setup', compact('deviceInfo', 'qrBase64', 'instanceName'));
+}
 
     // =====================================================================
     // KODE DI BAWAH INI TETAP SAMA, TIDAK ADA YANG DIUBAH
