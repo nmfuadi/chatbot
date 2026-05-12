@@ -17,6 +17,15 @@ use App\Http\Controllers\WhatsAppMonitoringController;
 use App\Http\Controllers\ServerMonitoringController;
 use App\Http\Controllers\TrafficMonitoringController;
 use App\Http\Controllers\AiMonitoringController;
+use App\Http\Controllers\Admin\MonitoringLogController;
+
+
+
+
+Route::prefix('admin/monitoring')->group(function () {
+    Route::get('/', [MonitoringLogController::class, 'index'])->name('admin.monitor.logs');
+    Route::delete('/delete/{filename}', [MonitoringLogController::class, 'destroy'])->name('admin.monitor.delete');
+});
 
 Route::get('/', function () { return view('welcome'); });
 Route::get('/admin/traffic', [TrafficMonitoringController::class, 'index'])->name('traffic.monitor');
