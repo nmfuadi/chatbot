@@ -14,6 +14,7 @@ use App\Http\Middleware\EnsureWaVerified;
 use App\Http\Middleware\EnsureHasActiveSubscription;
 use App\Models\Plan;
 use App\Http\Controllers\WhatsAppMonitoringController;
+use App\Http\Controllers\ServerMonitoringController;
 
 Route::get('/', function () { return view('welcome'); });
 
@@ -115,6 +116,10 @@ Route::prefix('admin/whatsapp')->group(function () {
     Route::get('/qr/{instanceName}', [WhatsAppMonitoringController::class, 'getQr']);
     Route::put('/restart/{instanceName}', [WhatsAppMonitoringController::class, 'restart'])->name('wa.restart');
     Route::delete('/logout/{instanceName}', [WhatsAppMonitoringController::class, 'logout'])->name('wa.logout');
+});
+
+Route::prefix('admin/servers')->group(function () {
+    Route::get('/', [ServerMonitoringController::class, 'index'])->name('server.monitor');
 });
 
 require __DIR__.'/auth.php'; // Rute Login/Register bawaan Breeze

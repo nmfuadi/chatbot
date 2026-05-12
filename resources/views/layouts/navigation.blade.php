@@ -28,6 +28,10 @@
                             {{ __('Status WhatsApp') }}
                         </x-nav-link>
 
+                        <x-nav-link :href="route('server.monitor')" :active="request()->routeIs('server.monitor')">
+                            {{ __('Monitoring Server') }}
+                        </x-nav-link>
+
                     @elseif(Auth::user()->role === 'member')
                         <x-nav-link :href="route('user.invoice.index')" :active="request()->routeIs('user.invoice.index')">
                             {{ __('Tagihan') }}
@@ -109,6 +113,12 @@
                 <x-responsive-nav-link :href="route('wa.monitor')" :active="request()->routeIs('wa.monitor')">
                      {{ __('Status WhatsApp') }}
                 </x-responsive-nav-link>
+
+                <x-responsive-nav-link :href="route('server.monitor')" :active="request()->routeIs('server.monitor')">
+                     {{ __('Server Monitor') }}
+                </x-responsive-nav-link>
+
+                
 
             @elseif(Auth::user()->role === 'member')
                 <x-responsive-nav-link :href="route('user.invoice.index')" :active="request()->routeIs('user.invoice.index')">
