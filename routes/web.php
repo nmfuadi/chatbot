@@ -18,8 +18,29 @@ use App\Http\Controllers\ServerMonitoringController;
 use App\Http\Controllers\TrafficMonitoringController;
 use App\Http\Controllers\AiMonitoringController;
 use App\Http\Controllers\Admin\MonitoringLogController;
+use App\Http\Middleware\IsAdmin; // Pastikan middleware-nya di-import
 
 
+// Rute Publik (Bisa diakses siapa saja)
+Route::get('/', function () {
+    return view('welcome');
+});
+
+
+// ========================================================
+// RUTE KHUSUS ADMIN (Digembok oleh Middleware IsAdmin)
+// ========================================================
+Route::middleware(['auth', IsAdmin::class])->prefix('admin')->group(function () {
+    
+    // Rute Log Monitoring (Hanya Admin)
+    Route::get('/monitoring', [MonitoringLogController::class, 'index'])->name('admin.monitor.logs');
+    Route::delete('/monitoring/delete/{filename}', [MonitoringLogController::class, 'destroy'])->name('admin.monitor.delete');
+
+    // Silakan pindahkan rute admin Anda yang lain ke dalam blok ini
+    // Contoh:
+    // Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
+    // Route::get('/users', [UserController::class, 'index'])->name('admin.users');
+});
 
 
 Route::prefix('admin/monitoring')->group(function () {
