@@ -16,9 +16,12 @@ use App\Models\Plan;
 use App\Http\Controllers\WhatsAppMonitoringController;
 use App\Http\Controllers\ServerMonitoringController;
 use App\Http\Controllers\TrafficMonitoringController;
+use App\Http\Controllers\AiMonitoringController;
 
 Route::get('/', function () { return view('welcome'); });
 Route::get('/admin/traffic', [TrafficMonitoringController::class, 'index'])->name('traffic.monitor');
+
+Route::get('/admin/ai-monitoring', [AiMonitoringController::class, 'index'])->name('ai.monitor');
 
 // =========================================================
 // GERBANG 1: PENGGUNA HARUS LOGIN (AUTH)
