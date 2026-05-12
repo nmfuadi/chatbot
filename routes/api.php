@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\WebhookController;
 use App\Http\Controllers\Api\BotController;
 use App\Http\Controllers\PaymentController;
+use App\Models\BotLog;
+
 
 
 /*
@@ -17,6 +19,20 @@ use App\Http\Controllers\PaymentController;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
+
+Route::post('/bot-logger', function (Request $request) {
+    // Validasi sederhana
+    $request->validate([
+        'instance_name' => 'required',
+        'status' => 'required'
+    ]);
+
+    // Simpan ke database
+    BotLog::create($request->all());
+
+    return response()->json(['message' => 'Log berhasil dicatat!']);
+});
+
 Route::post('/bot/context', [BotController::class, 'getContext']);
 Route::post('/bot/history', [BotController::class, 'saveHistory']);
 Route::post('/webhook/get-context', [WebhookController::class, 'getContext']);

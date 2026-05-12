@@ -15,8 +15,10 @@ use App\Http\Middleware\EnsureHasActiveSubscription;
 use App\Models\Plan;
 use App\Http\Controllers\WhatsAppMonitoringController;
 use App\Http\Controllers\ServerMonitoringController;
+use App\Http\Controllers\TrafficMonitoringController;
 
 Route::get('/', function () { return view('welcome'); });
+Route::get('/admin/traffic', [TrafficMonitoringController::class, 'index'])->name('traffic.monitor');
 
 // =========================================================
 // GERBANG 1: PENGGUNA HARUS LOGIN (AUTH)
