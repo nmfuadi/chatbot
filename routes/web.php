@@ -13,6 +13,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Middleware\EnsureWaVerified;
 use App\Http\Middleware\EnsureHasActiveSubscription;
 use App\Models\Plan;
+use App\Http\Controllers\WhatsAppMonitoringController;
 
 Route::get('/', function () { return view('welcome'); });
 
@@ -106,6 +107,14 @@ Route::get('/', function () {
     // Ambil data paket untuk ditampilkan di landing page
     $plans = Plan::all();
     return view('welcome', compact('plans'));
+});
+
+// Rute untuk WhatsApp Monitoring
+Route::prefix('admin/whatsapp')->group(function () {
+    Route::get('/', [WhatsAppMonitoringController::class, 'index'])->name('wa.monitor');
+    Route::get('/qr/{instanceName}', [WhatsAppMonitoringController::class, 'getQr']);
+    Route::put('/restart/{instanceName}', [WhatsAppMonitoringController::class, 'restart'])->name('wa.restart');
+    Route::delete('/logout/{instanceName}', [WhatsAppMonitoringController::class, 'logout'])->name('wa.logout');
 });
 
 require __DIR__.'/auth.php'; // Rute Login/Register bawaan Breeze

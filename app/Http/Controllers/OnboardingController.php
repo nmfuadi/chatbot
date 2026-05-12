@@ -55,7 +55,7 @@ class OnboardingController extends Controller
            'apikey' => $globalApiKey,
            'Content-Type' => 'application/json'
        ])->post("{$evolutionUrl}/message/sendText/{$adminInstance}", [
-           'number' => $request->whatsapp_number,
+           'number' => $request->whatsapp_number.'@s.whatsapp.net',
            'options' => [
                'delay' => 1200,
                'presence' => 'composing' // Memberikan efek "sedang mengetik..."
