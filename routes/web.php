@@ -109,7 +109,7 @@ Route::middleware(['auth'])->group(function () {
 // AREA KHUSUS ADMIN
 // =========================================================
 // Rute admin disatukan di bawah satu prefix dan middleware agar bersih
-Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', IsAdmin::class])->prefix('admin')->group(function () {
     
     Route::get('/members', [AdminController::class, 'members'])->name('members');
     Route::post('/members/{id}/wablas', [AdminController::class, 'updateMemberWablas'])->name('members.wablas');
