@@ -12,7 +12,7 @@ class WhatsAppMonitoringController extends Controller
 
     public function __construct()
     {
-        $this->apiUrl = env('EVOLUTION_API_URL');
+        $this->apiUrl = env('EVOLUTION_URL');
         $this->apiKey = env('EVOLUTION_API_KEY');
     }
 
