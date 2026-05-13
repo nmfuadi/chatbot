@@ -101,37 +101,64 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware([EnsureWaVerified::class])->group(function () {
 
         // -- TAMBAHAN: Logika Pintu Masuk & Progress Onboarding --
-        Route::get('/dashboard', function () { 
-            $user = auth()->user();
+       // -- Pintu Masuk & Progress Onboarding (4 Steps) --
+       Route::get('/dashboard', function () { 
+        $user = auth()->user();
 
-            // Jika Admin yang mencoba masuk ke sini, lempar ke dashboard admin
-            if ($user->role === 'admin') {
-                return redirect()->route('admin.dashboard');
+        if ($user->role === 'admin') {
+            return redirect()->route('admin.dashboard');
+        }
+
+        // =========================================================
+        // CEK PROGRESS ONBOARDING MEMBER (4 STEPS)
+        // =========================================================
+        
+        // Step 1: Cek table product_knowledges
+        $step1_done = \DB::table('product_knowledges')
+                        ->where('user_id', $user->id)
+                        ->whereNotNull('content')
+                        ->where('content', '!=', '')
+                        ->exists();
+
+        // Step 2: Cek table catalogs (minimal 1)
+        $step2_done = \App\Models\Catalog::where('user_id', $user->id)->exists();
+
+        // Step 3: LIVE CHECK Evolution API (Instance Name dari kolom wablas_device_id)
+        $step3_done = false;
+        $instanceName = $user->wablas_device_id; 
+
+        if (!empty($instanceName)) {
+            try {
+                $evolutionUrl = env('EVOLUTION_API_URL');
+                $globalApiKey = env('EVOLUTION_API_KEY');
+                
+                $response = \Illuminate\Support\Facades\Http::withHeaders([
+                    'apikey' => $globalApiKey
+                ])->timeout(3)->get("{$evolutionUrl}/instance/connectionState/{$instanceName}");
+
+                if ($response->successful() && $response->json('instance.state') === 'open') {
+                    $step3_done = true;
+                }
+            } catch (\Exception $e) {
+                $step3_done = false; 
             }
+        }
 
-            // =========================================================
-            // CEK PROGRESS ONBOARDING MEMBER
-            // =========================================================
-            
-            // Step 1: Cek apakah SOP sudah diisi? 
-            $step1_done = !empty($user->product_knowledge); 
+        // Step 4: Cek table chat_histories (minimal 1 data)
+        $step4_done = \DB::table('chat_histories')
+                        ->where('user_id', $user->id)
+                        ->exists();
 
-            // Step 2: Cek apakah user sudah punya minimal 1 katalog?
-            $step2_done = \App\Models\Catalog::where('user_id', $user->id)->exists();
+        // Hitung Progress (4 Step = masing-masing 25%)
+        $progress = 0;
+        if($step1_done) $progress += 25;
+        if($step2_done) $progress += 25;
+        if($step3_done) $progress += 25;
+        if($step4_done) $progress += 25;
 
-            // Step 3: Cek apakah WA sudah discan/terkoneksi?
-            $step3_done = !empty($user->wablas_device_id); 
+        return view('dashboard', compact('step1_done', 'step2_done', 'step3_done', 'step4_done', 'progress')); 
 
-            // Hitung Progress Bar (Maksimal 100%)
-            $progress = 0;
-            if($step1_done) $progress += 33;
-            if($step2_done) $progress += 33;
-            if($step3_done) $progress += 34;
-
-            // Jika Member biasa, tampilkan dashboard member beserta data progress-nya
-            return view('dashboard', compact('step1_done', 'step2_done', 'step3_done', 'progress')); 
-
-        })->name('dashboard');
+    })->name('dashboard');
 
         // Profil
         Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
