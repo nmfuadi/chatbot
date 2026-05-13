@@ -25,8 +25,7 @@
                     <thead class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider border-b border-gray-100">
                         <tr>
                             <th class="px-6 py-4 font-bold">Info Member</th>
-                            <th class="px-6 py-4 font-bold">Status Akun</th>
-                            <th class="px-6 py-4 font-bold">Paket Berlangganan</th>
+                             <th class="px-6 py-4 font-bold">Paket Berlangganan</th>
                             <th class="px-6 py-4 font-bold">Koneksi WA (Instance)</th>
                             <th class="px-6 py-4 font-bold text-right">Aksi</th>
                         </tr>
@@ -54,18 +53,7 @@
                                     <div class="mt-2 text-[10px] text-gray-400 font-medium">Bergabung: {{ $member->created_at->format('d M Y') }}</div>
                                 </td>
 
-                                <td class="px-6 py-4">
-                                    @if($member->status === 'active')
-                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold bg-green-100 text-green-700">
-                                            <span class="w-1.5 h-1.5 bg-green-500 rounded-full mr-1.5 animate-pulse"></span>
-                                            Aktif
-                                        </span>
-                                    @else
-                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold bg-gray-100 text-gray-600">
-                                            Pending/Nonaktif
-                                        </span>
-                                    @endif
-                                </td>
+                                
 
                                 <td class="px-6 py-4">
                                     @if($latestSub)
