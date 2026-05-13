@@ -52,18 +52,14 @@ class OnboardingController extends Controller
 
        // Kirim OTP via Evolution API
        Http::withHeaders([
-           'apikey' => $globalApiKey,
-           'Content-Type' => 'application/json'
-       ])->post("{$evolutionUrl}/message/sendText/{$adminInstance}", [
-           'number' => $request->whatsapp_number.'@s.whatsapp.net',
-           'options' => [
-               'delay' => 1200,
-               'presence' => 'composing' // Memberikan efek "sedang mengetik..."
-           ],
-           'textMessage' => [
-               'text' => $messageText
-           ]
-       ]);
+        'apikey' => $globalApiKey,
+        'Content-Type' => 'application/json'
+    ])->post("{$evolutionUrl}/message/sendText/{$adminInstance}", [
+        'number' => $request->whatsapp_number."@s.whatsapp.net", // Tambahkan .'@s.whatsapp.net' di sini jika API-nya butuh
+        'text' => $messageText,
+        'delay' => 5000,
+        'linkPreview' => true
+    ]);
 
        return redirect()->route('onboarding.otp.form')->with('success', 'OTP telah dikirim ke WhatsApp Anda!');
     }
