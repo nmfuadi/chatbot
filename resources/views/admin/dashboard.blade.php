@@ -53,24 +53,37 @@
             
             <div class="lg:col-span-1 space-y-6">
                 <div class="bg-gradient-to-br from-gray-800 to-gray-900 rounded-3xl p-6 text-white shadow-md">
-                    <h3 class="font-bold text-lg mb-4">🚀 Pusat Pemantauan Sistem</h3>
-                    <p class="text-sm text-gray-400 mb-6">Akses cepat ke seluruh infrastruktur platform Anda.</p>
+                    <h3 class="font-bold text-lg mb-1">🚀 Akses Cepat Admin</h3>
+                    <p class="text-sm text-gray-400 mb-6">Navigasi ke seluruh area platform.</p>
                     
+                    <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-3 mt-4">Manajemen Bisnis</h4>
+                    <div class="space-y-3 mb-6">
+                        <a href="{{ route('admin.plans.index') }}" class="flex items-center justify-between bg-indigo-600 hover:bg-indigo-700 p-3 rounded-xl transition shadow-sm">
+                            <span class="flex items-center text-sm font-medium"><span class="text-xl mr-3">📦</span> Kelola Paket & Harga</span>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                        </a>
+                        <a href="{{ route('admin.members') }}" class="flex items-center justify-between bg-gray-800 hover:bg-gray-700 p-3 rounded-xl border border-gray-700 transition">
+                            <span class="flex items-center text-sm font-medium"><span class="text-xl mr-3">👥</span> Manajemen Member</span>
+                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                        </a>
+                    </div>
+
+                    <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">Pemantauan Sistem</h4>
                     <div class="space-y-3">
                         <a href="{{ route('admin.monitor.logs') }}" class="flex items-center justify-between bg-gray-800 hover:bg-gray-700 p-3 rounded-xl border border-gray-700 transition">
                             <span class="flex items-center text-sm font-medium"><span class="text-xl mr-3">📊</span> Lalu Lintas Chat (Log)</span>
                             <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                         </a>
                         <a href="{{ route('ai.monitor') }}" class="flex items-center justify-between bg-gray-800 hover:bg-gray-700 p-3 rounded-xl border border-gray-700 transition">
-                            <span class="flex items-center text-sm font-medium"><span class="text-xl mr-3">🧠</span> Pemantauan Otak AI (Groq)</span>
+                            <span class="flex items-center text-sm font-medium"><span class="text-xl mr-3">🧠</span> Otak AI (Groq)</span>
                             <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                         </a>
                         <a href="{{ route('wa.monitor') }}" class="flex items-center justify-between bg-gray-800 hover:bg-gray-700 p-3 rounded-xl border border-gray-700 transition">
-                            <span class="flex items-center text-sm font-medium"><span class="text-xl mr-3">🟢</span> Status WhatsApp Member</span>
+                            <span class="flex items-center text-sm font-medium"><span class="text-xl mr-3">🟢</span> WhatsApp Member</span>
                             <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                         </a>
                         <a href="{{ route('server.monitor') }}" class="flex items-center justify-between bg-gray-800 hover:bg-gray-700 p-3 rounded-xl border border-gray-700 transition">
-                            <span class="flex items-center text-sm font-medium"><span class="text-xl mr-3">🖥️</span> Kesehatan Server (VPS)</span>
+                            <span class="flex items-center text-sm font-medium"><span class="text-xl mr-3">🖥️</span> Server (VPS)</span>
                             <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                         </a>
                     </div>

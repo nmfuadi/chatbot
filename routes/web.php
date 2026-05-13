@@ -100,14 +100,37 @@ Route::middleware(['auth'])->group(function () {
     // --- GERBANG 2: WAJIB VERIFIKASI WHATSAPP ---
     Route::middleware([EnsureWaVerified::class])->group(function () {
 
-        // -- TAMBAHAN: Logika Pintu Masuk Dashboard (Admin vs Member) --
+        // -- TAMBAHAN: Logika Pintu Masuk & Progress Onboarding --
         Route::get('/dashboard', function () { 
+            $user = auth()->user();
+
             // Jika Admin yang mencoba masuk ke sini, lempar ke dashboard admin
-            if (auth()->user()->role === 'admin') {
+            if ($user->role === 'admin') {
                 return redirect()->route('admin.dashboard');
             }
-            // Jika Member biasa, tampilkan dashboard member
-            return view('dashboard'); 
+
+            // =========================================================
+            // CEK PROGRESS ONBOARDING MEMBER
+            // =========================================================
+            
+            // Step 1: Cek apakah SOP sudah diisi? 
+            $step1_done = !empty($user->product_knowledge); 
+
+            // Step 2: Cek apakah user sudah punya minimal 1 katalog?
+            $step2_done = \App\Models\Catalog::where('user_id', $user->id)->exists();
+
+            // Step 3: Cek apakah WA sudah discan/terkoneksi?
+            $step3_done = !empty($user->wablas_device_id); 
+
+            // Hitung Progress Bar (Maksimal 100%)
+            $progress = 0;
+            if($step1_done) $progress += 33;
+            if($step2_done) $progress += 33;
+            if($step3_done) $progress += 34;
+
+            // Jika Member biasa, tampilkan dashboard member beserta data progress-nya
+            return view('dashboard', compact('step1_done', 'step2_done', 'step3_done', 'progress')); 
+
         })->name('dashboard');
 
         // Profil
