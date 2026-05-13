@@ -129,7 +129,7 @@ Route::middleware(['auth'])->group(function () {
 
         if (!empty($instanceName)) {
             try {
-                $evolutionUrl = env('EVOLUTION_API_URL');
+                $evolutionUrl = env('EVOLUTION_URL');
                 $globalApiKey = env('EVOLUTION_API_KEY');
                 
                 $response = \Illuminate\Support\Facades\Http::withHeaders([
