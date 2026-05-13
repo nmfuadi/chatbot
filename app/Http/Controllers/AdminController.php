@@ -14,7 +14,14 @@ class AdminController extends Controller
     // A. List Member & Input API Wablas
     public function members()
     {
-        $members = User::where('role', 'member')->get();
+        // Ambil data member beserta relasi langganan terakhir mereka
+        $members = User::where('role', '!=', 'admin')
+                    ->with(['subscriptions' => function($query) {
+                        $query->latest(); // Ambil langganan paling baru
+                    }, 'subscriptions.plan'])
+                    ->orderBy('created_at', 'desc')
+                    ->get();
+                    
         return view('admin.members', compact('members'));
     }
 
