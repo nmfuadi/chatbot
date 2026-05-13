@@ -47,6 +47,9 @@ require __DIR__.'/auth.php'; // Rute Login/Register bawaan Breeze
 */
 Route::middleware(['auth', IsAdmin::class])->prefix('admin')->group(function () {
     
+    // -- TAMBAHAN: Rute Khusus Dashboard Admin --
+    Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
+
     // -- Dashboard / Fitur Utama Admin --
     // Membungkus rute admin lama dengan akhiran nama 'admin.' agar navigasi tidak error
     Route::name('admin.')->group(function () {
@@ -97,8 +100,17 @@ Route::middleware(['auth'])->group(function () {
     // --- GERBANG 2: WAJIB VERIFIKASI WHATSAPP ---
     Route::middleware([EnsureWaVerified::class])->group(function () {
 
-        // Dashboard & Profil
-        Route::get('/dashboard', function () { return view('dashboard'); })->name('dashboard');
+        // -- TAMBAHAN: Logika Pintu Masuk Dashboard (Admin vs Member) --
+        Route::get('/dashboard', function () { 
+            // Jika Admin yang mencoba masuk ke sini, lempar ke dashboard admin
+            if (auth()->user()->role === 'admin') {
+                return redirect()->route('admin.dashboard');
+            }
+            // Jika Member biasa, tampilkan dashboard member
+            return view('dashboard'); 
+        })->name('dashboard');
+
+        // Profil
         Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
         Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
         Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
