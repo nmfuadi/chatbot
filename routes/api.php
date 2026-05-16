@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\BotController;
 use App\Http\Controllers\PaymentController;
 use Illuminate\Support\Facades\File;
 use Carbon\Carbon;
+use App\Http\Controllers\API\LeadAnalyticController;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,6 +19,10 @@ use Carbon\Carbon;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
+
+
+// Jalur Endpoint untuk paket Intelligent Sales
+Route::post('/v1/sales-intelligence/analytics', [LeadAnalyticController::class, 'store']);
 
 // Endpoint untuk menerima log dari n8n dan menyimpannya ke file .log
 Route::post('/bot-logger', function (Request $request) {
