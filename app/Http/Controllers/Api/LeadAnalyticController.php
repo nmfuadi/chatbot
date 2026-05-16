@@ -40,17 +40,31 @@ class LeadAnalyticController extends Controller
     public function updateStatus(Request $request)
     {
         $request->validate([
-            'id' => 'required|exists:lead_analytics,id',
-            'status_prospek' => 'required|string'
+            'id'             => 'required|exists:lead_analytics,id',
+            'status_prospek' => 'required|string',
+            'chat_summary'   => 'required|string',
+            'alasan_batal'   => 'nullable|string'
         ]);
 
-        $lead = \App\Models\LeadAnalytic::find($request->id);
-        $lead->status_prospek = $request->status_prospek;
-        $lead->save();
+        // 1. Ambil data analitik lama untuk menduplikasi informasi penting (nomor, instance, dll)
+        $oldLead = \App\Models\LeadAnalytic::find($request->id);
+
+        // 2. Buat BARIS BARU sebagai log riwayat terbaru dari pemindahan manual member
+        $newLog = \App\Models\LeadAnalytic::create([
+            'chat_session_id' => $oldLead->chat_session_id,
+            'phone'           => $oldLead->phone,
+            'instance'        => $oldLead->instance,
+            'sumber_iklan'    => $oldLead->sumber_iklan,
+            'status_prospek'  => $request->status_prospek,
+            'chat_summary'    => $request->chat_summary,
+            'lead_score'      => $request->status_prospek === 'closing' ? 100 : ($request->status_prospek === 'gagal' ? 0 : $oldLead->lead_score),
+            'alasan_batal'    => $request->status_prospek === 'gagal' ? $request->alasan_batal : null,
+        ]);
 
         return response()->json([
             'success' => true,
-            'message' => 'Status berhasil diperbarui'
+            'message' => 'Status dan riwayat baru berhasil dicatat',
+            'data'    => $newLog
         ]);
     }
 
@@ -122,6 +136,9 @@ class LeadAnalyticController extends Controller
     }
 
 
+    
+
+
     // Fungsi untuk menarik riwayat berdasarkan nomor HP
     public function history($phone)
     {
@@ -134,4 +151,7 @@ class LeadAnalyticController extends Controller
             'data'    => $history
         ]);
     }
+
+
+    
 }
