@@ -7,7 +7,7 @@ use App\Http\Controllers\Api\BotController;
 use App\Http\Controllers\PaymentController;
 use Illuminate\Support\Facades\File;
 use Carbon\Carbon;
-use App\Http\Controllers\API\LeadAnalyticController;
+use App\Http\Controllers\Api\LeadAnalyticController;
 
 /*
 |--------------------------------------------------------------------------
