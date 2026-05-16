@@ -14,15 +14,22 @@ class LeadAnalyticController extends Controller
     // Menampilkan Halaman Kanban & Summary
     public function index()
     {
-        // 1. Ambil Summary Data
-        $totalLeads = \App\Models\LeadAnalytic::count();
-        $closingLeads = \App\Models\LeadAnalytic::where('status_prospek', 'closing')->count();
-        $hotLeads = \App\Models\LeadAnalytic::where('status_prospek', 'hot_prospek')->count();
-        $gagalLeads = \App\Models\LeadAnalytic::where('status_prospek', 'gagal')->count();
+        // 1. Cari ID terakhir untuk masing-masing nomor HP
+        $latestIds = LeadAnalytic::selectRaw('MAX(id) as id')
+            ->groupBy('phone')
+            ->pluck('id');
 
-        // 2. Ambil semua leads, kelompokkan berdasarkan status
-        // Catatan: Jika ada filter per instance/member login, tambahkan ->where('instance', Auth::user()->instance)
-        $leads = \App\Models\LeadAnalytic::latest()->get()->groupBy('status_prospek');
+        // 2. Ambil data lengkapnya HANYA untuk ID yang terbaru tadi
+        $latestLeads = LeadAnalytic::whereIn('id', $latestIds)->latest()->get();
+
+        // 3. Hitung Summary berdasarkan data terbaru
+        $totalLeads = $latestLeads->count();
+        $closingLeads = $latestLeads->where('status_prospek', 'closing')->count();
+        $hotLeads = $latestLeads->where('status_prospek', 'hot_prospek')->count();
+        $gagalLeads = $latestLeads->where('status_prospek', 'gagal')->count();
+
+        // 4. Kelompokkan untuk papan Kanban
+        $leads = $latestLeads->groupBy('status_prospek');
 
         return view('analytics.kanban', compact(
             'totalLeads', 'closingLeads', 'hotLeads', 'gagalLeads', 'leads'
@@ -85,22 +92,17 @@ class LeadAnalyticController extends Controller
 
             // B. UPDATE ATAU CREATE DATA DI LEAD ANALYTICS
             // Menggunakan updateOrCreate agar 1 Nomor HP = 1 Kartu saja
-            $analytics = LeadAnalytic::updateOrCreate(
-                [
-                    // Kriteria pencarian: Cari berdasarkan nomor HP dan instance ini
-                    'phone'    => $request->phone,
-                    'instance' => $request->instance,
-                ],
-                [
-                    // Nilai yang akan di-update (atau di-insert jika datanya baru)
-                    'chat_session_id' => $chatSessionId,
-                    'status_prospek'  => $request->status_prospek,
-                    'alasan_batal'    => $request->alasan_batal == 'null' ? null : $request->alasan_batal,
-                    'sumber_iklan'    => $request->sumber_iklan ?? 'Organik',
-                    'chat_summary'    => $request->chat_summary ?? 'Belum ada ringkasan', 
-                    'lead_score'      => $request->lead_score ?? 0, 
-                ]
-            );
+            // B. BUAT DATA BARU DI LEAD ANALYTICS (SEBAGAI LOG RIWAYAT)
+            $analytics = LeadAnalytic::create([
+                'chat_session_id' => $chatSessionId,
+                'phone'           => $request->phone,
+                'instance'        => $request->instance,
+                'status_prospek'  => $request->status_prospek,
+                'alasan_batal'    => $request->alasan_batal == 'null' ? null : $request->alasan_batal,
+                'sumber_iklan'    => $request->sumber_iklan ?? 'Organik',
+                'chat_summary'    => $request->chat_summary ?? 'Belum ada ringkasan', 
+                'lead_score'      => $request->lead_score ?? 0, 
+            ]);
 
             DB::commit();
 
@@ -117,5 +119,19 @@ class LeadAnalyticController extends Controller
                 'message' => 'Failed to track data: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+
+    // Fungsi untuk menarik riwayat berdasarkan nomor HP
+    public function history($phone)
+    {
+        $history = LeadAnalytic::where('phone', $phone)
+            ->orderBy('created_at', 'desc') // Urutkan dari yang terbaru
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data'    => $history
+        ]);
     }
 }

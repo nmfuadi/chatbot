@@ -125,10 +125,14 @@
                                 </div>
                             @endif
 
-                            <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $lead->phone) }}" target="_blank" class="mt-3.5 flex items-center justify-center gap-1.5 w-full bg-white border-2 border-blue-100 text-blue-600 hover:bg-blue-50 hover:border-blue-200 text-xs py-2 rounded-lg transition-all font-bold opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
-                                Takeover Chat
-                            </a>
+                            <div class="mt-3.5 grid grid-cols-2 gap-2 opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all">
+                                <button onclick="openHistory('{{ $lead->phone }}')" class="flex items-center justify-center gap-1 w-full bg-white border-2 border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 text-[11px] py-1.5 rounded-lg font-bold transition-colors">
+                                    📄 History
+                                </button>
+                                <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $lead->phone) }}" target="_blank" class="flex items-center justify-center gap-1 w-full bg-blue-50 border-2 border-blue-100 text-blue-700 hover:bg-blue-100 hover:border-blue-200 text-[11px] py-1.5 rounded-lg font-bold transition-colors">
+                                    💬 Takeover
+                                </a>
+                            </div>
                         </div>
                         @endforeach
                     @endif
@@ -202,6 +206,82 @@
                 });
             });
         });
+    </script>
+
+<div id="historyModal" class="fixed inset-0 z-50 hidden flex items-center justify-center">
+        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeHistory()"></div>
+        
+        <div class="bg-white w-full max-w-md rounded-2xl shadow-xl z-10 flex flex-col max-h-[80vh] overflow-hidden transform transition-all relative">
+            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                <h3 class="font-bold text-slate-800 text-lg">Riwayat Analitik AI</h3>
+                <button onclick="closeHistory()" class="text-slate-400 hover:text-rose-500 font-bold text-xl">&times;</button>
+            </div>
+            
+            <div id="historyContent" class="p-6 overflow-y-auto flex-1 space-y-0">
+                </div>
+        </div>
+    </div>
+
+    <script>
+        function openHistory(phone) {
+            // Tampilkan modal
+            const modal = document.getElementById('historyModal');
+            const content = document.getElementById('historyContent');
+            modal.classList.remove('hidden');
+            content.innerHTML = '<div class="text-center text-sm text-slate-500 py-4 font-medium animate-pulse">Menarik data riwayat...</div>';
+            
+            // Ambil data dari Laravel
+            fetch(`/sales-intelligence/history/${encodeURIComponent(phone)}`)
+                .then(res => res.json())
+                .then(data => {
+                    if(data.data.length === 0) {
+                        content.innerHTML = '<div class="text-center text-sm text-slate-500 py-4">Belum ada riwayat.</div>';
+                        return;
+                    }
+
+                    let html = '';
+                    data.data.forEach((item, index) => {
+                        // Formatting tanggal
+                        const dateObj = new Date(item.created_at);
+                        const timeString = dateObj.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+                        const dateString = dateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+                        
+                        // Menentukan warna titik timeline berdasarkan status terbaru
+                        const isLatest = index === 0;
+                        const dotColor = isLatest ? 'bg-blue-500 ring-4 ring-blue-100' : 'bg-slate-300';
+                        const textColor = isLatest ? 'text-slate-900' : 'text-slate-500';
+
+                        html += `
+                        <div class="relative pl-6 pb-6 border-l-2 ${isLatest ? 'border-blue-200' : 'border-slate-100'} last:border-0 last:pb-0">
+                            <div class="absolute w-3 h-3 rounded-full -left-[7px] top-1 ${dotColor}"></div>
+                            
+                            <div class="flex justify-between items-baseline mb-1">
+                                <h4 class="font-bold text-sm uppercase tracking-wide ${textColor}">${item.status_prospek.replace('_', ' ')}</h4>
+                                <span class="text-[10px] font-medium text-slate-400">${dateString}, ${timeString}</span>
+                            </div>
+                            
+                            <p class="text-xs ${isLatest ? 'text-slate-600' : 'text-slate-400'} italic bg-slate-50 p-2.5 rounded-lg border border-slate-100 mt-1.5 leading-relaxed">
+                                "${item.chat_summary}"
+                            </p>
+                            
+                            <div class="mt-2 flex items-center gap-2">
+                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-md ${item.lead_score > 70 ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-600'}">
+                                    Suhu Prospek: ${item.lead_score}%
+                                </span>
+                            </div>
+                        </div>
+                        `;
+                    });
+                    content.innerHTML = html;
+                })
+                .catch(err => {
+                    content.innerHTML = '<div class="text-center text-sm text-rose-500 py-4">Gagal memuat riwayat jaringan.</div>';
+                });
+        }
+
+        function closeHistory() {
+            document.getElementById('historyModal').classList.add('hidden');
+        }
     </script>
 </body>
 </html>

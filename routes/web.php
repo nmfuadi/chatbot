@@ -38,6 +38,7 @@ use App\Http\Controllers\Api\LeadAnalyticController;
 Route::get('/sales-intelligence', [LeadAnalyticController::class, 'index'])->name('sales.index');
 // Endpoint untuk drag & drop status
 Route::post('/sales-intelligence/update-status', [LeadAnalyticController::class, 'updateStatus'])->name('sales.update-status');
+Route::get('/sales-intelligence/history/{phone}', [LeadAnalyticController::class, 'history'])->name('sales.history');
 
 Route::get('/', function () {
     // Ambil data paket untuk ditampilkan di landing page
