@@ -16,6 +16,8 @@ class LeadAnalytic extends Model
         'instance',
         'status_prospek',
         'alasan_batal',
-        'sumber_iklan'
+        'sumber_iklan',
+        'chat_summary', 
+        'lead_score' // <-- Tambahkan ini
     ];
 }

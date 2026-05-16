@@ -24,12 +24,21 @@ use App\Http\Middleware\EnsureWaVerified;
 use App\Http\Middleware\EnsureHasActiveSubscription;
 use App\Http\Middleware\IsAdmin;
 use App\Models\Plan;
+use App\Http\Controllers\Api\LeadAnalyticController;
+
 
 /*
 |--------------------------------------------------------------------------
 | 1. AREA PUBLIC (Bisa diakses siapa saja tanpa login)
 |--------------------------------------------------------------------------
 */
+
+
+// Halaman Dashboard Kanban
+Route::get('/sales-intelligence', [LeadAnalyticController::class, 'index'])->name('sales.index');
+// Endpoint untuk drag & drop status
+Route::post('/sales-intelligence/update-status', [LeadAnalyticController::class, 'updateStatus'])->name('sales.update-status');
+
 Route::get('/', function () {
     // Ambil data paket untuk ditampilkan di landing page
     $plans = Plan::all();
@@ -37,6 +46,7 @@ Route::get('/', function () {
 });
 
 require __DIR__.'/auth.php'; // Rute Login/Register bawaan Breeze
+
 
 
 /*

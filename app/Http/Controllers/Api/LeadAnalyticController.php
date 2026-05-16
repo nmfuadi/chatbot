@@ -11,6 +11,42 @@ use Illuminate\Support\Facades\DB;
 
 class LeadAnalyticController extends Controller
 {
+    // Menampilkan Halaman Kanban & Summary
+    public function index()
+    {
+        // 1. Ambil Summary Data
+        $totalLeads = \App\Models\LeadAnalytic::count();
+        $closingLeads = \App\Models\LeadAnalytic::where('status_prospek', 'closing')->count();
+        $hotLeads = \App\Models\LeadAnalytic::where('status_prospek', 'hot_prospek')->count();
+        $gagalLeads = \App\Models\LeadAnalytic::where('status_prospek', 'gagal')->count();
+
+        // 2. Ambil semua leads, kelompokkan berdasarkan status
+        // Catatan: Jika ada filter per instance/member login, tambahkan ->where('instance', Auth::user()->instance)
+        $leads = \App\Models\LeadAnalytic::latest()->get()->groupBy('status_prospek');
+
+        return view('analytics.kanban', compact(
+            'totalLeads', 'closingLeads', 'hotLeads', 'gagalLeads', 'leads'
+        ));
+    }
+
+    // Menerima aksi Drag & Drop dari SortableJS
+    public function updateStatus(Request $request)
+    {
+        $request->validate([
+            'id' => 'required|exists:lead_analytics,id',
+            'status_prospek' => 'required|string'
+        ]);
+
+        $lead = \App\Models\LeadAnalytic::find($request->id);
+        $lead->status_prospek = $request->status_prospek;
+        $lead->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Status berhasil diperbarui'
+        ]);
+    }
+
     public function store(Request $request)
     {
         // 1. Validasi data masuk dari n8n
@@ -39,6 +75,8 @@ class LeadAnalyticController extends Controller
                 'status_prospek' => $request->status_prospek,
                 'alasan_batal'   => $request->alasan_batal == 'null' ? null : $request->alasan_batal,
                 'sumber_iklan'   => $request->sumber_iklan ?? 'Organik',
+                'chat_summary'   => $request->chat_summary ?? 'Belum ada ringkasan', // <-- Tambahkan ini
+                'lead_score'     => $request->lead_score ?? 0, // <-- Tambahkan ini
             ]);
 
             // OPTIONAL LOGIC: Jika Anda punya tabel master 'customers', update statusnya di sini
