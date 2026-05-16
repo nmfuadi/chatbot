@@ -14,8 +14,21 @@
         body { font-family: 'Inter', sans-serif; }
         .sortable-ghost { opacity: 0.4; border: 2px dashed #94a3b8; background-color: #f8fafc; }
         .sortable-drag { cursor: grabbing !important; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+       /* Scrollbar Horizontal Custom */
+        .custom-scrollbar::-webkit-scrollbar {
+            height: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1; 
+            border-radius: 20px; 
+            border: 3px solid #f1f5f9; /* Memberikan efek padding di dalam scrollbar */
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background-color: #94a3b8; 
+        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 h-screen flex flex-col overflow-hidden">
@@ -64,8 +77,8 @@
         ];
     @endphp
 
-    <main class="flex-1 overflow-x-auto no-scrollbar p-6 bg-slate-100/50">
-        <div class="flex gap-6 h-full items-start">
+    <main class="flex-1 overflow-x-auto custom-scrollbar p-6 bg-slate-100/50">
+    <div class="flex gap-6 h-full items-start w-max pr-6 pb-4">
             
             @foreach($columns as $statusKey => $col)
             <div class="flex-shrink-0 w-80 bg-{{ $col['color'] }}-50/60 rounded-xl border border-{{ $col['color'] }}-200 flex flex-col max-h-full shadow-sm">
