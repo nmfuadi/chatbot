@@ -12,6 +12,7 @@ class LeadAnalytic extends Model
     protected $table = 'lead_analytics';
 
     protected $fillable = [
+        'chat_session_id', // <-- Tambahkan ini di paling atas
         'phone',
         'instance',
         'status_prospek',

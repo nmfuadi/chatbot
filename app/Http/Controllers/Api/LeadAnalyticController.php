@@ -56,6 +56,8 @@ class LeadAnalyticController extends Controller
             'status_prospek' => 'required|string|in:baru,tanya_harga,hot_prospek,closing,gagal',
             'alasan_batal'   => 'nullable|string',
             'sumber_iklan'   => 'nullable|string',
+            'chat_summary'   => 'nullable|string',
+            'lead_score'     => 'nullable|integer',
         ]);
 
         if ($validator->fails()) {
@@ -68,22 +70,37 @@ class LeadAnalyticController extends Controller
         // 2. Transaksi Database (Simpan Log & Update Status Master)
         DB::beginTransaction();
         try {
-            // Simpan data ke log analitik
-            $analytics = LeadAnalytic::create([
-                'phone'          => $request->phone,
-                'instance'       => $request->instance,
-                'status_prospek' => $request->status_prospek,
-                'alasan_batal'   => $request->alasan_batal == 'null' ? null : $request->alasan_batal,
-                'sumber_iklan'   => $request->sumber_iklan ?? 'Organik',
-                'chat_summary'   => $request->chat_summary ?? 'Belum ada ringkasan', // <-- Tambahkan ini
-                'lead_score'     => $request->lead_score ?? 0, // <-- Tambahkan ini
-            ]);
+            // A. CARI ID MASTER (CHAT SESSION) BERDASARKAN NOMOR HP
+            // Bersihkan format nomor dari @s.whatsapp.net untuk pencarian yang lebih akurat
+            $cleanPhone = str_replace('@s.whatsapp.net', '', $request->phone);
+            
+            // Asumsi model Anda berada di namespace default App\Models
+            $masterChat = \App\Models\ChatSession::where('customer_phone', $request->phone)
+                                                 ->orWhere('customer_phone', $cleanPhone)
+                                                 ->first();
+            
+            // Ambil ID-nya jika ketemu, jika tidak maka null
+            $chatSessionId = $masterChat ? $masterChat->id : null;
 
-            // OPTIONAL LOGIC: Jika Anda punya tabel master 'customers', update statusnya di sini
-            // DB::table('customers')
-            //     ->where('phone', $request->phone)
-            //     ->where('instance', $request->instance)
-            //     ->update(['current_status' => $request->status_prospek]);
+
+            // B. UPDATE ATAU CREATE DATA DI LEAD ANALYTICS
+            // Menggunakan updateOrCreate agar 1 Nomor HP = 1 Kartu saja
+            $analytics = LeadAnalytic::updateOrCreate(
+                [
+                    // Kriteria pencarian: Cari berdasarkan nomor HP dan instance ini
+                    'phone'    => $request->phone,
+                    'instance' => $request->instance,
+                ],
+                [
+                    // Nilai yang akan di-update (atau di-insert jika datanya baru)
+                    'chat_session_id' => $chatSessionId,
+                    'status_prospek'  => $request->status_prospek,
+                    'alasan_batal'    => $request->alasan_batal == 'null' ? null : $request->alasan_batal,
+                    'sumber_iklan'    => $request->sumber_iklan ?? 'Organik',
+                    'chat_summary'    => $request->chat_summary ?? 'Belum ada ringkasan', 
+                    'lead_score'      => $request->lead_score ?? 0, 
+                ]
+            );
 
             DB::commit();
 
