@@ -16,7 +16,7 @@
     
     <div class="flex items-center justify-between h-16 px-4 bg-slate-950 border-b border-slate-800 shrink-0">
         <a href="{{ route('dashboard') }}" class="flex items-center gap-2">
-            <span class="text-white font-black text-xl tracking-wider">🚀 AI CRM</span>
+            <span class="text-white font-black text-xl tracking-wider">🚀 TERA.AI</span>
         </a>
         <button @click="sidebarOpen = false" class="lg:hidden text-slate-400 hover:text-white">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
