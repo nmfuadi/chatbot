@@ -90,7 +90,7 @@
                                     🏷️ {{ $lead->sumber_iklan }}
                                 </span>
                                 <span class="text-[10px] text-slate-400 font-medium bg-slate-50 px-1.5 py-0.5 rounded">
-                                    {{ $lead->created_at->diffForHumans(null, true, true) }}
+                                {{ preg_replace('/[^0-9]/', '', $lead->phone) }}
                                 </span>
                             </div>
                             
