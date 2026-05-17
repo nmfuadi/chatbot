@@ -11,8 +11,14 @@
      class="fixed inset-0 z-40 bg-slate-900/80 backdrop-blur-sm lg:hidden">
 </div>
 
-<aside :class="{'translate-x-0': sidebarOpen, '-translate-x-full': !sidebarOpen, 'lg:w-20': sidebarMinimized, 'lg:w-64': !sidebarMinimized}" 
-       class="fixed inset-y-0 left-0 z-50 bg-slate-900 text-slate-300 transition-all duration-300 ease-in-out lg:static lg:inset-0 flex flex-col h-full shadow-2xl shrink-0 w-64">
+<aside :class="{
+        'translate-x-0': sidebarOpen, 
+        '-translate-x-full': !sidebarOpen, 
+        'lg:w-20': sidebarMinimized, 
+        'lg:w-64': !sidebarMinimized,
+        'w-64': true
+    }" 
+    class="fixed inset-y-0 left-0 z-50 bg-slate-900 text-slate-300 transition-all duration-300 ease-in-out lg:static lg:translate-x-0 flex flex-col h-full shadow-2xl shrink-0">
     
     <div class="flex items-center h-16 bg-slate-950 border-b border-slate-800 shrink-0 transition-all duration-300" :class="sidebarMinimized ? 'justify-center px-0' : 'justify-between px-4'">
         <a href="{{ route('dashboard') }}" class="flex items-center gap-2">
