@@ -59,7 +59,7 @@ class LeadAnalyticController extends Controller
             'chat_summary'    => $request->chat_summary,
             'lead_score'      => $request->status_prospek === 'closing' ? 100 : ($request->status_prospek === 'gagal' ? 0 : $oldLead->lead_score),
             'alasan_batal'    => $request->status_prospek === 'gagal' ? $request->alasan_batal : null,
-            'buyer_character' => $oldLead->buyer_character, // <-- COPIED DARI DATA SEBELUMNYA
+            'buyer_character' => $request->buyer_character, // <-- COPIED DARI DATA SEBELUMNYA
         ]);
 
         return response()->json([
