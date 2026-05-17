@@ -16,7 +16,12 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     
-    <body class="font-sans antialiased text-slate-800 bg-slate-50 overflow-hidden" x-data="{ sidebarOpen: false }">
+    <body class="font-sans antialiased text-slate-800 bg-slate-50 overflow-hidden" 
+          x-data="{ 
+              sidebarOpen: false, 
+              sidebarMinimized: localStorage.getItem('sidebarMini') === 'true' 
+          }"
+          x-init="$watch('sidebarMinimized', value => localStorage.setItem('sidebarMini', value))">
         
         <div class="flex h-screen w-full">
             
