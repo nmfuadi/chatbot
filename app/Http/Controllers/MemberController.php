@@ -129,10 +129,32 @@ class MemberController extends Controller
 
     public function saveProductKnowledge(Request $request)
     {
+        // Validasi opsional agar data aman
+        $request->validate([
+            'content' => 'nullable|string',
+            'objection_reasons' => 'nullable|string',
+            'lead_rule_baru' => 'nullable|string',
+            'lead_rule_prospect' => 'nullable|string',
+            'lead_rule_hot_prospek' => 'nullable|string',
+            'lead_rule_deal' => 'nullable|string',
+            'lead_rule_closing' => 'nullable|string',
+            'lead_rule_gagal' => 'nullable|string',
+        ]);
+
         ProductKnowledge::updateOrCreate(
             ['user_id' => Auth::id()],
-            ['content' => $request->content]
+            [
+                'content' => $request->content,
+                'objection_reasons' => $request->objection_reasons,
+                'lead_rule_baru' => $request->lead_rule_baru,
+                'lead_rule_prospect' => $request->lead_rule_prospect,
+                'lead_rule_hot_prospek' => $request->lead_rule_hot_prospek,
+                'lead_rule_deal' => $request->lead_rule_deal,
+                'lead_rule_closing' => $request->lead_rule_closing,
+                'lead_rule_gagal' => $request->lead_rule_gagal,
+            ]
         );
-        return back()->with('success', 'Product Knowledge berhasil disimpan untuk AI.');
+
+        return back()->with('success', 'Product Knowledge dan Aturan Analitik AI berhasil disimpan.');
     }
 }

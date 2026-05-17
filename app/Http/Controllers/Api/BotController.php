@@ -121,26 +121,62 @@ class BotController extends Controller {
             $knowledge .= "3. Jika customer TIDAK meminta foto (misal hanya bilang 'fotonya bagus', 'sudah lihat', atau bertanya hal lain), DILARANG KERAS menyertakan KODE GAMBAR.\n";
             $knowledge .= "4. Jika customer meminta foto lainnya (misal bilang 'ada foto yang lain', 'foto selain ini', atau pertanyaan lain seputar minta kirim foto lagi), JANGAN KIRIM KODE GAMBAR LAGI! Katakan saja: 'Aku sudah mengirim semua foto seluruh fasilitas dan kamar secara detail kak (tidak ada pengiriman foto ulang)'.\n";
 
-            // ... (kode sebelumnya)
+            // ====================================================================
+            // --- TAMBAHAN BARU: ATURAN BATASAN KONTEKS (PERHALUS / CLOSING) ---
+            // ====================================================================
+            $knowledge .= "\n=== BATASAN KONTEKS & PERINTAH AUTO-STOP ===\n";
+            $knowledge .= "Kamu adalah Asisten Bisnis profesional. Tolong perhatikan riwayat obrolan sebelumnya. Jika customer membahas hal yang SAMA SEKALI TIDAK RELEVAN dengan bisnis/produk (seperti ngobrol santai, curhat, minta coding, dll), ikuti 2 tahapan ini secara ketat:\n";
+            
+            $knowledge .= "TAHAP 1 (Peringatan & Closing Statement): \n";
+            $knowledge .= "Jika customer baru pertama kali melenceng dari topik, tolak dengan sangat sopan dan berikan closing statement. tanpa memberikan info TAHAP 1 ATAU TAHAP 2  \n";
+            $knowledge .= "Contoh balasan Tahap 1: 'Maaf kak, aku hanya asisten virtual untuk melayani pesanan dan info produk. Jika sudah tidak ada yang bisa aku bantu seputar produk kami, aku izin mengakhiri sesi chat ini ya kak 🙏'\n\n";
 
-        // --- ATURAN SISTEM TRIGGER FOTO (KATALOG + ANTI SPAM) ---
-        // (kode aturan foto Anda yang sudah ada di sini...)
-
-        // ====================================================================
-        // --- TAMBAHAN BARU: ATURAN BATASAN KONTEKS (PERHALUS / CLOSING) ---
-        // ====================================================================
-        $knowledge .= "\n=== BATASAN KONTEKS & PERINTAH AUTO-STOP ===\n";
-        $knowledge .= "Kamu adalah Asisten Bisnis profesional. Tolong perhatikan riwayat obrolan sebelumnya. Jika customer membahas hal yang SAMA SEKALI TIDAK RELEVAN dengan bisnis/produk (seperti ngobrol santai, curhat, minta coding, dll), ikuti 2 tahapan ini secara ketat:\n";
-        
-        $knowledge .= "TAHAP 1 (Peringatan & Closing Statement): \n";
-        $knowledge .= "Jika customer baru pertama kali melenceng dari topik, tolak dengan sangat sopan dan berikan closing statement. tanpa memberikan info TAHAP 1 ATAU TAHAP 2  \n";
-        $knowledge .= "Contoh balasan Tahap 1: 'Maaf kak, aku hanya asisten virtual untuk melayani pesanan dan info produk. Jika sudah tidak ada yang bisa aku bantu seputar produk kami, aku izin mengakhiri sesi chat ini ya kak 🙏'\n\n";
-
-        $knowledge .= "TAHAP 2 (Eksekusi Penghentian): \n";
-        $knowledge .= "Jika di chat selanjutnya customer MASIH membalas hal di luar konteks, atau sekadar membalas closing statement-mu tanpa ada niat bertanya soal produk, kamu WAJIB membalas HANYA dengan SATU KATA ini: [AUTO_STOP]\n";
-        $knowledge .= "PENTING: Pada Tahap 2, JANGAN tambahkan kata maaf atau kata-kata lainnya. CUKUP KETIK: [AUTO_STOP]\n";
-        // ====================================================================
+            $knowledge .= "TAHAP 2 (Eksekusi Penghentian): \n";
+            $knowledge .= "Jika di chat selanjutnya customer MASIH membalas hal di luar konteks, atau sekadar membalas closing statement-mu tanpa ada niat bertanya soal produk, kamu WAJIB membalas HANYA dengan SATU KATA ini: [AUTO_STOP]\n";
+            $knowledge .= "PENTING: Pada Tahap 2, JANGAN tambahkan kata maaf atau kata-kata lainnya. CUKUP KETIK: [AUTO_STOP]\n";
+            // ====================================================================
         }
+
+        // ====================================================================
+        // --- TAMBAHAN BARU: STRUKTUR JSON PROMPT & ATURAN LEAD ANALYTICS ---
+        // ====================================================================
+        // Ambil data Product Knowledge untuk mengambil Aturan Dinamis AI
+        $pkRules = ProductKnowledge::where('user_id', $member->id)->first();
+
+        // Siapkan variabel dengan fallback default jika member belum mengisinya
+        $customObjections = $pkRules->objection_reasons ?? "ongkir_mahal, budget_kurang, kompetitor, slow_respon";
+        $rBaru    = $pkRules->lead_rule_baru ?? "Baru masuk ke sistem WhatsApp, chat pertama kali, atau menyapa.";
+        $rProsp   = $pkRules->lead_rule_prospect ?? "Pelanggan mulai aktif mengobrol, tanya produk/katalog/harga.";
+        $rHot     = $pkRules->lead_rule_hot_prospek ?? "Pelanggan cocok dengan budget/kebutuhan dan sangat serius ingin membeli.";
+        $rDeal    = $pkRules->lead_rule_deal ?? "Pelanggan setuju membeli, meminta nomor rekening, atau membayar booking fee.";
+        $rClosing = $pkRules->lead_rule_closing ?? "Pelanggan mengirimkan bukti transfer lunas dan pembayaran dikonfirmasi.";
+        $rGagal   = $pkRules->lead_rule_gagal ?? "Pelanggan membatalkan pesanan secara tegas atau menolak membeli.";
+
+        $jsonPrompt = '
+OUTPUT KAMU WAJIB BERUPA RAW JSON DENGAN SKEMA BERIKUT:
+{
+  "reply_text": "Isi balasan yang natural, persuasif, dan ramah ke pelanggan. Gunakan emoji.",
+  "lead_status": "baru" | "prospect" | "hot_prospek" | "deal" | "closing" | "gagal",
+  "objection_reason": "PILIH SALAH SATU DARI: [' . $customObjections . '] atau isi \"null\" jika transaksi lancar",
+  "ads_source": "Ekstrak nama promo/iklan dari chat pertama pelanggan, misal \'Promo IG\' atau \'Organik\'.",
+  "chat_summary": "Buat 1 kalimat singkat (maks 10 kata) yang menyimpulkan inti percakapan prospek ini.",
+  "lead_score": Isi dengan angka 1 sampai 100 yang menilai probabilitas closing.
+}
+
+ATURAN KLASIFIKASI "lead_status" (WAJIB SESUAIKAN DENGAN KONDISI BERIKUT):
+1. baru = ' . $rBaru . '
+2. prospect = ' . $rProsp . '
+3. hot_prospek = ' . $rHot . '
+4. deal = ' . $rDeal . '
+5. closing = ' . $rClosing . '
+6. gagal = ' . $rGagal . '
+
+CATATAN TAMBAHAN:
+Hanya keluarkan objek JSON murni. Dilarang menggunakan markdown (```json).';
+
+        // Gabungkan JSON Prompt ke pengetahuan AI
+        $knowledge .= "\n\n=== INSTRUKSI SISTEM FORMAT JSON (WAJIB DIPATUHI) ===\n" . $jsonPrompt;
+        // ====================================================================
 
         // --- LOGIKA HISTORY CHAT ---
         $histories = ChatHistory::where('user_id', $member->id)

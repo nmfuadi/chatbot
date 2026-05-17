@@ -14,8 +14,15 @@ class ProductKnowledge extends Model
 
     // 2. Izinkan kolom ini untuk diisi datanya
     protected $fillable = [
-        'user_id',
-        'content',
+        'user_id', 
+        'content', 
+        'objection_reasons',
+        'lead_rule_baru',
+        'lead_rule_prospect',
+        'lead_rule_hot_prospek',
+        'lead_rule_deal',
+        'lead_rule_closing',
+        'lead_rule_gagal'
     ];
 
     // Relasi ke User
