@@ -19,6 +19,7 @@ class LeadAnalytic extends Model
         'alasan_batal',
         'sumber_iklan',
         'chat_summary', 
-        'lead_score' // <-- Tambahkan ini
+        'lead_score', // <-- Tambahkan ini
+        'buyer_character' // <-- WAJIB ADA DI SINI agar Laravel mau menyimpannya!
     ];
 }
