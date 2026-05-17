@@ -95,6 +95,25 @@
                                         </div>
                                         
                                         <h4 class="font-bold text-gray-900 tracking-tight text-lg">{{ str_replace('@s.whatsapp.net', '', $lead->phone) }}</h4>
+                                             @if($lead->buyer_character)
+                                                @php
+                                                    // Mengatur skema warna otomatis berdasarkan sifat psikologis pembeli
+                                                    $charColors = [
+                                                        'To The Point' => 'bg-indigo-50 text-indigo-700 border-indigo-200',
+                                                        'Banyak Tanya' => 'bg-amber-50 text-amber-700 border-amber-200',
+                                                        'Ragu-Ragu'    => 'bg-yellow-50 text-yellow-700 border-yellow-200',
+                                                        'Skeptis'      => 'bg-rose-50 text-rose-700 border-rose-200',
+                                                        'Ramah'        => 'bg-emerald-50 text-emerald-700 border-emerald-200',
+                                                    ];
+                                                    $colorClass = $charColors[$lead->buyer_character] ?? 'bg-gray-50 text-gray-700 border-gray-200';
+                                                @endphp
+                                                <div class="mt-1.5">
+                                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold border {{ $colorClass }}">
+                                                        👤 Tipe: {{ $lead->buyer_character }}
+                                                    </span>
+                                                </div>
+                                            @endif
+
                                         <p class="text-[10px] text-gray-400 mt-1 flex items-center gap-1 font-medium">
                                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
                                             {{ $lead->instance }}

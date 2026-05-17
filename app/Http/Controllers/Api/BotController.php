@@ -160,7 +160,8 @@ OUTPUT KAMU WAJIB BERUPA RAW JSON DENGAN SKEMA BERIKUT:
   "objection_reason": "PILIH SALAH SATU DARI: [' . $customObjections . '] atau isi \"null\" jika transaksi lancar",
   "ads_source": "Ekstrak nama promo/iklan dari chat pertama pelanggan, misal \'Promo IG\' atau \'Organik\'.",
   "chat_summary": "Buat 1 kalimat singkat (maks 10 kata) yang menyimpulkan inti percakapan prospek ini.",
-  "lead_score": Isi dengan angka 1 sampai 100 yang menilai probabilitas closing.
+  "lead_score": Isi dengan angka 1 sampai 100 yang menilai probabilitas closing,
+  "buyer_character": "PILIH KATEGORI KEPRIBADIAN: "To The Point" | "Banyak Tanya" | "Ragu-Ragu" | "Skeptis" | "Ramah" (Pilih 1 kategori yang paling mencerminkan psikologi chat pelanggan saat ini)"
 }
 
 ATURAN KLASIFIKASI "lead_status" (WAJIB SESUAIKAN DENGAN KONDISI BERIKUT):
