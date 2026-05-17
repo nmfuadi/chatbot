@@ -15,49 +15,49 @@
     <style>
         .sortable-ghost { opacity: 0.4; border: 2px dashed #94a3b8; background-color: #f8fafc; }
         .sortable-drag { cursor: grabbing !important; }
-        
-        /* Scrollbar Horizontal Custom */
         .custom-scrollbar::-webkit-scrollbar { height: 10px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background-color: #cbd5e1; 
-            border-radius: 20px; 
-            border: 3px solid #f1f5f9;
-        }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 20px; border: 3px solid #f1f5f9; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background-color: #94a3b8; }
     </style>
 
     <div class="py-8">
         <div class="w-full mx-auto sm:px-4 lg:px-8">
             
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex justify-between items-center">
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+                <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex flex-col justify-center">
                     <span class="text-sm font-semibold text-gray-500">Total Leads</span>
-                    <span class="text-3xl font-black text-gray-900">{{ number_format($totalLeads) }}</span>
+                    <span class="text-3xl font-black text-gray-900">{{ $totalLeads ?? 0 }}</span>
                 </div>
-                <div class="bg-amber-50 p-5 rounded-xl border border-amber-200 shadow-sm flex justify-between items-center">
+                <div class="bg-blue-50 p-5 rounded-xl border border-blue-200 shadow-sm flex flex-col justify-center">
+                    <span class="text-sm font-semibold text-blue-700">Prospect</span>
+                    <span class="text-3xl font-black text-blue-600">{{ isset($leads['prospect']) ? count($leads['prospect']) : 0 }}</span>
+                </div>
+                <div class="bg-amber-50 p-5 rounded-xl border border-amber-200 shadow-sm flex flex-col justify-center">
                     <span class="text-sm font-semibold text-amber-700">Hot Prospek</span>
-                    <span class="text-3xl font-black text-amber-600">{{ number_format($hotLeads) }}</span>
+                    <span class="text-3xl font-black text-amber-600">{{ isset($leads['hot_prospek']) ? count($leads['hot_prospek']) : 0 }}</span>
                 </div>
-                <div class="bg-emerald-50 p-5 rounded-xl border border-emerald-200 shadow-sm flex justify-between items-center">
+                <div class="bg-purple-50 p-5 rounded-xl border border-purple-200 shadow-sm flex flex-col justify-center">
+                    <span class="text-sm font-semibold text-purple-700">Deal</span>
+                    <span class="text-3xl font-black text-purple-600">{{ isset($leads['deal']) ? count($leads['deal']) : 0 }}</span>
+                </div>
+                <div class="bg-emerald-50 p-5 rounded-xl border border-emerald-200 shadow-sm flex flex-col justify-center">
                     <span class="text-sm font-semibold text-emerald-700">Closing</span>
-                    <span class="text-3xl font-black text-emerald-600">{{ number_format($closingLeads) }}</span>
-                </div>
-                <div class="bg-rose-50 p-5 rounded-xl border border-rose-200 shadow-sm flex justify-between items-center">
-                    <span class="text-sm font-semibold text-rose-700">Gagal / Lost</span>
-                    <span class="text-3xl font-black text-rose-600">{{ number_format($gagalLeads) }}</span>
+                    <span class="text-3xl font-black text-emerald-600">{{ isset($leads['closing']) ? count($leads['closing']) : 0 }}</span>
                 </div>
             </div>
 
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-xl border border-gray-200">
                 
                 @php
+                    // Struktur 6 Kolom Utama Sesuai Aturan AI Baru
                     $columns = [
-                        'baru' => ['title' => 'Baru Masuk', 'color' => 'slate', 'icon' => '📥'],
-                        'tanya_harga' => ['title' => 'Tanya Harga', 'color' => 'blue', 'icon' => '💬'],
+                        'baru'        => ['title' => 'Baru Masuk', 'color' => 'slate', 'icon' => '📥'],
+                        'prospect'    => ['title' => 'Prospect', 'color' => 'blue', 'icon' => '💬'],
                         'hot_prospek' => ['title' => 'Hot Prospek', 'color' => 'amber', 'icon' => '🔥'],
-                        'closing' => ['title' => 'Closing', 'color' => 'emerald', 'icon' => '💰'],
-                        'gagal' => ['title' => 'Gagal / Batal', 'color' => 'rose', 'icon' => '❌'],
+                        'deal'        => ['title' => 'Deal', 'color' => 'purple', 'icon' => '🤝'],
+                        'closing'     => ['title' => 'Closing', 'color' => 'emerald', 'icon' => '💰'],
+                        'gagal'       => ['title' => 'Gagal / Batal', 'color' => 'rose', 'icon' => '❌'],
                     ];
                 @endphp
 
@@ -145,8 +145,8 @@
     </div>
 
     <div id="updateStatusModal" class="fixed inset-0 z-50 hidden flex items-center justify-center">
-        <div class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm"></div>
-        <div class="bg-white w-full max-w-md rounded-2xl shadow-xl z-10 p-6 relative transform transition-all">
+        <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm"></div>
+        <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl z-10 p-6 relative transform transition-all">
             <h3 class="font-bold text-gray-900 text-lg mb-2">📝 Perbarui Informasi Prospek</h3>
             <p class="text-xs text-gray-500 mb-4">Lengkapi data di bawah ini untuk disimpan ke database analitik.</p>
             
@@ -156,31 +156,26 @@
 
                 <div class="mb-4">
                     <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Chat Summary / Catatan</label>
-                    <textarea id="modal-chat-summary" required rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50"></textarea>
+                    <textarea id="modal-chat-summary" required rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50"></textarea>
                 </div>
 
                 <div id="modal-alasan-container" class="mb-5 hidden">
                     <label class="block text-xs font-bold text-rose-700 uppercase tracking-wider mb-2">⚠️ Alasan Batal</label>
-                    <select id="modal-alasan-batal" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 bg-white">
-                        <option value="budget_kurang">Budget Kurang / Kemahalan</option>
-                        <option value="ongkir_mahal">Ongkos Kirim Mahal</option>
-                        <option value="kompetitor">Pindah ke Kompetitor</option>
-                        <option value="slow_respon">Respon Hilang (Ghosting)</option>
-                        <option value="lainnya">Alasan Lainnya</option>
-                    </select>
+                    <input type="text" id="modal-alasan-batal" class="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 bg-white" placeholder="Contoh: budget_kurang, kompetitor, dll">
+                    <p class="text-[10px] text-gray-400 mt-1">Ketik alasan pembatalan sesuai aturan bisnis Anda.</p>
                 </div>
 
-                <div class="flex justify-end gap-3 border-t border-gray-100 pt-4">
-                    <button type="button" onclick="cancelStatusUpdate()" class="px-4 py-2 text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition">Batal</button>
-                    <button type="submit" class="px-4 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm transition">Simpan</button>
+                <div class="flex justify-end gap-3 border-t border-gray-100 pt-4 mt-2">
+                    <button type="button" onclick="cancelStatusUpdate()" class="px-4 py-2 text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition">Batal</button>
+                    <button type="submit" class="px-4 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-sm transition">Simpan & Pindah</button>
                 </div>
             </form>
         </div>
     </div>
 
     <div id="historyModal" class="fixed inset-0 z-50 hidden flex items-center justify-center">
-        <div class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm" onclick="closeHistory()"></div>
-        <div class="bg-white w-full max-w-md rounded-2xl shadow-xl z-10 flex flex-col max-h-[80vh] overflow-hidden transform transition-all relative">
+        <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onclick="closeHistory()"></div>
+        <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl z-10 flex flex-col max-h-[80vh] overflow-hidden transform transition-all relative">
             <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50/50">
                 <h3 class="font-bold text-gray-800 text-lg">Riwayat Analitik AI</h3>
                 <button onclick="closeHistory()" class="text-gray-400 hover:text-rose-500 font-bold text-xl">&times;</button>
@@ -225,13 +220,14 @@
             document.getElementById('modal-chat-summary').value = existingSummary || '';
             
             const alasanContainer = document.getElementById('modal-alasan-container');
-            const alasanSelect = document.getElementById('modal-alasan-batal');
+            const alasanInput = document.getElementById('modal-alasan-batal');
             if(statusTarget === 'gagal') {
                 alasanContainer.classList.remove('hidden');
-                alasanSelect.setAttribute('required', 'required');
+                alasanInput.setAttribute('required', 'required');
             } else {
                 alasanContainer.classList.add('hidden');
-                alasanSelect.removeAttribute('required');
+                alasanInput.removeAttribute('required');
+                alasanInput.value = ''; // Reset nilai
             }
 
             document.getElementById('updateStatusModal').classList.remove('hidden');
@@ -245,7 +241,6 @@
         function submitStatusUpdate(event) {
             event.preventDefault();
             
-            // Mengambil CSRF token bawaan layout Laravel
             const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
             const id = document.getElementById('modal-lead-id').value;
             const status_prospek = document.getElementById('modal-status-target').value;
