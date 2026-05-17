@@ -91,18 +91,20 @@
                 </div>
             </div>
 
-            <div x-data="{ expanded: {{ $isSalesActive ? 'true' : 'false' }} }" class="mt-2">
-                <button @click="expanded = !expanded" class="flex items-center justify-between w-full px-3 py-2.5 rounded-lg font-medium transition-colors {{ $isSalesActive ? 'bg-slate-800 text-white' : 'hover:bg-slate-800 hover:text-white' }}">
-                    <div class="flex items-center gap-3">
-                        <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
-                        AI Sales Intelligent
+            <div x-data="{ open: {{ request()->routeIs('sales.index', 'member.ai-rules') ? 'true' : 'false' }} }" class="mt-2">
+                    <button @click="open = !open" class="flex items-center justify-between w-full px-3 py-2.5 rounded-lg font-medium transition-colors {{ request()->routeIs('sales.index', 'member.ai-rules') ? 'bg-slate-800 text-white' : 'hover:bg-slate-800 hover:text-white' }}">
+                        <div class="flex items-center gap-3">
+                            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                            AI Sales Intelligent
+                        </div>
+                        <svg :class="{'rotate-180': open}" class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div x-show="open" x-transition.opacity class="mt-1 space-y-1 bg-slate-950/50 rounded-lg p-2">
+                        <a href="{{ route('sales.index') }}" class="block px-10 py-2 text-sm rounded-md transition-colors {{ request()->routeIs('sales.index') ? 'text-blue-400 font-bold' : 'text-slate-400 hover:text-white hover:bg-slate-800' }}">Sales Pipeline</a>
+                        
+                        <a href="{{ route('member.ai-rules') }}" class="block px-10 py-2 text-sm rounded-md transition-colors {{ request()->routeIs('member.ai-rules') ? 'text-blue-400 font-bold' : 'text-slate-400 hover:text-white hover:bg-slate-800' }}">Aturan Pipeline AI</a>
                     </div>
-                    <svg :class="{'rotate-180': expanded}" class="w-4 h-4 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                </button>
-                <div x-show="expanded" x-collapse style="display: {{ $isSalesActive ? 'block' : 'none' }};" class="mt-1 space-y-1 bg-slate-950/50 rounded-lg p-2">
-                    <a href="{{ route('sales.index') }}" class="block px-10 py-2 text-sm rounded-md transition-colors {{ request()->routeIs('sales.index') ? 'text-blue-400 font-bold' : 'text-slate-400 hover:text-white hover:bg-slate-800' }}">Sales Pipeline</a>
                 </div>
-            </div>
         @endif
     </nav>
 </aside>

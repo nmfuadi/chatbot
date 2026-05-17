@@ -127,11 +127,28 @@ class MemberController extends Controller
         return back()->with('success', 'Konfirmasi berhasil dikirim. Menunggu approval Admin.');
     }
 
+    // 2. Menyimpan halaman SOP saja
     public function saveProductKnowledge(Request $request)
     {
-        // Validasi opsional agar data aman
+        $request->validate(['content' => 'nullable|string']);
+
+        ProductKnowledge::updateOrCreate(
+            ['user_id' => Auth::id()],
+            ['content' => $request->content]
+        );
+        return back()->with('success', 'SOP / Product Knowledge berhasil disimpan.');
+    }
+
+    public function showAiRules()
+    {
+        $pk = ProductKnowledge::where('user_id', Auth::id())->first();
+        return view('member.ai-rules', compact('pk'));
+    }
+
+    // 4. Menyimpan data Aturan AI
+    public function saveAiRules(Request $request)
+    {
         $request->validate([
-            'content' => 'nullable|string',
             'objection_reasons' => 'nullable|string',
             'lead_rule_baru' => 'nullable|string',
             'lead_rule_prospect' => 'nullable|string',
@@ -144,7 +161,6 @@ class MemberController extends Controller
         ProductKnowledge::updateOrCreate(
             ['user_id' => Auth::id()],
             [
-                'content' => $request->content,
                 'objection_reasons' => $request->objection_reasons,
                 'lead_rule_baru' => $request->lead_rule_baru,
                 'lead_rule_prospect' => $request->lead_rule_prospect,
@@ -155,6 +171,6 @@ class MemberController extends Controller
             ]
         );
 
-        return back()->with('success', 'Product Knowledge dan Aturan Analitik AI berhasil disimpan.');
+        return back()->with('success', 'Aturan Indikator Pipeline AI berhasil diperbarui.');
     }
 }

@@ -215,6 +215,10 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/sales-intelligence/update-status', [LeadAnalyticController::class, 'updateStatus'])->name('sales.update-status');
             Route::get('/sales-intelligence/history/{phone}', [LeadAnalyticController::class, 'history'])->name('sales.history');
 
+            // TAMBAHKAN ROUTE BARU INI:
+            Route::get('/member/ai-rules', [App\Http\Controllers\MemberController::class, 'showAiRules'])->name('member.ai-rules');
+            Route::post('/member/ai-rules', [App\Http\Controllers\MemberController::class, 'saveAiRules'])->name('member.ai-rules.save');
+
         });
     });
 });
