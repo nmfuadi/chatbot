@@ -209,6 +209,12 @@ Route::middleware(['auth'])->group(function () {
             // Manajemen Katalog
             Route::resource('catalogs', CatalogController::class);
 
+            // Halaman Dashboard Kanban
+            Route::get('/sales-intelligence', [LeadAnalyticController::class, 'index'])->name('sales.index');
+            // Endpoint untuk drag & drop status
+            Route::post('/sales-intelligence/update-status', [LeadAnalyticController::class, 'updateStatus'])->name('sales.update-status');
+            Route::get('/sales-intelligence/history/{phone}', [LeadAnalyticController::class, 'history'])->name('sales.history');
+
         });
     });
 });
