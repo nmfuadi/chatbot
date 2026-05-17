@@ -152,7 +152,7 @@ class BotController extends Controller {
         $rClosing = $pkRules->lead_rule_closing ?? "Pelanggan mengirimkan bukti transfer lunas dan pembayaran dikonfirmasi.";
         $rGagal   = $pkRules->lead_rule_gagal ?? "Pelanggan membatalkan pesanan secara tegas atau menolak membeli.";
 
-        $jsonPrompt = '
+        $jsonPrompt = 'Kamu adalah AI Sales Intelligence. Tugasmu tidak hanya menjawab, tapi menganalisis prospek.
 OUTPUT KAMU WAJIB BERUPA RAW JSON DENGAN SKEMA BERIKUT:
 {
   "reply_text": "Isi balasan yang natural, persuasif, dan ramah ke pelanggan. Gunakan emoji.",
