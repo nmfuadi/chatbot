@@ -74,7 +74,7 @@ class LeadAnalyticController extends Controller
         $validator = Validator::make($request->all(), [
             'phone'          => 'required|string',
             'instance'       => 'required|string',
-            'status_prospek' => 'required|string|in:baru,tanya_harga,hot_prospek,closing,gagal',
+            'status_prospek' => 'required|string|in:baru,prospect,hot_prospek,deal,closing,gagal',
             'alasan_batal'   => 'nullable|string',
             'sumber_iklan'   => 'nullable|string',
             'chat_summary'   => 'nullable|string',
