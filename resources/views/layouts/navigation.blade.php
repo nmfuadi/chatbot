@@ -112,6 +112,7 @@
                 <div x-show="expanded && !sidebarMinimized" x-collapse class="mt-1 space-y-1 bg-slate-950/50 rounded-lg p-2">
                     <a href="{{ route('sales.index') }}" class="block px-10 py-2 text-sm rounded-md transition-colors {{ request()->routeIs('sales.index') ? 'text-blue-400 font-bold' : 'text-slate-400 hover:text-white hover:bg-slate-800' }}">Sales Pipeline</a>
                     <a href="{{ route('member.ai-rules') }}" class="block px-10 py-2 text-sm rounded-md transition-colors {{ request()->routeIs('member.ai-rules') ? 'text-blue-400 font-bold' : 'text-slate-400 hover:text-white hover:bg-slate-800' }}">Aturan Pipeline AI</a>
+                    <a href="{{ route('member.integrations') }}" class="block px-10 py-2 text-sm rounded-md transition-colors {{ request()->routeIs('member.integrations') ? 'text-blue-400 font-bold' : 'text-slate-400 hover:text-white hover:bg-slate-800' }}">Integrasi & Tracking</a>
                 </div>
             </div>
         @endif

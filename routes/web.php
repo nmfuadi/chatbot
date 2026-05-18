@@ -219,6 +219,9 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/member/ai-rules', [App\Http\Controllers\MemberController::class, 'showAiRules'])->name('member.ai-rules');
             Route::post('/member/ai-rules', [App\Http\Controllers\MemberController::class, 'saveAiRules'])->name('member.ai-rules.save');
 
+            Route::get('/member/integrations', [App\Http\Controllers\MemberController::class, 'showIntegrations'])->name('member.integrations');
+            Route::post('/member/integrations', [App\Http\Controllers\MemberController::class, 'saveIntegrations'])->name('member.integrations.save');
+
         });
     });
 });

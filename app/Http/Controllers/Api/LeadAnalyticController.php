@@ -8,6 +8,7 @@ use App\Models\LeadAnalytic;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use App\Services\TrackingService; // <-- Jangan lupa import di atas class
 
 class LeadAnalyticController extends Controller
 {
@@ -61,6 +62,15 @@ class LeadAnalyticController extends Controller
             'alasan_batal'    => $request->status_prospek === 'gagal' ? $request->alasan_batal : null,
             'buyer_character' => $request->buyer_character, // <-- COPIED DARI DATA SEBELUMNYA
         ]);
+
+        $value = $request->status_prospek === 'closing' ? 100000 : 0;
+    
+            TrackingService::dispatch(
+                $oldLead->user_id, // Pastikan Anda punya akses ke user_id
+                $oldLead->phone, 
+                $request->status_prospek,
+                $value
+            );
 
         return response()->json([
             'success' => true,
@@ -122,6 +132,14 @@ class LeadAnalyticController extends Controller
             ]);
 
             DB::commit();
+            $value = $request->status_prospek === 'closing' ? 100000 : 0; 
+    
+            TrackingService::dispatch(
+                $chatSession->user_id, // atau ID member terkait
+                $request->phone, 
+                $request->status_prospek,
+                $value
+            );
 
             return response()->json([
                 'success' => true,

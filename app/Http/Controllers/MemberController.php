@@ -8,90 +8,91 @@ use App\Models\Payment;
 use App\Models\ProductKnowledge;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
+use App\Models\TrackingIntegration;
 
 class MemberController extends Controller
 {
     // A. Halaman Pairing WhatsApp (Evolution API)
     public function whatsappPairing()
-{
-    $user = \Illuminate\Support\Facades\Auth::user();
-    $userId = $user->id;
-    $instanceName = 'member_' . $userId; 
+        {
+            $user = \Illuminate\Support\Facades\Auth::user();
+            $userId = $user->id;
+            $instanceName = 'member_' . $userId; 
 
-    $evolutionUrl = env('EVOLUTION_URL', 'http://103.150.196.172:8080'); 
-    $globalApiKey = env('EVOLUTION_API_KEY', 'terabot123');
+            $evolutionUrl = env('EVOLUTION_URL', 'http://103.150.196.172:8080'); 
+            $globalApiKey = env('EVOLUTION_API_KEY', 'terabot123');
 
-    $headers = [
-        'apikey' => $globalApiKey,
-        'Content-Type' => 'application/json'
-    ];
+            $headers = [
+                'apikey' => $globalApiKey,
+                'Content-Type' => 'application/json'
+            ];
 
-    $deviceInfo = ['status' => 'disconnected'];
-    $qrBase64 = null;
+            $deviceInfo = ['status' => 'disconnected'];
+            $qrBase64 = null;
 
-    // 1. Cek status koneksi
-    $checkState = \Illuminate\Support\Facades\Http::withHeaders($headers)
-        ->get("{$evolutionUrl}/instance/connectionState/{$instanceName}");
+            // 1. Cek status koneksi
+            $checkState = \Illuminate\Support\Facades\Http::withHeaders($headers)
+                ->get("{$evolutionUrl}/instance/connectionState/{$instanceName}");
 
-    if ($checkState->successful()) {
-        $stateData = $checkState->json();
-        // Di v2, format JSON respons bisa sedikit berbeda, kita gunakan fallback
-        $state = $stateData['instance']['state'] ?? $stateData['state'] ?? 'close';
+            if ($checkState->successful()) {
+                $stateData = $checkState->json();
+                // Di v2, format JSON respons bisa sedikit berbeda, kita gunakan fallback
+                $state = $stateData['instance']['state'] ?? $stateData['state'] ?? 'close';
 
-        if ($state === 'open') {
-            $deviceInfo['status'] = 'connected';
-            
-            // --- FORCE UPDATE JIKA KONEK ---
-            \App\Models\User::where('id', $userId)->update([
-                'wablas_device_id' => $instanceName
-            ]);
-            
-        } else {
-            // 2. Minta QR Code baru (Jika instance ada tapi terputus)
-            $getQr = \Illuminate\Support\Facades\Http::withHeaders($headers)
-                ->get("{$evolutionUrl}/instance/connect/{$instanceName}");
-            
-            if ($getQr->successful()) {
-                $qrResponse = $getQr->json();
-                $qrBase64 = $qrResponse['base64'] ?? $qrResponse['qrcode']['base64'] ?? null;
+                if ($state === 'open') {
+                    $deviceInfo['status'] = 'connected';
+                    
+                    // --- FORCE UPDATE JIKA KONEK ---
+                    \App\Models\User::where('id', $userId)->update([
+                        'wablas_device_id' => $instanceName
+                    ]);
+                    
+                } else {
+                    // 2. Minta QR Code baru (Jika instance ada tapi terputus)
+                    $getQr = \Illuminate\Support\Facades\Http::withHeaders($headers)
+                        ->get("{$evolutionUrl}/instance/connect/{$instanceName}");
+                    
+                    if ($getQr->successful()) {
+                        $qrResponse = $getQr->json();
+                        $qrBase64 = $qrResponse['base64'] ?? $qrResponse['qrcode']['base64'] ?? null;
+                    }
+                }
+            } elseif ($checkState->status() == 404) {
+                // 3. Buat Instance Baru (SUDAH DIUPDATE KE FORMAT V2.x)
+                $createInstance = \Illuminate\Support\Facades\Http::withHeaders($headers)
+                    ->post("{$evolutionUrl}/instance/create", [
+                        'instanceName' => $instanceName,
+                        'token' => 'terabot123_' . $userId,
+                        'qrcode' => true,
+                        'integration' => 'WHATSAPP-BAILEYS', // Parameter wajib di v2.x
+                        'webhook' => [
+                            'url' => 'https://n8n.chatbotnew.web.id/webhook/terabot',
+                            'byEvents' => false,
+                            'base64' => false, // Penting: agar n8n tidak crash menerima file Base64 gambar
+                            'headers' => [
+                                'Content-Type' => 'application/json'
+                            ],
+                            'events' => [
+                                'APPLICATION_STARTUP',
+                                'MESSAGES_UPSERT'
+                            ]
+                        ]
+                    ]);
+
+                if ($createInstance->successful()) {
+                    $responseCreate = $createInstance->json();
+                    // Menangkap QR Code dari respons v2.x
+                    $qrBase64 = $responseCreate['qrcode']['base64'] ?? $responseCreate['base64'] ?? null;
+
+                    // --- FORCE UPDATE SAAT BERHASIL CREATE ---
+                    \App\Models\User::where('id', $userId)->update([
+                        'wablas_device_id' => $instanceName
+                    ]);
+                }
             }
+
+            return view('member.whatsapp-setup', compact('deviceInfo', 'qrBase64', 'instanceName'));
         }
-    } elseif ($checkState->status() == 404) {
-        // 3. Buat Instance Baru (SUDAH DIUPDATE KE FORMAT V2.x)
-        $createInstance = \Illuminate\Support\Facades\Http::withHeaders($headers)
-            ->post("{$evolutionUrl}/instance/create", [
-                'instanceName' => $instanceName,
-                'token' => 'terabot123_' . $userId,
-                'qrcode' => true,
-                'integration' => 'WHATSAPP-BAILEYS', // Parameter wajib di v2.x
-                'webhook' => [
-                    'url' => 'https://n8n.chatbotnew.web.id/webhook/terabot',
-                    'byEvents' => false,
-                    'base64' => false, // Penting: agar n8n tidak crash menerima file Base64 gambar
-                    'headers' => [
-                        'Content-Type' => 'application/json'
-                    ],
-                    'events' => [
-                        'APPLICATION_STARTUP',
-                        'MESSAGES_UPSERT'
-                    ]
-                ]
-            ]);
-
-        if ($createInstance->successful()) {
-            $responseCreate = $createInstance->json();
-            // Menangkap QR Code dari respons v2.x
-            $qrBase64 = $responseCreate['qrcode']['base64'] ?? $responseCreate['base64'] ?? null;
-
-            // --- FORCE UPDATE SAAT BERHASIL CREATE ---
-            \App\Models\User::where('id', $userId)->update([
-                'wablas_device_id' => $instanceName
-            ]);
-        }
-    }
-
-    return view('member.whatsapp-setup', compact('deviceInfo', 'qrBase64', 'instanceName'));
-}
 
     // =====================================================================
     // KODE DI BAWAH INI TETAP SAMA, TIDAK ADA YANG DIUBAH
@@ -138,6 +139,53 @@ class MemberController extends Controller
         );
         return back()->with('success', 'SOP / Product Knowledge berhasil disimpan.');
     }
+
+        // ====================================================================
+    // --- MENU INTEGRASI & TRACKING (CAPI, GA4, TIKTOK) ---
+    // ====================================================================
+
+    public function showIntegrations()
+        {
+            // Ambil data integrasi dan kelompokkan berdasarkan nama provider
+            $integrations = \App\Models\TrackingIntegration::where('user_id', \Illuminate\Support\Facades\Auth::id())
+                ->get()
+                ->keyBy('provider');
+
+            return view('member.integrations', compact('integrations'));
+        }
+
+    public function saveIntegrations(\Illuminate\Http\Request $request)
+        {
+            $userId = \Illuminate\Support\Facades\Auth::id();
+
+            // Looping data provider yang dikirim dari form
+            if ($request->has('providers')) {
+                foreach ($request->providers as $providerName => $data) {
+                    
+                    // Cek apakah user mengisi ID Pixel atau Webhook URL
+                    if (!empty($data['pixel_id']) || !empty($data['access_token'])) {
+                        \App\Models\TrackingIntegration::updateOrCreate(
+                            [
+                                'user_id' => $userId, 
+                                'provider' => $providerName
+                            ],
+                            [
+                                'pixel_id' => $data['pixel_id'] ?? null,
+                                'access_token' => $data['access_token'] ?? null,
+                                'is_active' => isset($data['is_active']) ? true : false,
+                            ]
+                        );
+                    } else {
+                        // Jika dikosongkan saat update, hapus dari database agar bersih
+                        \App\Models\TrackingIntegration::where('user_id', $userId)
+                            ->where('provider', $providerName)
+                            ->delete();
+                    }
+                }
+            }
+
+            return back()->with('success', 'Konfigurasi Tracking & API berhasil disimpan. Event akan dikirimkan secara realtime!');
+        }
 
     public function showAiRules()
     {
