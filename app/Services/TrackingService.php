@@ -66,7 +66,7 @@ class TrackingService
         ];
 
         // 5. Tembak ke Webhook Router n8n (Ubah URL ini sesuai URL Webhook n8n Kakak)
-        $n8nWebhookUrl = 'https://n8n.domainkakak.com/webhook/tera-tracking-router';
+        $n8nWebhookUrl = 'https://n8n.chatbotnew.web.id/webhook-test/tera-tracking-router';
 
         try {
             // Gunakan timeout singkat agar tidak membebani respon bot jika n8n down
