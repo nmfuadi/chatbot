@@ -63,20 +63,15 @@ class LeadAnalyticController extends Controller
             'buyer_character' => $request->buyer_character, // <-- COPIED DARI DATA SEBELUMNYA
         ]);
 
-       // CARI USER BERDASARKAN INSTANCE WA
-       $user = \App\Models\User::where('wablas_device_id', $request->instance)->first();
+        $value = $request->status_prospek === 'closing' ? 100000 : 0;
+    
+    TrackingService::dispatch(
+        $oldLead->user_id, // Pastikan Anda punya akses ke user_id
+        $oldLead->phone, 
+        $request->status_prospek,
+        $value
+    );
 
-       // JIKA USER DITEMUKAN, JALANKAN TRACKING
-       if ($user) {
-           $value = $request->status_prospek === 'closing' ? 100000 : 0; 
-           
-           \App\Services\TrackingService::dispatch(
-               $user->id, 
-               $request->phone, 
-               $request->status_prospek,
-               $value
-           );
-       }
         return response()->json([
             'success' => true,
             'message' => 'Status dan riwayat baru berhasil dicatat',
@@ -137,14 +132,20 @@ class LeadAnalyticController extends Controller
             ]);
 
             DB::commit();
-            $value = $request->status_prospek === 'closing' ? 100000 : 0; 
+           // CARI USER BERDASARKAN INSTANCE WA
+        $user = \App\Models\User::where('wablas_device_id', $request->instance)->first();
     
-            TrackingService::dispatch(
-                $chatSession->user_id, // atau ID member terkait
+           // JIKA USER DITEMUKAN, JALANKAN TRACKING
+        if ($user) {
+            $value = $request->status_prospek === 'closing' ? 100000 : 0; 
+            
+            \App\Services\TrackingService::dispatch(
+                $user->id, 
                 $request->phone, 
                 $request->status_prospek,
                 $value
             );
+        }
 
             return response()->json([
                 'success' => true,
