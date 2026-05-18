@@ -63,15 +63,20 @@ class LeadAnalyticController extends Controller
             'buyer_character' => $request->buyer_character, // <-- COPIED DARI DATA SEBELUMNYA
         ]);
 
-        $value = $request->status_prospek === 'closing' ? 100000 : 0;
-    
-            TrackingService::dispatch(
-                $oldLead->user_id, // Pastikan Anda punya akses ke user_id
-                $oldLead->phone, 
-                $request->status_prospek,
-                $value
-            );
+       // CARI USER BERDASARKAN INSTANCE WA
+       $user = \App\Models\User::where('wablas_device_id', $request->instance)->first();
 
+       // JIKA USER DITEMUKAN, JALANKAN TRACKING
+       if ($user) {
+           $value = $request->status_prospek === 'closing' ? 100000 : 0; 
+           
+           \App\Services\TrackingService::dispatch(
+               $user->id, 
+               $request->phone, 
+               $request->status_prospek,
+               $value
+           );
+       }
         return response()->json([
             'success' => true,
             'message' => 'Status dan riwayat baru berhasil dicatat',
