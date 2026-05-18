@@ -31,9 +31,9 @@
                         <div class="relative z-10">
                             <div class="flex items-center justify-between mb-4">
                                 <h3 class="font-black text-blue-700 text-lg flex items-center gap-2">Meta Conversions API</h3>
-                                <label class="inline-flex items-center cursor-pointer">
+                                <label class="inline-flex items-center cursor-pointer shrink-0">
                                     <input type="checkbox" name="providers[meta][is_active]" class="sr-only peer" {{ isset($integrations['meta']) && $integrations['meta']->is_active ? 'checked' : '' }}>
-                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                    <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                                 </label>
                             </div>
 
@@ -58,9 +58,9 @@
                         <div class="relative z-10">
                             <div class="flex items-center justify-between mb-4">
                                 <h3 class="font-black text-gray-900 text-lg flex items-center gap-2">TikTok Events API</h3>
-                                <label class="inline-flex items-center cursor-pointer">
+                                <label class="inline-flex items-center cursor-pointer shrink-0">
                                     <input type="checkbox" name="providers[tiktok][is_active]" class="sr-only peer" {{ isset($integrations['tiktok']) && $integrations['tiktok']->is_active ? 'checked' : '' }}>
-                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-slate-900"></div>
+                                    <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-slate-900"></div>
                                 </label>
                             </div>
 
@@ -81,9 +81,9 @@
                         <div class="relative z-10">
                             <div class="flex items-center justify-between mb-4">
                                 <h3 class="font-black text-amber-600 text-lg flex items-center gap-2">Google Analytics 4</h3>
-                                <label class="inline-flex items-center cursor-pointer">
+                                <label class="inline-flex items-center cursor-pointer shrink-0">
                                     <input type="checkbox" name="providers[ga4][is_active]" class="sr-only peer" {{ isset($integrations['ga4']) && $integrations['ga4']->is_active ? 'checked' : '' }}>
-                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+                                    <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
                                 </label>
                             </div>
 
@@ -103,10 +103,10 @@
                     <div class="bg-white p-6 rounded-[2rem] border border-purple-100 shadow-sm relative overflow-hidden group hover:border-purple-300 transition-all">
                         <div class="relative z-10">
                             <div class="flex items-center justify-between mb-4">
-                                <h3 class="font-black text-purple-700 text-lg flex items-center gap-2">Custom Webhook (Zapier/Make)</h3>
-                                <label class="inline-flex items-center cursor-pointer">
+                                <h3 class="font-black text-purple-700 text-lg flex items-center gap-2">Custom Webhook</h3>
+                                <label class="inline-flex items-center cursor-pointer shrink-0">
                                     <input type="checkbox" name="providers[webhook][is_active]" class="sr-only peer" {{ isset($integrations['webhook']) && $integrations['webhook']->is_active ? 'checked' : '' }}>
-                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                                    <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
                                 </label>
                             </div>
 
