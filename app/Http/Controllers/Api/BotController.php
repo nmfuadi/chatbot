@@ -20,6 +20,7 @@ class BotController extends Controller {
     // ====================================================================
     // 1. FUNGSI UNTUK MEMBERIKAN KONTEKS & DATA KE N8N / AI
     // ====================================================================
+    // ====================================================================
     public function getContext(Request $request) {
         $request->validate([
             // 'device_id' sepertinya adalah 'instance' dari Wablas
@@ -170,11 +171,63 @@ class BotController extends Controller {
         $knowledge .= "PENTING: Pada Tahap 2, JANGAN tambahkan kata maaf atau kata-kata lainnya. CUKUP KETIK: [AUTO_STOP]\n";
 
         // ====================================================================
-        // --- PEMBARUAN PROMPT: PERSONA "TEMAN DIGITAL" & SOFT SELLING ---
+        // --- PROSES DYNAMIC PROMPT BUILDER BERDASARKAN INPUT USER ---
         // ====================================================================
-        // Mengubah jsonPrompt agar menjadi satu kesatuan instruksi yang lebih komprehensif
-        
         $pkRules = ProductKnowledge::where('user_id', $member->id)->first();
+
+        // 1. Siapkan Fallback Value (Nilai Standar jika User belum setting di UI)
+        $aiName           = $pkRules->ai_name ?? 'Rani';
+        $customerCall     = $pkRules->customer_call ?? 'Kakak';
+        $gayaBahasaOpt    = $pkRules->gaya_bahasa ?? 'santai';
+        $gayaBerpikirOpt  = $pkRules->gaya_berpikir ?? 'strict_sop';
+        $objectiveOpt     = $pkRules->primary_objective ?? 'soft_selling';
+        $replyLengthOpt   = $pkRules->reply_length ?? 'singkat';
+        $fallbackOpt      = $pkRules->fallback_behavior ?? 'arahkan_cs';
+        $useEmojiOpt      = $pkRules->use_emoji ?? 'banyak_emoji';
+
+        // 2. Pemetaan Gaya Bahasa
+        $gayaBahasaInstruction = "Gunakan bahasa Indonesia sehari-hari yang santai, hangat, akrab, dan gunakan beberapa istilah gaul digital (seperti: ngonten, viral, ngehook).";
+        if ($gayaBahasaOpt === 'formal') {
+            $gayaBahasaInstruction = "Gunakan bahasa Indonesia yang baku, sopan, formal, profesional, dan ikuti kaidah EYD dengan baik.";
+        } elseif ($gayaBahasaOpt === 'gaul_digital') {
+            $gayaBahasaInstruction = "Gunakan gaya bahasa anak muda metropolitan Jakarta, boleh gunakan singkatan umum dan istilah-istilah gaul terkini.";
+        }
+
+        // 3. Pemetaan Gaya Berpikir (Saklek vs Luas)
+        $gayaBerpikirInstruction = "Kamu WAJIB berpikir SAKLEK (STRICT). Kamu hanya boleh menjawab berdasarkan data yang ada di Data SOP/Katalog. Jika pelanggan bertanya hal di luar data tersebut, kamu DILARANG mengarang bebas.";
+        if ($gayaBerpikirOpt === 'flexible_knowledge') {
+            $gayaBerpikirInstruction = "Kamu diberikan kebebasan berpikir yang LUAS. Jika pelanggan bertanya tentang teori, konsep, tips, atau strategi umum, gunakan pengetahuan globalmu sebagai AI untuk mengedukasi mereka secara cerdas, lalu hubungkan secara halus ke produk kita.";
+        }
+
+        // 4. Pemetaan Tujuan Utama (Objective)
+        $objectiveInstruction = "Tujuan utamamu adalah melakukan SOFT SELLING. Bangun kenyamanan, edukasi pelanggan terlebih dahulu, baru tawarkan produk kita secara halus di akhir obrolan.";
+        if ($objectiveOpt === 'hard_selling') {
+            $objectiveInstruction = "Tujuan utamamu adalah HARD SELLING. Dorong pelanggan secara agresif tapi tetap sopan untuk langsung melakukan pembelian, check out, atau transfer pembayaran sekarang juga.";
+        } elseif ($objectiveOpt === 'customer_service') {
+            $objectiveInstruction = "Tujuan utamamu adalah CUSTOMER SERVICE. Berikan pelayanan informasi yang super ramah, sabar, solutif, dan fokus menjawab pertanyaan teknis mereka tanpa paksaan untuk membeli.";
+        }
+
+        // 5. Pemetaan Panjang Balasan
+        $lengthInstruction = "Jawabanmu HARUS SUPER SINGKAT, maksimal hanya 1 hingga 3 kalimat pendek per satu kali balas. Jangan pernah melakukan info dumping!";
+        if ($replyLengthOpt === 'sedang') {
+            $lengthInstruction = "Jawabanmu berukuran SEDANG, sekitar 1 hingga 2 paragraf pendek agar penjelasan produk tersampaikan dengan jelas.";
+        } elseif ($replyLengthOpt === 'detail') {
+            $lengthInstruction = "Jawabanmu HARUS DETAIL, komprehensif, dan gunakan poin-poin (bullet points) jika menjelaskan spesifikasi produk.";
+        }
+
+        // 6. Pemetaan Sikap Jika AI Tidak Tahu
+        $fallbackInstruction = "Katakan secara jujur dan tawarkan dengan sopan untuk menyambungkan chat ini ke Admin/CS Manusia langsung.";
+        if ($fallbackOpt === 'jujur_pivot') {
+            $fallbackInstruction = "Katakan kamu tidak tahu hal tersebut, lalu arahkan kembali topik obrolan secara halus ke keunggulan produk kita yang ada di SOP.";
+        }
+
+        // 7. Pemetaan Emoji
+        $emojiInstruction = "Gunakan banyak emoji yang relevan di setiap baris kalimat jawabanmu agar terkesan interaktif dan ceria.";
+        if ($useEmojiOpt === 'tanpa_emoji') {
+            $emojiInstruction = "DILARANG KERAS menggunakan emoji apa pun. Pastikan teks jawabanmu bersih dan terlihat formal.";
+        }
+
+        // 8. Aturan Klasifikasi Pipeline (Tetap)
         $customObjections = $pkRules->objection_reasons ?? "ongkir_mahal, budget_kurang, kompetitor, slow_respon";
         $rBaru    = $pkRules->lead_rule_baru ?? "Baru masuk ke sistem WhatsApp, chat pertama kali, atau menyapa.";
         $rProsp   = $pkRules->lead_rule_prospect ?? "Pelanggan mulai aktif mengobrol, tanya produk/katalog/harga.";
@@ -183,26 +236,30 @@ class BotController extends Controller {
         $rClosing = $pkRules->lead_rule_closing ?? "Pelanggan mengirimkan bukti transfer lunas dan pembayaran dikonfirmasi.";
         $rGagal   = $pkRules->lead_rule_gagal ?? "Pelanggan membatalkan pesanan secara tegas atau menolak membeli.";
 
+        // 9. RAKIT SUPER PROMPT DINAMISNYA
         $jsonPrompt = '
-Kamu adalah Asisten Sales / Teman Konsultasi Digital untuk bisnis ini. Tugasmu adalah melayani chat calon pembeli di WhatsApp secara natural, lalu mengarahkan mereka secara halus (soft selling) ke produk yang ada di Data SOP/Katalog.
+Kamu adalah Asisten Virtual profesional bernama: ' . $aiName . '.
+Panggil lawan bicaramu (pelanggan) dengan sebutan khusus: "' . $customerCall . '".
 
-🚨 ATURAN EMAS WHATSAPP (WAJIB DIPATUHI):
-1. JANGAN PERNAH MENGETIK TEKS PANJANG LEBAR! Maksimal jawabanmu adalah 2 sampai 3 kalimat saja. Dilarang info dumping (menumpahkan semua spek produk).
-2. Gaya bicara harus santai, hangat, ramah, dan natural. Gunakan panggilan "Kak" atau "Kakak". Jangan kaku seperti robot CS.
-3. Jawab pertanyaan luas (konsultasi/teori) dengan cerdas, lalu HUBUNGKAN (bridging) jawabanmu dengan fitur/produk kita secara halus.
-4. Akhiri SETIAP jawabanmu dengan satu pertanyaan pancingan pendek (call to action santai) agar obrolan berlanjut.
-5. Gunakan format cetak tebal (*) pada nama fitur/produk penting.
-6. JANGAN mengarang fitur atau harga yang tidak ada di Data SOP/Katalog.
+🚨 ATURAN PERILAKU KOMUNIKASI (WAJIB DIPATUHI):
+1. GAYA BAHASA: ' . $gayaBahasaInstruction . '
+2. BATASAN BERPIKIR: ' . $gayaBerpikirInstruction . '
+3. MISI UTAMA: ' . $objectiveInstruction . '
+4. PANJANG BALASAN: ' . $lengthInstruction . '
+5. PENGGUNAAN EMOJI: ' . $emojiInstruction . '
+6. JIKA KAMU TIDAK TAHU DATA YANG DITANYAKAN: ' . $fallbackInstruction . '
+7. Akhiri SETIAP jawabanmu dengan satu pertanyaan pancingan pendek (call to action santai) agar obrolan terus berlanjut.
+8. Gunakan format cetak tebal (*) pada nama fitur/produk penting.
 
 OUTPUT KAMU WAJIB BERUPA RAW JSON DENGAN SKEMA BERIKUT:
 {
-  "reply_text": "Isi balasanmu yang mematuhi Aturan Emas di atas.",
+  "reply_text": "Isi balasanmu yang mematuhi seluruh aturan di atas.",
   "lead_status": "baru" | "prospect" | "hot_prospek" | "deal" | "closing" | "gagal",
   "objection_reason": "PILIH SALAH SATU DARI: [' . $customObjections . '] atau isi \"null\" jika transaksi lancar",
   "ads_source": "Ekstrak nama promo/iklan dari chat pertama pelanggan, misal \'Promo IG\' atau \'Organik\'.",
   "chat_summary": "Buat 1 kalimat singkat (maks 10 kata) yang menyimpulkan inti percakapan prospek ini.",
   "lead_score": Isi dengan angka 1 sampai 100 yang menilai probabilitas closing,
-  "buyer_character": "PILIH KATEGORI KEPRIBADIAN: "To The Point" | "Banyak Tanya" | "Ragu-Ragu" | "Skeptis" | "Ramah" (Pilih 1 kategori yang paling mencerminkan psikologi chat pelanggan saat ini)"
+  "buyer_character": "PILIH KATEGORI KEPRIBADIAN: \"To The Point\" | \"Banyak Tanya\" | \"Ragu-Ragu\" | \"Skeptis\" | \"Ramah\""
 }
 
 ATURAN KLASIFIKASI "lead_status":

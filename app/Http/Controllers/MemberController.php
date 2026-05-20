@@ -100,8 +100,43 @@ class MemberController extends Controller
 
     public function showProductKnowledge()
     {
-        $pk = ProductKnowledge::where('user_id', Auth::id())->first();
+        $pk = \App\Models\ProductKnowledge::where('user_id', \Illuminate\Support\Facades\Auth::id())->first();
+        
         return view('member.product-knowledge', compact('pk'));
+    }
+
+    public function saveProductKnowledge(\Illuminate\Http\Request $request)
+    {
+        // 1. Validasi semua input (Isi SOP + Pengaturan Gaya Bot)
+        $request->validate([
+            'content'           => 'nullable|string',
+            'ai_name'           => 'nullable|string|max:50',
+            'customer_call'     => 'nullable|string|max:50',
+            'gaya_bahasa'       => 'nullable|string',
+            'gaya_berpikir'     => 'nullable|string',
+            'primary_objective' => 'nullable|string',
+            'reply_length'      => 'nullable|string',
+            'fallback_behavior' => 'nullable|string',
+            'use_emoji'         => 'nullable|string',
+        ]);
+
+        // 2. Simpan atau perbarui data ke database
+        \App\Models\ProductKnowledge::updateOrCreate(
+            ['user_id' => \Illuminate\Support\Facades\Auth::id()],
+            [
+                'content'           => $request->content,
+                'ai_name'           => $request->ai_name,
+                'customer_call'     => $request->customer_call,
+                'gaya_bahasa'       => $request->gaya_bahasa,
+                'gaya_berpikir'     => $request->gaya_berpikir,
+                'primary_objective' => $request->primary_objective,
+                'reply_length'      => $request->reply_length,
+                'fallback_behavior' => $request->fallback_behavior,
+                'use_emoji'         => $request->use_emoji,
+            ]
+        );
+
+        return back()->with('success', 'SOP dan Pengaturan Gaya Bot berhasil disimpan.');
     }
 
     public function showPayment()
@@ -129,16 +164,7 @@ class MemberController extends Controller
     }
 
     // 2. Menyimpan halaman SOP saja
-    public function saveProductKnowledge(Request $request)
-    {
-        $request->validate(['content' => 'nullable|string']);
-
-        ProductKnowledge::updateOrCreate(
-            ['user_id' => Auth::id()],
-            ['content' => $request->content]
-        );
-        return back()->with('success', 'SOP / Product Knowledge berhasil disimpan.');
-    }
+    
 
         // ====================================================================
     // --- MENU INTEGRASI & TRACKING (CAPI, GA4, TIKTOK) ---
