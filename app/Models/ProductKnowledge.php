@@ -22,7 +22,15 @@ class ProductKnowledge extends Model
         'lead_rule_hot_prospek',
         'lead_rule_deal',
         'lead_rule_closing',
-        'lead_rule_gagal'
+        'lead_rule_gagal',
+        'ai_name',
+        'customer_call',
+        'gaya_bahasa',
+        'gaya_berpikir',
+        'primary_objective',
+        'reply_length',
+        'fallback_behavior',
+        'use_emoji'
     ];
 
     // Relasi ke User
