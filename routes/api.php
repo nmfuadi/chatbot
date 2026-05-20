@@ -48,8 +48,11 @@ Route::post('/bot/history', [BotController::class, 'saveHistory']);
 Route::post('/webhook/get-context', [WebhookController::class, 'getContext']);
 Route::post('/webhook/toggle-ai', [WebhookController::class, 'toggleAi']);
 
-Route::post('/sales-intelligence/pause-ai', [LeadAnalyticController::class, 'pauseAi']);
-Route::post('/sales-intelligence/resume-ai', [LeadAnalyticController::class, 'resumeAi']);
+// Pastikan path-nya sesuai dengan yang ditembak n8n
+Route::prefix('v1')->group(function () {
+    Route::post('/sales-intelligence/pause-ai', [App\Http\Controllers\Api\LeadAnalyticController::class, 'pauseAi']);
+    Route::post('/sales-intelligence/resume-ai', [App\Http\Controllers\Api\LeadAnalyticController::class, 'resumeAi']);
+});
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
