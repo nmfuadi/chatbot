@@ -179,6 +179,83 @@ class LeadAnalyticController extends Controller
         ]);
     }
 
+    // ====================================================================
+    // --- FITUR AUTO PAUSE & RESUME AI (HUMAN TAKEOVER) ---
+    // ====================================================================
+
+    /**
+     * Mematikan AI secara otomatis saat Owner membalas chat secara manual
+     */
+    
+
+    /**
+     * Menyalakan kembali AI saat Owner mengetik perintah #s
+     */
+    // ====================================================================
+    // --- FITUR AUTO PAUSE & RESUME AI (FIXED SCHEMA CHAT SESSIONS) ---
+    // ====================================================================
+
+    /**
+     * Mematikan AI secara otomatis (is_ai_active = 0) saat Owner membalas manual
+     */
+    public function pauseAi(\Illuminate\Http\Request $request)
+    {
+        $request->validate([
+            'phone' => 'required'
+        ]);
+
+        $phoneInput = $request->phone; // Ambil input phone dari n8n
+        $cleanPhone = str_replace('@s.whatsapp.net', '', $phoneInput);
+
+        // Pencarian fleksibel untuk mencakup format nomor biasa atau yang pakai @s.whatsapp.net
+        $session = \App\Models\ChatSession::where('customer_phone', $phoneInput)
+                                          ->orWhere('customer_phone', $cleanPhone)
+                                          ->orWhere('customer_phone', $cleanPhone . '@s.whatsapp.net')
+                                          ->first();
+
+        if ($session) {
+            // Set menjadi 0 (Non-Aktif) sesuai tipe data integer di tabel data
+            $session->update(['is_ai_active' => 0]);
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'AI berhasil di-pause (is_ai_active = 0) untuk customer: ' . $cleanPhone
+            ]);
+        }
+
+        return response()->json(['success' => false, 'message' => 'Session chat tidak ditemukan.'], 404);
+    }
+
+    /**
+     * Menyalakan kembali AI (is_ai_active = 1) saat Owner mengetik perintah #s
+     */
+    public function resumeAi(\Illuminate\Http\Request $request)
+    {
+        $request->validate([
+            'phone' => 'required'
+        ]);
+
+        $phoneInput = $request->phone;
+        $cleanPhone = str_replace('@s.whatsapp.net', '', $phoneInput);
+
+        $session = \App\Models\ChatSession::where('customer_phone', $phoneInput)
+                                          ->orWhere('customer_phone', $cleanPhone)
+                                          ->orWhere('customer_phone', $cleanPhone . '@s.whatsapp.net')
+                                          ->first();
+
+        if ($session) {
+            // Set menjadi 1 (Aktif Kembali)
+            $session->update(['is_ai_active' => 1]);
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'AI berhasil diaktifkan kembali (is_ai_active = 1) untuk customer: ' . $cleanPhone
+            ]);
+        }
+
+        return response()->json(['success' => false, 'message' => 'Session chat tidak ditemukan.'], 404);
+    }
+
 
     
 }

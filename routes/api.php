@@ -48,6 +48,9 @@ Route::post('/bot/history', [BotController::class, 'saveHistory']);
 Route::post('/webhook/get-context', [WebhookController::class, 'getContext']);
 Route::post('/webhook/toggle-ai', [WebhookController::class, 'toggleAi']);
 
+Route::post('/sales-intelligence/pause-ai', [LeadAnalyticController::class, 'pauseAi']);
+Route::post('/sales-intelligence/resume-ai', [LeadAnalyticController::class, 'resumeAi']);
+
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });

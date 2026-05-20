@@ -193,6 +193,12 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/member/product-knowledge', [MemberController::class, 'showProductKnowledge'])->name('member.pk');
         Route::post('/member/product-knowledge', [MemberController::class, 'saveProductKnowledge'])->name('member.pk.save');
 
+        // Halaman Dashboard Kanban
+        Route::get('/sales-intelligence', [LeadAnalyticController::class, 'index'])->name('sales.index');
+        // Endpoint untuk drag & drop status
+        Route::post('/sales-intelligence/update-status', [LeadAnalyticController::class, 'updateStatus'])->name('sales.update-status');
+        Route::get('/sales-intelligence/history/{phone}', [LeadAnalyticController::class, 'history'])->name('sales.history');
+
 
         // --- GERBANG 3: WAJIB PUNYA LANGGANAN AKTIF ---
         Route::middleware([EnsureHasActiveSubscription::class])->group(function () {
@@ -209,11 +215,7 @@ Route::middleware(['auth'])->group(function () {
             // Manajemen Katalog
             Route::resource('catalogs', CatalogController::class);
 
-            // Halaman Dashboard Kanban
-            Route::get('/sales-intelligence', [LeadAnalyticController::class, 'index'])->name('sales.index');
-            // Endpoint untuk drag & drop status
-            Route::post('/sales-intelligence/update-status', [LeadAnalyticController::class, 'updateStatus'])->name('sales.update-status');
-            Route::get('/sales-intelligence/history/{phone}', [LeadAnalyticController::class, 'history'])->name('sales.history');
+            
 
             // TAMBAHKAN ROUTE BARU INI:
             Route::get('/member/ai-rules', [App\Http\Controllers\MemberController::class, 'showAiRules'])->name('member.ai-rules');
