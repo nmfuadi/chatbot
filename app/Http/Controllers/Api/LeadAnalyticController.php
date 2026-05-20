@@ -18,34 +18,34 @@ class LeadAnalyticController extends Controller
         // 1. Ambil ID member yang sedang login
         $userId = \Illuminate\Support\Facades\Auth::id();
 
-        // 2. Query untuk mengambil HANYA status terbaru per chat_session_id MILIK user yang login
+        // 2. Query Utama: Ambil DATA TERBARU (MAX id) dari lead_analytics per chat_session_id MILIK user yang login
         $leadsData = \App\Models\LeadAnalytic::select('lead_analytics.*')
-            // JOIN ke tabel chat_sessions sesuai instruksi Kakak
             ->join('chat_sessions', 'lead_analytics.chat_session_id', '=', 'chat_sessions.id')
-            
-            // KUNCI KEAMANAN: Pastikan chat session ini milik user yang login
             ->where('chat_sessions.user_id', $userId)
-            
-            // SUBQUERY: Memastikan hanya mengambil data lead_analytic TERBARU (MAX id) dari setiap sesi chat
             ->whereIn('lead_analytics.id', function ($query) {
                 $query->selectRaw('MAX(id)')
                       ->from('lead_analytics')
                       ->groupBy('chat_session_id');
             })
-            
-            // Urutkan dari yang paling baru diupdate
             ->orderBy('lead_analytics.updated_at', 'desc')
             ->get();
 
-        // 3. Kelompokkan data yang sudah bersih ini berdasarkan kolom status
-        // Pastikan nama kolom statusnya sesuai dengan database (misal: status_prospek atau lead_status)
+        // 3. Kelompokkan data yang sudah bersih berdasarkan status untuk papan Kanban
+        // (Pastikan key grouping ini sesuai dengan nama kolom status di database Kakak, misal 'status_prospek')
         $leads = $leadsData->groupBy('status_prospek'); 
 
-        // 4. Hitung total leads (kartu) yang tampil
-        $totalLeads = $leadsData->count();
+        // 4. Hitung Statistik Berdasarkan Data Ter-filter (Hanya Data Milik User & Status Terbaru)
+        $totalLeads   = $leadsData->count();
+        
+        // Menghitung jumlah per status dari hasil query yang sudah difilter di atas
+        $hotLeads     = $leadsData->where('status_prospek', 'hot_prospek')->count();
+        $closingLeads = $leadsData->where('status_prospek', 'closing')->count();
+        $gagalLeads   = $leadsData->where('status_prospek', 'gagal')->count();
 
-        // 5. Kembalikan ke View Kanban (sesuaikan nama view-nya)
-        return view('pages.sales-pipeline', compact('leads', 'totalLeads'));
+        // 5. Return View dengan seluruh compact bawaan asli agar tidak error
+        return view('analytics.kanban', compact(
+            'totalLeads', 'closingLeads', 'hotLeads', 'gagalLeads', 'leads'
+        ));
     }
 
     // Menerima aksi Drag & Drop dari SortableJS
