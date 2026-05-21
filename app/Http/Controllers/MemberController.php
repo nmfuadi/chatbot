@@ -107,6 +107,7 @@ class MemberController extends Controller
 
     public function saveProductKnowledge(\Illuminate\Http\Request $request)
     {
+        dd($request->all());
         // 1. Validasi semua input (Isi SOP + Pengaturan Gaya Bot)
         $request->validate([
             'content'           => 'nullable|string',
