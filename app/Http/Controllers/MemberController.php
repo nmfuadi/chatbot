@@ -107,8 +107,7 @@ class MemberController extends Controller
 
     public function saveProductKnowledge(\Illuminate\Http\Request $request)
     {
-        dd($request->all());
-        // 1. Validasi semua input (Isi SOP + Pengaturan Gaya Bot)
+        // 1. Validasi
         $request->validate([
             'content'           => 'nullable|string',
             'ai_name'           => 'nullable|string|max:50',
@@ -121,23 +120,32 @@ class MemberController extends Controller
             'use_emoji'         => 'nullable|string',
         ]);
 
-        // 2. Simpan atau perbarui data ke database
-        \App\Models\ProductKnowledge::updateOrCreate(
-            ['user_id' => \Illuminate\Support\Facades\Auth::id()],
-            [
-                'content'           => $request->content,
-                'ai_name'           => $request->ai_name,
-                'customer_call'     => $request->customer_call,
-                'gaya_bahasa'       => $request->gaya_bahasa,
-                'gaya_berpikir'     => $request->gaya_berpikir,
-                'primary_objective' => $request->primary_objective,
-                'reply_length'      => $request->reply_length,
-                'fallback_behavior' => $request->fallback_behavior,
-                'use_emoji'         => $request->use_emoji,
-            ]
-        );
+        // 2. Coba Simpan ke Database (Pakai Try-Catch)
+        try {
+            \App\Models\ProductKnowledge::updateOrCreate(
+                ['user_id' => \Illuminate\Support\Facades\Auth::id()],
+                [
+                    'content'           => $request->content,
+                    'ai_name'           => $request->ai_name,
+                    'customer_call'     => $request->customer_call,
+                    'gaya_bahasa'       => $request->gaya_bahasa,
+                    'gaya_berpikir'     => $request->gaya_berpikir,
+                    'primary_objective' => $request->primary_objective,
+                    'reply_length'      => $request->reply_length,
+                    'fallback_behavior' => $request->fallback_behavior,
+                    'use_emoji'         => $request->use_emoji,
+                ]
+            );
 
-        return back()->with('success', 'SOP dan Pengaturan Gaya Bot berhasil disimpan.');
+            return back()->with('success', 'SOP dan Pengaturan Gaya Bot berhasil disimpan.');
+
+        } catch (\Exception $e) {
+            // 3. Jika gagal, catat ke log (storage/logs/laravel.log)
+            \Illuminate\Support\Facades\Log::error('ERROR SIMPAN PK: ' . $e->getMessage());
+            
+            // 4. Langsung muntahkan error aslinya ke layar agar kita tahu penyebab pastinya!
+            dd('GAGAL MENYIMPAN KE DATABASE! Pesan Error: ', $e->getMessage());
+        }
     }
 
     public function showPayment()
