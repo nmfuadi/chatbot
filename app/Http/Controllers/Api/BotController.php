@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Storage;
 // --- TAMBAHAN BARU: Import Model Subscription & PaymentController ---
 use App\Models\Subscription;
 use App\Http\Controllers\PaymentController;
+use App\Models\AiSetting;
 // ------------------------------------------------------------------
 
 class BotController extends Controller {
@@ -291,6 +292,8 @@ CATATAN: Dilarang menggunakan markdown (```json) pada output, berikan JSON murni
             if ($h->ai_response) $formattedHistory[] = ['role' => 'assistant', 'content' => $h->ai_response];
         }
 
+        $aiSetting = AiSetting::where('device_id', $request->device_id)->first();
+
         // RETURN JSON KE N8N
         return response()->json([
             'knowledge' => $knowledge,
@@ -299,6 +302,10 @@ CATATAN: Dilarang menggunakan markdown (```json) pada output, berikan JSON murni
             'history' => $formattedHistory,
             'is_ai_active' => $session->is_ai_active,
             'is_command' => in_array($pesan, ['#s', '#c']),
+            // 👇 Tarik data dari tabel AiSetting baru
+           'ai_provider' => $aiSetting->ai_provider ?? 'gemini', 
+           'ai_model' => $aiSetting->ai_model ?? 'gemini-flash-latest', 
+            'deepinfra_api_key' => $aiSetting->deepinfra_api_key ?? null,
             'project_images' => [] 
         ]);
     }
