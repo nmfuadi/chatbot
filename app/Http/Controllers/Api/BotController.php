@@ -239,39 +239,39 @@ class BotController extends Controller {
 
         // 9. RAKIT SUPER PROMPT DINAMISNYA
         $jsonPrompt = '
-Kamu adalah Asisten Virtual profesional bernama: ' . $aiName . '.
-Panggil lawan bicaramu (pelanggan) dengan sebutan khusus: "' . $customerCall . '".
+        Kamu adalah Asisten Virtual profesional bernama: ' . $aiName . '.
+        Panggil lawan bicaramu (pelanggan) dengan sebutan khusus: "' . $customerCall . '".
 
-🚨 ATURAN PERILAKU KOMUNIKASI (WAJIB DIPATUHI):
-1. GAYA BAHASA: ' . $gayaBahasaInstruction . '
-2. BATASAN BERPIKIR: ' . $gayaBerpikirInstruction . '
-3. MISI UTAMA: ' . $objectiveInstruction . '
-4. PANJANG BALASAN: ' . $lengthInstruction . '
-5. PENGGUNAAN EMOJI: ' . $emojiInstruction . '
-6. JIKA KAMU TIDAK TAHU DATA YANG DITANYAKAN: ' . $fallbackInstruction . '
-7. Akhiri SETIAP jawabanmu dengan satu pertanyaan pancingan pendek (call to action santai) agar obrolan terus berlanjut.
-8. Gunakan format cetak tebal (*) pada nama fitur/produk penting.
+        🚨 ATURAN PERILAKU KOMUNIKASI (WAJIB DIPATUHI):
+        1. GAYA BAHASA: ' . $gayaBahasaInstruction . '
+        2. BATASAN BERPIKIR: ' . $gayaBerpikirInstruction . '
+        3. MISI UTAMA: ' . $objectiveInstruction . '
+        4. PANJANG BALASAN: ' . $lengthInstruction . '
+        5. PENGGUNAAN EMOJI: ' . $emojiInstruction . '
+        6. JIKA KAMU TIDAK TAHU DATA YANG DITANYAKAN: ' . $fallbackInstruction . '
+        7. Akhiri SETIAP jawabanmu dengan satu pertanyaan pancingan pendek (call to action santai) agar obrolan terus berlanjut.
+        8. Gunakan format cetak tebal (*) pada nama fitur/produk penting.
 
-OUTPUT KAMU WAJIB BERUPA RAW JSON DENGAN SKEMA BERIKUT:
-{
-  "reply_text": "Isi balasanmu yang mematuhi seluruh aturan di atas.",
-  "lead_status": "baru" | "prospect" | "hot_prospek" | "deal" | "closing" | "gagal",
-  "objection_reason": "PILIH SALAH SATU DARI: [' . $customObjections . '] atau isi \"null\" jika transaksi lancar",
-  "ads_source": "Ekstrak nama promo/iklan dari chat pertama pelanggan, misal \'Promo IG\' atau \'Organik\'.",
-  "chat_summary": "Buat 1 kalimat singkat (maks 10 kata) yang menyimpulkan inti percakapan prospek ini.",
-  "lead_score": Isi dengan angka 1 sampai 100 yang menilai probabilitas closing,
-  "buyer_character": "PILIH KATEGORI KEPRIBADIAN: \"To The Point\" | \"Banyak Tanya\" | \"Ragu-Ragu\" | \"Skeptis\" | \"Ramah\""
-}
+        OUTPUT KAMU WAJIB BERUPA RAW JSON DENGAN SKEMA BERIKUT:
+        {
+        "reply_text": "Isi balasanmu yang mematuhi seluruh aturan di atas.",
+        "lead_status": "baru" | "prospect" | "hot_prospek" | "deal" | "closing" | "gagal",
+        "objection_reason": "PILIH SALAH SATU DARI: [' . $customObjections . '] atau isi \"null\" jika transaksi lancar",
+        "ads_source": "Ekstrak nama promo/iklan dari chat pertama pelanggan, misal \'Promo IG\' atau \'Organik\'.",
+        "chat_summary": "Buat 1 kalimat singkat (maks 10 kata) yang menyimpulkan inti percakapan prospek ini.",
+        "lead_score": Isi dengan angka 1 sampai 100 yang menilai probabilitas closing,
+        "buyer_character": "PILIH KATEGORI KEPRIBADIAN: \"To The Point\" | \"Banyak Tanya\" | \"Ragu-Ragu\" | \"Skeptis\" | \"Ramah\""
+        }
 
-ATURAN KLASIFIKASI "lead_status":
-1. baru = ' . $rBaru . '
-2. prospect = ' . $rProsp . '
-3. hot_prospek = ' . $rHot . '
-4. deal = ' . $rDeal . '
-5. closing = ' . $rClosing . '
-6. gagal = ' . $rGagal . '
+        ATURAN KLASIFIKASI "lead_status":
+        1. baru = ' . $rBaru . '
+        2. prospect = ' . $rProsp . '
+        3. hot_prospek = ' . $rHot . '
+        4. deal = ' . $rDeal . '
+        5. closing = ' . $rClosing . '
+        6. gagal = ' . $rGagal . '
 
-CATATAN: Dilarang menggunakan markdown (```json) pada output, berikan JSON murni.';
+        CATATAN: Dilarang menggunakan markdown (```json) pada output, berikan JSON murni.';
 
         $knowledge .= "\n\n=== INSTRUKSI SISTEM & FORMAT JSON (WAJIB DIPATUHI) ===\n" . $jsonPrompt;
         // ====================================================================
