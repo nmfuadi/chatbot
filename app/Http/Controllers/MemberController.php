@@ -66,7 +66,7 @@ class MemberController extends Controller
                         'qrcode' => true,
                         'integration' => 'WHATSAPP-BAILEYS', // Parameter wajib di v2.x
                         'webhook' => [
-                            'url' => 'https://n8n.chatbotnew.web.id/webhook/terabot',
+                            'url' => 'https://chatbotnew.web.id/python-api/webhook/wablas',
                             'byEvents' => false,
                             'base64' => false, // Penting: agar n8n tidak crash menerima file Base64 gambar
                             'headers' => [
