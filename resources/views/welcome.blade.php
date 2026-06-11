@@ -2,284 +2,632 @@
 <html lang="id" class="scroll-smooth">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Tera.ai - Chatbot AI + CRM Otomatis | Solusi Layanan Pelanggan Cerdas</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Tera.AI – CS Otomatis 24 Jam + CRM Cerdas via WhatsApp</title>
+    <meta name="description" content="Tera.AI: Chatbot AI WhatsApp yang menjawab pelanggan 24 jam, memfilter prospek panas, dan update CRM secara otomatis. Tanpa tambah karyawan.">
     <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800,900&display=swap" rel="stylesheet">
+    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800,900&display=swap" rel="stylesheet" />
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { font-family: 'Inter', sans-serif; }
-        .glass-card { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.3); }
-        .gradient-mesh { background: radial-gradient(circle at 0% 0%, rgba(139, 92, 246, 0.15) 0%, rgba(59, 130, 246, 0.1) 50%, transparent 80%); }
-        .hover-lift { transition: transform 0.2s ease, box-shadow 0.2s ease; }
-        .hover-lift:hover { transform: translateY(-4px); box-shadow: 0 20px 25px -12px rgba(0, 0, 0, 0.15); }
+
+        .glow-violet { box-shadow: 0 0 60px rgba(124, 58, 237, 0.35); }
+        .glow-cyan   { box-shadow: 0 0 40px rgba(6, 182, 212, 0.25); }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #a78bfa 0%, #38bdf8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-grid {
+            background-image:
+                linear-gradient(rgba(124,58,237,0.08) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(124,58,237,0.08) 1px, transparent 1px);
+            background-size: 48px 48px;
+        }
+
+        .card-hover {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .chat-bubble-in {
+            animation: slideInLeft 0.5s ease forwards;
+            opacity: 0;
+        }
+        .chat-bubble-out {
+            animation: slideInRight 0.5s ease forwards;
+            opacity: 0;
+        }
+        .chat-bubble-in:nth-child(1) { animation-delay: 0.1s; }
+        .chat-bubble-in:nth-child(3) { animation-delay: 0.6s; }
+        .chat-bubble-in:nth-child(5) { animation-delay: 1.1s; }
+        .chat-bubble-out:nth-child(2) { animation-delay: 0.35s; }
+        .chat-bubble-out:nth-child(4) { animation-delay: 0.85s; }
+
+        @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-16px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(16px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+
+        .pulse-dot::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 9999px;
+            background: #22c55e;
+            animation: ping 1.5s cubic-bezier(0,0,0.2,1) infinite;
+        }
+        @keyframes ping {
+            75%, 100% { transform: scale(2); opacity: 0; }
+        }
+
+        .badge-hot {
+            background: linear-gradient(135deg, #f97316, #ef4444);
+        }
+        .badge-warm {
+            background: linear-gradient(135deg, #eab308, #f97316);
+        }
+        .badge-cold {
+            background: linear-gradient(135deg, #3b82f6, #6366f1);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .chat-bubble-in, .chat-bubble-out { animation: none; opacity: 1; }
+        }
     </style>
 </head>
-<body class="bg-white antialiased text-slate-800 selection:bg-purple-500 selection:text-white">
+<body class="bg-[#0A0F1E] text-slate-100 antialiased selection:bg-violet-600 selection:text-white">
 
-    <!-- Navigation -->
-    <nav class="fixed top-0 left-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-slate-100 shadow-sm transition-all">
-        <div class="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
-            <div class="text-slate-800 font-extrabold text-2xl tracking-tight flex items-center gap-2">
-                <span class="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">Tera.ai</span>
-                <span class="bg-purple-100 text-purple-700 text-xs font-semibold px-2 py-0.5 rounded-full">AI</span>
+    <!-- ═══════════════════════════════════════════════════
+         NAVBAR
+    ═══════════════════════════════════════════════════ -->
+    <nav class="fixed top-0 left-0 w-full z-50 px-6 py-4 flex justify-between items-center backdrop-blur-md bg-[#0A0F1E]/80 border-b border-white/5">
+        <div class="max-w-6xl w-full mx-auto flex justify-between items-center">
+            <div class="font-black text-xl tracking-tight">
+                <span class="text-white">tera</span><span class="gradient-text">.ai</span>
             </div>
-            <div class="hidden md:flex items-center gap-6 text-sm font-medium">
-                <a href="#fitur-unggulan" class="text-slate-600 hover:text-purple-700 transition">Fitur Utama</a>
-                <a href="#crm-prospek" class="text-slate-600 hover:text-purple-700 transition">CRM Prospek</a>
-                <a href="#pricing" class="text-slate-600 hover:text-purple-700 transition">Harga</a>
-                <a href="#testimoni" class="text-slate-600 hover:text-purple-700 transition">Testimoni</a>
-            </div>
-            <div class="flex items-center gap-2 sm:gap-3">
-                <a href="{{ route('login') }}" class="text-slate-700 hover:text-purple-700 font-medium px-4 py-2 transition text-sm">Masuk</a>
-                <a href="{{ route('register') }}" class="bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:shadow-lg font-bold px-5 py-2.5 rounded-full transition shadow-md text-sm">Daftar Gratis</a>
+            <div class="flex items-center gap-3">
+                <a href="{{ route('login') }}" class="text-slate-300 hover:text-white font-medium px-4 py-2 transition text-sm">
+                    Masuk
+                </a>
+                <a href="{{ route('register') }}" class="bg-violet-600 hover:bg-violet-500 text-white font-bold px-5 py-2 rounded-lg transition text-sm shadow-lg shadow-violet-900/50">
+                    Coba Gratis
+                </a>
             </div>
         </div>
     </nav>
 
-    <!-- Hero Section -->
-    <section class="relative bg-gradient-to-br from-indigo-50 via-white to-purple-50 pt-36 pb-24 px-4 overflow-hidden">
-        <div class="absolute inset-0 gradient-mesh pointer-events-none"></div>
-        <div class="max-w-5xl mx-auto text-center relative z-10">
-            <div class="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm border border-purple-200 rounded-full px-4 py-1.5 shadow-sm mb-6">
-                <span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span></span>
-                <span class="text-sm font-medium text-slate-700">Siap pakai + Auto CRM Prospek</span>
-            </div>
-            <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight bg-gradient-to-r from-purple-700 via-indigo-700 to-blue-700 bg-clip-text text-transparent mb-6">Tera.ai</h1>
-            <p class="text-2xl md:text-3xl font-semibold text-slate-800 mb-4">Chatbot AI + CRM Otomatis <br> untuk Bisnis Anda</p>
-            <p class="text-lg text-slate-600 max-w-2xl mx-auto mb-8">Ditenagai Llama & DeepInfra, terintegrasi WhatsApp. <br class="hidden md:block">Dilengkapi penilaian prospek otomatis (Hot/Deal/Cancel) dari percakapan.</p>
-            <div class="flex flex-col sm:flex-row justify-center gap-4">
-                <a href="{{ route('register') }}" class="group px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-bold rounded-full shadow-lg hover:shadow-xl transition flex items-center justify-center gap-2 text-lg">🚀 Coba Gratis Sekarang</a>
-                <a href="#fitur-unggulan" class="px-8 py-4 bg-white border-2 border-purple-300 text-purple-700 font-bold rounded-full hover:bg-purple-50 transition shadow-sm">Lihat Cara Kerja</a>
-            </div>
-            <div class="flex flex-wrap justify-center gap-6 mt-12 text-sm font-medium text-slate-500">
-                <div class="flex items-center gap-2">✅ Tanpa kartu kredit</div>
-                <div class="flex items-center gap-2">⚡ Setup 5 menit</div>
-                <div class="flex items-center gap-2">🔒 Data aman</div>
-            </div>
-        </div>
-    </section>
+    <!-- ═══════════════════════════════════════════════════
+         HERO
+    ═══════════════════════════════════════════════════ -->
+    <section class="relative min-h-screen flex items-center pt-24 pb-20 px-4 hero-grid overflow-hidden">
+        <!-- Background blobs -->
+        <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-violet-600/20 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute bottom-1/4 right-1/4 w-80 h-80 bg-cyan-500/15 rounded-full blur-3xl pointer-events-none"></div>
 
-    <!-- Stack Teknologi (DeepInfra, Llama, Evolution API) -->
-    <section class="max-w-5xl mx-auto px-4 -mt-12 relative z-20">
-        <div class="bg-white/90 backdrop-blur-md rounded-2xl shadow-xl p-6 border border-slate-100 flex flex-wrap justify-between items-center gap-4">
-            <div class="flex flex-wrap items-center gap-4 justify-center md:justify-start">
-                <span class="text-slate-600 font-semibold">Teknologi:</span>
-                <div class="flex flex-wrap gap-3">
-                    <span class="px-4 py-2 bg-slate-100 text-slate-800 rounded-xl text-sm font-bold shadow-sm">DeepInfra</span>
-                    <span class="px-4 py-2 bg-slate-100 text-slate-800 rounded-xl text-sm font-bold shadow-sm">Llama 3</span>
-                    <span class="px-4 py-2 bg-slate-100 text-slate-800 rounded-xl text-sm font-bold shadow-sm">Evolution API</span>
-                    <span class="px-4 py-2 bg-slate-100 text-slate-800 rounded-xl text-sm font-bold shadow-sm">Laravel + Python</span>
-                </div>
-            </div>
-            <div class="h-8 w-px bg-slate-200 hidden md:block"></div>
-            <div class="flex items-center gap-6"><div><span class="font-black text-2xl text-purple-700">100%</span> <span class="text-slate-500">otomatisasi prospek</span></div><div><span class="font-black text-2xl text-blue-600">24/7</span> <span class="text-slate-500">respon instan</span></div></div>
-        </div>
-    </section>
+        <div class="max-w-6xl mx-auto w-full relative z-10">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
 
-    <!-- FITUR UTAMA YANG SUDAH JADI (sesuai deskripsi) -->
-    <section id="fitur-unggulan" class="py-20 px-4 bg-white">
-        <div class="max-w-5xl mx-auto">
-            <div class="text-center mb-12">
-                <span class="text-indigo-600 font-semibold text-sm bg-indigo-100 px-4 py-1.5 rounded-full">Fitur yang Sudah Aktif</span>
-                <h2 class="text-3xl md:text-4xl font-bold mt-5 mb-4 bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">Kendali Penuh atas AI & Prospek</h2>
-                <p class="text-slate-500 max-w-2xl mx-auto">Sistem chatbot cerdas dengan CRM prospek internal — siap digunakan untuk bisnis Anda.</p>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Fitur 1: Custom Prompt & SOP -->
-                <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100 flex items-start gap-4 hover:shadow-md transition">
-                    <div class="bg-purple-100 p-2 rounded-xl text-purple-600 shrink-0"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg></div>
-                    <div><h3 class="font-bold text-slate-800 text-lg">Custom Prompt & SOP</h3><p class="text-slate-500 text-sm">Atur instruksi AI dari dashboard admin. Bisa mengikuti SOP bisnis Anda atau biarkan AI berpikir luas sesuai data.</p></div>
-                </div>
-                <!-- Fitur 2: Balasan dengan emoji / tanpa emoji -->
-                <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100 flex items-start gap-4 hover:shadow-md transition">
-                    <div class="bg-amber-100 p-2 rounded-xl text-amber-600 shrink-0"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div>
-                    <div><h3 class="font-bold text-slate-800 text-lg">Gaya Balasan Fleksibel</h3><p class="text-slate-500 text-sm">Aktifkan/nonaktifkan emoji, pilih gaya bahasa: <strong>Formal, Slang, atau Gaul Teknologi</strong>. Sesuaikan dengan persona brand.</p></div>
-                </div>
-                <!-- Fitur 3: Auto Prospect & Update Status -->
-                <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100 flex items-start gap-4 hover:shadow-md transition">
-                    <div class="bg-green-100 p-2 rounded-xl text-green-600 shrink-0"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg></div>
-                    <div><h3 class="font-bold text-slate-800 text-lg">Penilaian Prospek Otomatis</h3><p class="text-slate-500 text-sm">AI menganalisis percakapan lalu mengupdate status prospek menjadi <strong>Hot / Deal / Cancel</strong> secara otomatis. CRM internal tanpa ribet.</p></div>
-                </div>
-                <!-- Fitur 4: WhatsApp Integration -->
-                <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100 flex items-start gap-4 hover:shadow-md transition">
-                    <div class="bg-blue-100 p-2 rounded-xl text-blue-600 shrink-0"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg></div>
-                    <div><h3 class="font-bold text-slate-800 text-lg">Terhubung WhatsApp (Evolution API)</h3><p class="text-slate-500 text-sm">Integrasi penuh dengan WhatsApp Business. Balas pelanggan otomatis dari nomor bisnis Anda.</p></div>
-                </div>
-                <!-- Fitur 5: Admin Panel Laravel -->
-                <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100 flex items-start gap-4 hover:shadow-md transition">
-                    <div class="bg-indigo-100 p-2 rounded-xl text-indigo-600 shrink-0"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"></path></svg></div>
-                    <div><h3 class="font-bold text-slate-800 text-lg">Manajemen Admin Laravel</h3><p class="text-slate-500 text-sm">Kelola prompt, data prospek, histori chat, dan konfigurasi AI dari dashboard intuitif.</p></div>
-                </div>
-                <!-- Fitur 6: Python Engine + DeepInfra -->
-                <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100 flex items-start gap-4 hover:shadow-md transition">
-                    <div class="bg-rose-100 p-2 rounded-xl text-rose-600 shrink-0"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg></div>
-                    <div><h3 class="font-bold text-slate-800 text-lg">Engine Python + DeepInfra AI</h3><p class="text-slate-500 text-sm">Proses pesan cepat dan stabil menggunakan model Llama 3 via DeepInfra, dipisahkan dari web server.</p></div>
-                </div>
-            </div>
-            <div class="mt-8 text-center bg-purple-50 p-4 rounded-2xl">
-                <p class="text-purple-800 font-medium">✨ <strong>Siap jualan?</strong> Semua fitur di atas sudah berfungsi. Tinggal daftar, integrasikan WhatsApp, dan AI siap membantu bisnis Anda.</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- CRM OTOMATIS & PENILAIAN PROSPEK (detail lebih dalam) -->
-    <section id="crm-prospek" class="py-20 px-4 bg-gradient-to-br from-slate-50 to-indigo-50/30">
-        <div class="max-w-6xl mx-auto">
-            <div class="text-center mb-12">
-                <span class="bg-blue-100 text-blue-700 text-sm font-semibold px-4 py-1 rounded-full">🤖 CRM Otomatis dari Percakapan</span>
-                <h2 class="text-3xl md:text-4xl font-bold mt-5 text-slate-800">AI Tidak Hanya Chat, Tapi <span class="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Mengelola Prospek Penjualan</span></h2>
-                <p class="text-slate-600 max-w-2xl mx-auto mt-3">Setiap chat dengan pelanggan dinilai secara otomatis → update status pipeline. Tanpa input manual.</p>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div class="bg-white rounded-2xl shadow-md p-6 border-t-4 border-purple-500 hover-lift">
-                    <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-5">📊</div>
-                    <h3 class="text-xl font-bold mb-2">Deteksi Intent & Sentimen</h3>
-                    <p class="text-slate-500 text-sm">AI membaca apakah pelanggan berminat (Hot), siap beli (Deal), atau menolak (Cancel). Update CRM langsung.</p>
-                </div>
-                <div class="bg-white rounded-2xl shadow-md p-6 border-t-4 border-blue-500 hover-lift">
-                    <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-5">🏷️</div>
-                    <h3 class="text-xl font-bold mb-2">Otomatis Ubah Status Prospek</h3>
-                    <p class="text-slate-500 text-sm">Tanpa repot, chatbot akan menandai prospek sebagai HOT, DEAL, atau CANCEL berdasarkan percakapan. Dashboard langsung terlihat.</p>
-                </div>
-                <div class="bg-white rounded-2xl shadow-md p-6 border-t-4 border-emerald-500 hover-lift">
-                    <div class="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center mb-5">📈</div>
-                    <h3 class="text-xl font-bold mb-2">Rekap Prospek & Notifikasi</h3>
-                    <p class="text-slate-500 text-sm">Lihat daftar prospek terbaru, export data, dan notifikasi ke tim sales via email/WhatsApp.</p>
-                </div>
-            </div>
-            <div class="mt-12 text-center bg-white/60 p-6 rounded-2xl shadow-sm max-w-3xl mx-auto">
-                <p class="text-slate-700 font-medium">💡 <strong>Contoh kerja:</strong> Pelanggan chat "Saya tertarik dengan produk A, tapi harga?" → AI deteksi minat tinggi → status prospek otomatis menjadi <span class="bg-green-100 text-green-800 px-2 py-0.5 rounded">HOT</span> dan tersimpan di CRM Anda.</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- TARGET PASAR -->
-    <section class="py-16 px-4 bg-white">
-        <div class="max-w-5xl mx-auto text-center">
-            <h2 class="text-2xl md:text-3xl font-bold mb-3">Cocok untuk Semua Bisnis yang Butuh Chatbot + CRM Otomatis</h2>
-            <p class="text-slate-500 mb-10">E-commerce, properti, jasa keuangan, pendidikan, kesehatan, agensi, UKM, dan startup.</p>
-            <div class="flex flex-wrap justify-center gap-5">
-                <div class="bg-slate-100 rounded-full px-5 py-2 text-slate-700 font-medium">🛒 Toko Online</div>
-                <div class="bg-slate-100 rounded-full px-5 py-2 text-slate-700 font-medium">🏢 Properti & Real Estate</div>
-                <div class="bg-slate-100 rounded-full px-5 py-2 text-slate-700 font-medium">🎓 Lembaga Pendidikan</div>
-                <div class="bg-slate-100 rounded-full px-5 py-2 text-slate-700 font-medium">🏥 Klinik & RS</div>
-                <div class="bg-slate-100 rounded-full px-5 py-2 text-slate-700 font-medium">📱 Startup Digital</div>
-                <div class="bg-slate-100 rounded-full px-5 py-2 text-slate-700 font-medium">🤝 Layanan Konsultasi</div>
-            </div>
-        </div>
-    </section>
-
-    <!-- TESTIMONI (fiktif namun membangun kepercayaan) -->
-    <section id="testimoni" class="py-16 px-4 bg-indigo-50/40">
-        <div class="max-w-5xl mx-auto text-center">
-            <span class="text-sm font-semibold text-purple-600 bg-purple-100 px-3 py-1 rounded-full">Testimoni</span>
-            <h2 class="text-3xl font-bold mt-4 mb-8">Apa Kata Pengguna Tera.ai?</h2>
-            <div class="grid md:grid-cols-3 gap-6">
-                <div class="bg-white rounded-2xl p-6 shadow-sm text-left">
-                    <div class="flex text-yellow-400 mb-2">★★★★★</div>
-                    <p class="text-slate-600 text-sm">"Fitur auto-update prospek ke HOT/Deal benar-benar menghemat waktu sales. Chatbot langsung menilai minat pelanggan, kami tinggal follow up."</p>
-                    <h4 class="font-bold mt-4">— Dani, Owner E-commerce</h4>
-                </div>
-                <div class="bg-white rounded-2xl p-6 shadow-sm text-left">
-                    <div class="flex text-yellow-400 mb-2">★★★★★</div>
-                    <p class="text-slate-600 text-sm">"Kustomisasi gaya bahasa dan emoji membuat chatbot terdengar seperti tim kami sendiri. Tingkat konversi prospek meningkat 42%."</p>
-                    <h4 class="font-bold mt-4">— Rina, Manajer Penjualan</h4>
-                </div>
-                <div class="bg-white rounded-2xl p-6 shadow-sm text-left">
-                    <div class="flex text-yellow-400 mb-2">★★★★★</div>
-                    <p class="text-slate-600 text-sm">"Integrasi WhatsApp via Evolution API sangat mulus. Sekarang pelanggan bisa chat 24/7 dan data prospek langsung masuk CRM."</p>
-                    <h4 class="font-bold mt-4">— Andre, CEO Properti</h4>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- PRICING SECTION (original blade logic, tidak diubah) -->
-    <section id="pricing" class="py-20 px-4 bg-white">
-        <div class="max-w-6xl mx-auto">
-            <div class="text-center mb-12">
-                <span class="text-purple-600 font-semibold text-sm bg-purple-100 px-4 py-1 rounded-full">Paket Harga</span>
-                <h2 class="text-3xl md:text-4xl font-bold mt-4 mb-3">Pilih Sesuai Kebutuhan Bisnis Anda</h2>
-                <p class="text-slate-500">Semua paket sudah termasuk fitur chatbot AI + CRM prospek otomatis.</p>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
-                @if(isset($plans) && $plans->count() > 0)
-                    @foreach($plans as $plan)
-                    <div class="bg-white rounded-3xl p-7 border border-slate-200 shadow-sm hover:shadow-xl transition-all flex flex-col relative">
-                        @if($loop->first)
-                            <div class="absolute -top-3 left-6 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-bold px-4 py-1 rounded-full">Paling Populer</div>
-                        @endif
-                        <h3 class="text-2xl font-extrabold text-slate-800 text-center mb-2">{{ $plan->name }}</h3>
-                        <div class="text-center mb-5">
-                            <span class="text-4xl font-black text-blue-600">Rp {{ number_format($plan->price, 0, ',', '.') }}</span>
-                            <span class="text-slate-500">/bulan</span>
-                        </div>
-                        <ul class="space-y-3 mb-8 text-sm text-slate-600 flex-1">
-                            <li class="flex items-start gap-2">
-                                <svg class="w-5 h-5 text-green-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                                <span> @if($plan->max_messages > 0) Kuota <strong>{{ number_format($plan->max_messages, 0, ',', '.') }}</strong> Pesan AI @else Kuota <strong>Unlimited</strong> Pesan AI @endif </span>
-                            </li>
-                            @php
-                                $featuresList = [];
-                                if (!empty($plan->features)) {
-                                    if (is_string($plan->features)) {
-                                        $decoded = json_decode($plan->features, true);
-                                        $featuresList = is_array($decoded) ? $decoded : explode("\n", $plan->features);
-                                    } elseif (is_array($plan->features)) {
-                                        $featuresList = $plan->features;
-                                    }
-                                }
-                            @endphp
-                            @foreach($featuresList as $feature)
-                                @if(trim($feature) !== '')
-                                <li class="flex items-start gap-2">
-                                    <svg class="w-5 h-5 text-green-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                                    <span>{{ trim($feature) }}</span>
-                                </li>
-                                @endif
-                            @endforeach
-                        </ul>
-                        <a href="{{ route('register') }}" class="block text-center w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold rounded-xl hover:shadow-lg transition mt-auto">Pilih Paket</a>
+                <!-- Left: Copy -->
+                <div>
+                    <div class="inline-flex items-center gap-2 px-3 py-1.5 mb-6 rounded-full bg-violet-500/10 border border-violet-500/30 text-violet-300 text-xs font-semibold">
+                        <span class="relative inline-flex h-2 w-2">
+                            <span class="pulse-dot relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                        </span>
+                        Live 24/7 — AI sedang aktif menjawab pelanggan
                     </div>
+
+                    <h1 class="text-4xl md:text-5xl lg:text-6xl font-black leading-[1.08] tracking-tight mb-6">
+                        CS Otomatis.<br>
+                        Prospek Tersaring.<br>
+                        <span class="gradient-text">Bisnis Jalan Sendiri.</span>
+                    </h1>
+
+                    <p class="text-slate-400 text-lg leading-relaxed mb-8 max-w-lg">
+                        Tera.AI menjawab chat WhatsApp pelanggan Anda 24 jam, mengenali siapa yang serius beli, dan mengupdate CRM — tanpa perlu tambah tim CS.
+                    </p>
+
+                    <div class="flex flex-col sm:flex-row gap-3 mb-10">
+                        <a href="{{ route('register') }}" class="px-7 py-3.5 bg-violet-600 hover:bg-violet-500 text-white font-bold rounded-lg transition shadow-xl shadow-violet-900/50 text-center">
+                            Mulai Gratis Sekarang
+                        </a>
+                        <a href="#cara-kerja" class="px-7 py-3.5 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-medium rounded-lg transition text-center">
+                            Lihat Cara Kerja →
+                        </a>
+                    </div>
+
+                    <!-- Social proof mini -->
+                    <div class="flex items-center gap-4 text-sm text-slate-500">
+                        <div class="flex -space-x-2">
+                            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-pink-400 to-violet-500 border-2 border-[#0A0F1E]"></div>
+                            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 border-2 border-[#0A0F1E]"></div>
+                            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-rose-500 border-2 border-[#0A0F1E]"></div>
+                        </div>
+                        <span>Sudah dipakai ratusan bisnis di Indonesia</span>
+                    </div>
+                </div>
+
+                <!-- Right: Chat Demo Visual -->
+                <div class="relative">
+                    <div class="bg-[#111827] rounded-2xl border border-white/10 overflow-hidden glow-violet">
+                        <!-- Phone status bar -->
+                        <div class="bg-[#1a2332] px-4 py-3 flex items-center gap-3 border-b border-white/5">
+                            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center text-xs font-bold">T</div>
+                            <div>
+                                <div class="text-sm font-semibold text-white">Tera.AI</div>
+                                <div class="text-xs text-green-400 flex items-center gap-1">
+                                    <span class="w-1.5 h-1.5 bg-green-400 rounded-full inline-block"></span>
+                                    Online — Membalas otomatis
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Chat messages -->
+                        <div class="p-4 space-y-3 min-h-[280px] bg-[#0d1520]">
+                            <div class="chat-bubble-in flex justify-start">
+                                <div class="bg-[#1e293b] text-slate-200 rounded-2xl rounded-tl-sm px-4 py-2.5 text-sm max-w-[75%]">
+                                    Halo, saya mau tanya soal harga paket bulanannya 🙏
+                                </div>
+                            </div>
+                            <div class="chat-bubble-out flex justify-end">
+                                <div class="bg-violet-600 text-white rounded-2xl rounded-tr-sm px-4 py-2.5 text-sm max-w-[80%]">
+                                    Halo kak! 👋 Kami punya 3 pilihan paket, mulai dari Rp 299rb/bulan. Boleh tahu bisnisnya bergerak di bidang apa ya, biar saya rekomendasiin yang paling pas?
+                                </div>
+                            </div>
+                            <div class="chat-bubble-in flex justify-start">
+                                <div class="bg-[#1e293b] text-slate-200 rounded-2xl rounded-tl-sm px-4 py-2.5 text-sm max-w-[75%]">
+                                    Saya jualan properti, tim CS saya kewalahan balas chat 😅
+                                </div>
+                            </div>
+                            <div class="chat-bubble-out flex justify-end">
+                                <div class="bg-violet-600 text-white rounded-2xl rounded-tr-sm px-4 py-2.5 text-sm max-w-[80%]">
+                                    Wah pas banget! Paket Bisnis kami cocok untuk properti — AI bisa follow-up prospek, bedain yang serius vs yang cuma tanya-tanya, dan update data secara otomatis 🏠
+                                </div>
+                            </div>
+                            <div class="chat-bubble-in flex justify-start">
+                                <div class="bg-[#1e293b] text-slate-200 rounded-2xl rounded-tl-sm px-4 py-2.5 text-sm max-w-[75%]">
+                                    Menarik! Bisa coba dulu?
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- CRM auto-update badge -->
+                        <div class="bg-[#0f2010] border-t border-green-900/50 px-4 py-3 flex items-center gap-3">
+                            <div class="w-6 h-6 rounded bg-green-500/20 flex items-center justify-center">
+                                <svg class="w-3.5 h-3.5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                            </div>
+                            <div class="text-xs">
+                                <span class="text-green-400 font-semibold">CRM diupdate otomatis</span>
+                                <span class="text-slate-500 ml-1">· Prospek ini ditandai </span>
+                                <span class="badge-hot text-white text-[10px] font-bold px-1.5 py-0.5 rounded">🔥 HOT</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Floating stat -->
+                    <div class="absolute -bottom-4 -left-4 bg-[#111827] border border-white/10 rounded-xl px-4 py-3 shadow-2xl">
+                        <div class="text-2xl font-black text-white">80%</div>
+                        <div class="text-xs text-slate-400">lebih sedikit chat<br>yang harus dibalas manual</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════
+         LOGO BAR (AI Models)
+    ═══════════════════════════════════════════════════ -->
+    <section class="py-10 px-4 border-y border-white/5 bg-[#080c17]">
+        <div class="max-w-4xl mx-auto text-center">
+            <p class="text-slate-600 text-xs uppercase tracking-widest font-semibold mb-6">Didukung model AI terbaik dunia</p>
+            <div class="flex flex-wrap justify-center gap-3">
+                <span class="px-4 py-2 bg-[#111827] border border-white/8 text-slate-300 rounded-lg text-sm font-semibold">Llama 3</span>
+                <span class="px-4 py-2 bg-[#111827] border border-white/8 text-slate-300 rounded-lg text-sm font-semibold">GPT-4o</span>
+                <span class="px-4 py-2 bg-[#111827] border border-white/8 text-slate-300 rounded-lg text-sm font-semibold">Claude 3.5</span>
+                <span class="px-4 py-2 bg-[#111827] border border-white/8 text-slate-300 rounded-lg text-sm font-semibold">Gemini 1.5</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════
+         PROBLEM → SOLUTION
+    ═══════════════════════════════════════════════════ -->
+    <section class="py-24 px-4 bg-[#0A0F1E]">
+        <div class="max-w-4xl mx-auto text-center">
+            <p class="text-violet-400 text-sm font-semibold uppercase tracking-widest mb-4">Masalah yang kami selesaikan</p>
+            <h2 class="text-3xl md:text-4xl font-black mb-16 text-white leading-tight">
+                Tim CS Anda kelelahan.<br>
+                <span class="text-slate-500">Prospek kabur sebelum sempat difollow-up.</span>
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
+                <div class="bg-[#111827] border border-red-900/30 rounded-xl p-6 text-left">
+                    <div class="text-3xl mb-3">😤</div>
+                    <h3 class="font-bold text-white mb-2">Chat masuk ratusan per hari</h3>
+                    <p class="text-slate-500 text-sm">CS kewalahan, respon lambat, pelanggan kabur ke kompetitor.</p>
+                </div>
+                <div class="bg-[#111827] border border-yellow-900/30 rounded-xl p-6 text-left">
+                    <div class="text-3xl mb-3">🤷</div>
+                    <h3 class="font-bold text-white mb-2">Tidak tahu mana prospek serius</h3>
+                    <p class="text-slate-500 text-sm">Semua chat diperlakukan sama. Prospek panas malah didiamkan.</p>
+                </div>
+                <div class="bg-[#111827] border border-blue-900/30 rounded-xl p-6 text-left">
+                    <div class="text-3xl mb-3">📋</div>
+                    <h3 class="font-bold text-white mb-2">Data prospek berserakan</h3>
+                    <p class="text-slate-500 text-sm">Update CRM manual, data sering kelewat, follow-up berantakan.</p>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-center gap-4 text-slate-500 text-sm font-medium mb-16">
+                <div class="h-px flex-1 bg-white/5"></div>
+                Tera.AI mengatasinya sekaligus
+                <div class="h-px flex-1 bg-white/5"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════
+         FITUR UTAMA
+    ═══════════════════════════════════════════════════ -->
+    <section id="fitur" class="py-4 pb-24 px-4 bg-[#0A0F1E]">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-16">
+                <p class="text-violet-400 text-sm font-semibold uppercase tracking-widest mb-4">Fitur</p>
+                <h2 class="text-3xl md:text-4xl font-black text-white">Satu platform, semua yang Anda butuhkan</h2>
+            </div>
+
+            <!-- Feature 1: Chatbot AI -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center mb-20">
+                <div>
+                    <div class="inline-block px-3 py-1 bg-violet-500/10 border border-violet-500/20 text-violet-300 text-xs font-bold rounded-full mb-4 uppercase tracking-wider">CS Otomatis</div>
+                    <h3 class="text-2xl md:text-3xl font-black text-white mb-4">AI yang memahami bisnis Anda, bukan sekadar bot kaku</h3>
+                    <p class="text-slate-400 leading-relaxed mb-6">
+                        Setting prompt langsung dari dashboard — masukkan SOP, info produk, dan cara bicara yang Anda mau. AI akan menjawab persis seperti tim CS terbaik Anda, 24 jam tanpa henti.
+                    </p>
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-3 text-sm text-slate-300">
+                            <div class="w-5 h-5 rounded-full bg-violet-500/20 border border-violet-500/30 flex items-center justify-center shrink-0">
+                                <svg class="w-3 h-3 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                            </div>
+                            Custom SOP & persona sesuai brand Anda
+                        </div>
+                        <div class="flex items-center gap-3 text-sm text-slate-300">
+                            <div class="w-5 h-5 rounded-full bg-violet-500/20 border border-violet-500/30 flex items-center justify-center shrink-0">
+                                <svg class="w-3 h-3 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                            </div>
+                            Pilih gaya bahasa: formal, santai, atau gaul
+                        </div>
+                        <div class="flex items-center gap-3 text-sm text-slate-300">
+                            <div class="w-5 h-5 rounded-full bg-violet-500/20 border border-violet-500/30 flex items-center justify-center shrink-0">
+                                <svg class="w-3 h-3 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                            </div>
+                            Balas pesan teks dan pesan suara (voice note)
+                        </div>
+                        <div class="flex items-center gap-3 text-sm text-slate-300">
+                            <div class="w-5 h-5 rounded-full bg-violet-500/20 border border-violet-500/30 flex items-center justify-center shrink-0">
+                                <svg class="w-3 h-3 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                            </div>
+                            Toggle emoji on/off sesuai selera brand
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-[#111827] rounded-2xl border border-white/8 p-6">
+                    <div class="text-xs text-slate-500 uppercase font-semibold tracking-wider mb-4">Dashboard Pengaturan AI</div>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="text-xs text-slate-400 mb-1.5 block">Prompt / SOP CS Anda</label>
+                            <div class="bg-[#1e293b] rounded-lg p-3 text-sm text-slate-300 border border-white/5">
+                                Anda adalah CS dari Toko Baju Maju. Selalu sapa dengan "Halo Kak!" dan tawarkan promo hari ini...
+                                <span class="text-violet-400">|</span>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-xs text-slate-400 mb-1.5 block">Gaya Bahasa</label>
+                                <div class="bg-violet-600 rounded-lg px-3 py-2 text-sm text-white font-medium text-center">Santai ✓</div>
+                            </div>
+                            <div>
+                                <label class="text-xs text-slate-400 mb-1.5 block">Gunakan Emoji</label>
+                                <div class="bg-[#1e293b] rounded-lg px-3 py-2 flex items-center justify-between border border-white/5">
+                                    <span class="text-sm text-slate-300">Aktif</span>
+                                    <div class="w-8 h-4 bg-violet-600 rounded-full relative">
+                                        <div class="w-3 h-3 bg-white rounded-full absolute right-0.5 top-0.5"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feature 2: Auto CRM -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
+                <div class="order-2 lg:order-1 bg-[#111827] rounded-2xl border border-white/8 p-6">
+                    <div class="text-xs text-slate-500 uppercase font-semibold tracking-wider mb-4">CRM Otomatis — Update Real-time</div>
+                    <div class="space-y-3">
+                        <div class="bg-[#1e293b] rounded-xl p-4 flex items-center gap-4 border border-white/5">
+                            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-orange-400 to-rose-500 flex items-center justify-center text-sm font-bold shrink-0">B</div>
+                            <div class="flex-1 min-w-0">
+                                <div class="font-semibold text-white text-sm">Budi Santoso</div>
+                                <div class="text-xs text-slate-400 truncate">"Kapan bisa survey lokasinya?"</div>
+                            </div>
+                            <span class="badge-hot text-white text-[11px] font-bold px-2 py-1 rounded-full shrink-0">🔥 Hot</span>
+                        </div>
+                        <div class="bg-[#1e293b] rounded-xl p-4 flex items-center gap-4 border border-white/5">
+                            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center text-sm font-bold shrink-0">S</div>
+                            <div class="flex-1 min-w-0">
+                                <div class="font-semibold text-white text-sm">Sari Dewi</div>
+                                <div class="text-xs text-slate-400 truncate">"Oke, saya mau ambil 2 unit"</div>
+                            </div>
+                            <span class="text-white text-[11px] font-bold px-2 py-1 rounded-full bg-green-600 shrink-0">✅ Deal</span>
+                        </div>
+                        <div class="bg-[#1e293b] rounded-xl p-4 flex items-center gap-4 border border-white/5">
+                            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-violet-400 to-purple-500 flex items-center justify-center text-sm font-bold shrink-0">R</div>
+                            <div class="flex-1 min-w-0">
+                                <div class="font-semibold text-white text-sm">Reza Firmansyah</div>
+                                <div class="text-xs text-slate-400 truncate">"Cuma tanya-tanya aja kak"</div>
+                            </div>
+                            <span class="badge-cold text-white text-[11px] font-bold px-2 py-1 rounded-full shrink-0">❄️ Cold</span>
+                        </div>
+                    </div>
+                    <div class="mt-4 pt-4 border-t border-white/5 flex items-center gap-2 text-xs text-slate-500">
+                        <svg class="w-3.5 h-3.5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                        Diperbarui otomatis berdasarkan analisis percakapan AI
+                    </div>
+                </div>
+                <div class="order-1 lg:order-2">
+                    <div class="inline-block px-3 py-1 bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 text-xs font-bold rounded-full mb-4 uppercase tracking-wider">CRM Cerdas</div>
+                    <h3 class="text-2xl md:text-3xl font-black text-white mb-4">AI yang tahu siapa yang layak dikejar tim sales Anda</h3>
+                    <p class="text-slate-400 leading-relaxed mb-6">
+                        Dari setiap percakapan, Tera.AI otomatis menilai tingkat ketertarikan calon pembeli — dan langsung mengupdate status mereka di CRM. Tim sales Anda tinggal fokus ke yang sudah panas.
+                    </p>
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-3 text-sm text-slate-300">
+                            <div class="w-5 h-5 rounded-full bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center shrink-0">
+                                <svg class="w-3 h-3 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                            </div>
+                            Klasifikasi otomatis: 🔥 Hot, ⚡ Warm, ❄️ Cold, ✅ Deal, ❌ Cancel
+                        </div>
+                        <div class="flex items-center gap-3 text-sm text-slate-300">
+                            <div class="w-5 h-5 rounded-full bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center shrink-0">
+                                <svg class="w-3 h-3 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                            </div>
+                            Data nama, kontak, & kebutuhan prospek tersimpan otomatis
+                        </div>
+                        <div class="flex items-center gap-3 text-sm text-slate-300">
+                            <div class="w-5 h-5 rounded-full bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center shrink-0">
+                                <svg class="w-3 h-3 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                            </div>
+                            Tim sales Anda tahu harus follow-up siapa duluan
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════
+         CARA KERJA
+    ═══════════════════════════════════════════════════ -->
+    <section id="cara-kerja" class="py-24 px-4 bg-[#080c17]">
+        <div class="max-w-4xl mx-auto">
+            <div class="text-center mb-16">
+                <p class="text-violet-400 text-sm font-semibold uppercase tracking-widest mb-4">Cara Kerja</p>
+                <h2 class="text-3xl md:text-4xl font-black text-white">Aktif dalam 3 langkah mudah</h2>
+            </div>
+            <div class="relative">
+                <div class="absolute left-6 top-8 bottom-8 w-px bg-gradient-to-b from-violet-600 via-cyan-500 to-transparent hidden md:block"></div>
+                <div class="space-y-10 md:pl-20">
+                    <div class="relative flex gap-6 items-start">
+                        <div class="absolute -left-14 w-12 h-12 rounded-full bg-violet-600 flex items-center justify-center text-white font-black text-lg shrink-0 hidden md:flex">1</div>
+                        <div class="md:hidden w-10 h-10 rounded-full bg-violet-600 flex items-center justify-center text-white font-black shrink-0">1</div>
+                        <div>
+                            <h3 class="text-lg font-bold text-white mb-2">Sambungkan WhatsApp bisnis Anda</h3>
+                            <p class="text-slate-400">Hubungkan nomor WhatsApp Anda lewat QR Code — proses kurang dari 5 menit. Tidak perlu pindah nomor atau platform.</p>
+                        </div>
+                    </div>
+                    <div class="relative flex gap-6 items-start">
+                        <div class="absolute -left-14 w-12 h-12 rounded-full bg-violet-500 flex items-center justify-center text-white font-black text-lg shrink-0 hidden md:flex">2</div>
+                        <div class="md:hidden w-10 h-10 rounded-full bg-violet-500 flex items-center justify-center text-white font-black shrink-0">2</div>
+                        <div>
+                            <h3 class="text-lg font-bold text-white mb-2">Setting prompt & kepribadian AI</h3>
+                            <p class="text-slate-400">Masukkan SOP, info produk, dan gaya bahasa yang Anda inginkan. AI akan belajar dan menjawab sesuai standar bisnis Anda.</p>
+                        </div>
+                    </div>
+                    <div class="relative flex gap-6 items-start">
+                        <div class="absolute -left-14 w-12 h-12 rounded-full bg-cyan-500 flex items-center justify-center text-white font-black text-lg shrink-0 hidden md:flex">3</div>
+                        <div class="md:hidden w-10 h-10 rounded-full bg-cyan-500 flex items-center justify-center text-white font-black shrink-0">3</div>
+                        <div>
+                            <h3 class="text-lg font-bold text-white mb-2">AI bekerja, CRM terupdate sendiri</h3>
+                            <p class="text-slate-400">Setiap chat masuk dijawab otomatis. Prospek dinilai, data tersimpan, dan tim Anda tinggal fokus ke yang paling potensial.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════
+         STATS
+    ═══════════════════════════════════════════════════ -->
+    <section class="py-16 px-4 bg-[#0A0F1E] border-y border-white/5">
+        <div class="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+            <div>
+                <div class="text-3xl md:text-4xl font-black gradient-text mb-1">24/7</div>
+                <div class="text-slate-500 text-sm">AI aktif tanpa henti</div>
+            </div>
+            <div>
+                <div class="text-3xl md:text-4xl font-black gradient-text mb-1">80%</div>
+                <div class="text-slate-500 text-sm">penghematan waktu CS</div>
+            </div>
+            <div>
+                <div class="text-3xl md:text-4xl font-black gradient-text mb-1">&lt;3s</div>
+                <div class="text-slate-500 text-sm">rata-rata waktu respon</div>
+            </div>
+            <div>
+                <div class="text-3xl md:text-4xl font-black gradient-text mb-1">100%</div>
+                <div class="text-slate-500 text-sm">chat terjawab & tercatat</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════
+         PRICING
+    ═══════════════════════════════════════════════════ -->
+    <section id="pricing" class="py-24 px-4 bg-[#0A0F1E]">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-16">
+                <p class="text-violet-400 text-sm font-semibold uppercase tracking-widest mb-4">Harga</p>
+                <h2 class="text-3xl md:text-4xl font-black text-white mb-3">Mulai sesuai skala bisnis Anda</h2>
+                <p class="text-slate-500">Upgrade atau downgrade kapan saja. Tanpa kontrak jangka panjang.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch mb-10">
+                @if(isset($plans) && $plans->count() > 0)
+                    @foreach($plans as $index => $plan)
+                        <div class="relative rounded-2xl p-px {{ $index === 1 ? 'bg-gradient-to-b from-violet-500 to-cyan-500' : 'bg-white/8' }} card-hover flex flex-col">
+                            @if($index === 1)
+                                <div class="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-gradient-to-r from-violet-600 to-cyan-600 rounded-full text-white text-xs font-bold whitespace-nowrap">
+                                    ⭐ Paling Populer
+                                </div>
+                            @endif
+                            <div class="bg-[#111827] rounded-2xl p-7 flex flex-col flex-1">
+                                <h3 class="text-base font-bold text-slate-400 mb-1">{{ $plan->name }}</h3>
+                                <div class="mb-6">
+                                    <span class="text-4xl font-black text-white">Rp {{ number_format($plan->price, 0, ',', '.') }}</span>
+                                    <span class="text-slate-500 text-sm">/bulan</span>
+                                </div>
+
+                                <ul class="space-y-3 mb-8 flex-1">
+                                    <li class="flex items-start gap-3 text-sm text-slate-300">
+                                        <svg class="w-4 h-4 text-violet-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                                        @if($plan->max_messages > 0)
+                                            <span><strong class="text-white">{{ number_format($plan->max_messages, 0, ',', '.') }}</strong> pesan AI/bulan</span>
+                                        @else
+                                            <span><strong class="text-white">Unlimited</strong> pesan AI</span>
+                                        @endif
+                                    </li>
+                                    @php
+                                        $featuresList = [];
+                                        if (!empty($plan->features)) {
+                                            if (is_string($plan->features)) {
+                                                $decoded = json_decode($plan->features, true);
+                                                $featuresList = is_array($decoded) ? $decoded : explode("\n", $plan->features);
+                                            } elseif (is_array($plan->features)) {
+                                                $featuresList = $plan->features;
+                                            }
+                                        }
+                                    @endphp
+                                    @foreach($featuresList as $feature)
+                                        @if(trim($feature) !== '')
+                                            <li class="flex items-start gap-3 text-sm text-slate-300">
+                                                <svg class="w-4 h-4 text-violet-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                                                {{ trim($feature) }}
+                                            </li>
+                                        @endif
+                                    @endforeach
+                                </ul>
+
+                                <a href="{{ route('register') }}" class="block text-center w-full py-3 font-bold rounded-xl transition mt-auto
+                                    {{ $index === 1
+                                        ? 'bg-gradient-to-r from-violet-600 to-cyan-600 text-white hover:opacity-90 shadow-lg shadow-violet-900/30'
+                                        : 'bg-white/5 hover:bg-white/10 border border-white/10 text-white' }}">
+                                    Pilih Paket Ini
+                                </a>
+                            </div>
+                        </div>
                     @endforeach
                 @else
-                    <div class="col-span-full text-center text-slate-500 py-8 bg-slate-50 rounded-2xl">Paket berlangganan akan segera hadir. Hubungi kami untuk demo gratis.</div>
+                    <div class="col-span-full text-center text-slate-500 py-10">
+                        Paket berlangganan belum tersedia saat ini.
+                    </div>
                 @endif
             </div>
-            <div class="mt-12 bg-gradient-to-r from-indigo-900 to-purple-800 rounded-3xl p-8 text-center text-white shadow-xl">
-                <h3 class="text-2xl font-bold mb-2">Butuh solusi enterprise?</h3>
-                <p class="mb-5 text-indigo-100">Integrasi khusus, volume chat tinggi, atau on-premise. Tim kami siap membantu.</p>
-                <a href="https://wa.me/6285295955580" target="_blank" class="inline-block px-8 py-3 bg-white text-indigo-700 font-bold rounded-full hover:bg-gray-100 transition shadow-md">Hubungi Tim Sales →</a>
+
+            <!-- Enterprise -->
+            <div class="bg-gradient-to-r from-violet-900/40 to-cyan-900/30 border border-violet-500/20 rounded-2xl p-8 flex flex-col md:flex-row items-center justify-between gap-6">
+                <div>
+                    <div class="text-xs text-violet-400 font-bold uppercase tracking-wider mb-2">Enterprise / Custom</div>
+                    <h3 class="text-xl font-black text-white mb-1">Butuh solusi skala besar?</h3>
+                    <p class="text-slate-400 text-sm">Multi-nomor, integrasi custom, SLA tinggi, dan dedicated support.</p>
+                </div>
+                <a href="https://wa.me/6285295955580" target="_blank" class="shrink-0 px-7 py-3 bg-white text-slate-900 font-bold rounded-xl hover:bg-slate-100 transition whitespace-nowrap">
+                    Diskusi Kebutuhan Anda
+                </a>
             </div>
         </div>
     </section>
 
-    <!-- Footer -->
-    <footer class="bg-slate-900 text-white py-16 px-4 relative">
-        <div class="max-w-6xl mx-auto">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
-                <div><div class="text-2xl font-extrabold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent mb-4">Tera.ai</div><p class="text-slate-400 text-sm">Chatbot AI + CRM otomatis. Tingkatkan penjualan dan layanan pelanggan.</p></div>
-                <div><h4 class="font-bold mb-4">Fitur</h4><ul class="space-y-2 text-sm text-slate-300"><li><a href="#fitur-unggulan" class="hover:text-white">Custom Prompt & SOP</a></li><li><a href="#crm-prospek" class="hover:text-white">Auto Prospek (Hot/Deal/Cancel)</a></li><li><a href="#pricing" class="hover:text-white">Harga & Paket</a></li></ul></div>
-                <div><h4 class="font-bold mb-4">Dukungan</h4><ul class="space-y-2 text-sm text-slate-300"><li><a href="https://wa.me/6285295955580" target="_blank">WhatsApp Support</a></li><li><a href="#">Pusat Bantuan</a></li><li><a href="#">Integrasi API</a></li></ul></div>
-                <div><h4 class="font-bold mb-4">Kontak</h4><p class="text-sm text-slate-300">📞 0852-9595-5580</p><p class="text-sm text-slate-300">✉️ nmfuadi@gmail.com</p><p class="text-sm text-slate-300 text-xs mt-2">Jl. Kemiri Jaya, Beji, Depok, Jawa Barat</p></div>
+    <!-- ═══════════════════════════════════════════════════
+         CTA FINAL
+    ═══════════════════════════════════════════════════ -->
+    <section class="py-24 px-4 bg-[#080c17]">
+        <div class="max-w-3xl mx-auto text-center">
+            <div class="text-6xl mb-6">🚀</div>
+            <h2 class="text-3xl md:text-5xl font-black text-white mb-5 leading-tight">
+                Bisnis Anda butuh CS<br>
+                <span class="gradient-text">yang tidak pernah tidur.</span>
+            </h2>
+            <p class="text-slate-400 text-lg mb-8 max-w-xl mx-auto">
+                Daftar sekarang dan rasakan perbedaannya. Setup kurang dari 10 menit, langsung aktif di WhatsApp Anda.
+            </p>
+            <a href="{{ route('register') }}" class="inline-block px-10 py-4 bg-violet-600 hover:bg-violet-500 text-white font-black rounded-xl transition shadow-2xl shadow-violet-900/60 text-lg">
+                Mulai Gratis — Tanpa Kartu Kredit
+            </a>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════
+         FOOTER
+    ═══════════════════════════════════════════════════ -->
+    <footer class="bg-[#060910] border-t border-white/5 py-16 px-4">
+        <div class="max-w-4xl mx-auto">
+            <div class="text-center mb-12">
+                <div class="font-black text-2xl mb-2">
+                    <span class="text-white">tera</span><span class="gradient-text">.ai</span>
+                </div>
+                <p class="text-slate-600 text-sm">CS Otomatis & CRM Cerdas via WhatsApp</p>
             </div>
-            <div class="border-t border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-slate-400">
-                <p>© 2025 Tera.ai — Chatbot AI + CRM Prospek Otomatis. Siap membantu bisnis Anda.</p>
-                <div class="flex gap-6 mt-3 md:mt-0"><a href="#" class="hover:text-white">Kebijakan Privasi</a><a href="#" class="hover:text-white">Syarat & Ketentuan</a></div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
+                <a href="https://wa.me/6285295955580" target="_blank" class="bg-[#111827] hover:bg-[#1e293b] border border-white/5 p-5 rounded-xl flex items-center gap-4 transition">
+                    <div class="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center text-xl shrink-0">📱</div>
+                    <div>
+                        <div class="font-semibold text-white text-sm">WhatsApp</div>
+                        <div class="text-slate-500 text-xs mt-0.5">085295955580</div>
+                    </div>
+                </a>
+                <a href="mailto:nmfuadi@gmail.com" class="bg-[#111827] hover:bg-[#1e293b] border border-white/5 p-5 rounded-xl flex items-center gap-4 transition">
+                    <div class="w-10 h-10 rounded-lg bg-violet-500/10 flex items-center justify-center text-xl shrink-0">✉️</div>
+                    <div>
+                        <div class="font-semibold text-white text-sm">Email</div>
+                        <div class="text-slate-500 text-xs mt-0.5">nmfuadi@gmail.com</div>
+                    </div>
+                </a>
+                <div class="bg-[#111827] border border-white/5 p-5 rounded-xl flex items-center gap-4">
+                    <div class="w-10 h-10 rounded-lg bg-cyan-500/10 flex items-center justify-center text-xl shrink-0">📍</div>
+                    <div>
+                        <div class="font-semibold text-white text-sm">Kantor</div>
+                        <div class="text-slate-500 text-xs mt-0.5">Jl. Kemiri Jaya, Beji,<br>Depok, Jawa Barat 16421</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center text-slate-700 text-xs">
+                © {{ date('Y') }} Tera.AI · Hak cipta dilindungi
             </div>
         </div>
     </footer>
 
-    <script>
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                const targetId = this.getAttribute('href');
-                if(targetId === "#") return;
-                const target = document.querySelector(targetId);
-                if(target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
-            });
-        });
-    </script>
 </body>
 </html>
