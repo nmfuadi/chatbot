@@ -25,6 +25,7 @@ use App\Http\Middleware\EnsureHasActiveSubscription;
 use App\Http\Middleware\IsAdmin;
 use App\Models\Plan;
 use App\Http\Controllers\Api\LeadAnalyticController;
+use App\Http\Controllers\ProductKnowledgeController;
 
 
 /*
@@ -192,6 +193,7 @@ Route::middleware(['auth'])->group(function () {
         // Product Knowledge
         Route::get('/member/product-knowledge', [MemberController::class, 'showProductKnowledge'])->name('member.pk');
         Route::post('/member/product-knowledge', [MemberController::class, 'saveProductKnowledge'])->name('member.pk.save');
+        Route::post('/product-knowledge/scrape', [ProductKnowledgeController::class, 'scrapeWebsite'])->name('bot.scrape_website');
 
         // Halaman Dashboard Kanban
         Route::get('/sales-intelligence', [LeadAnalyticController::class, 'index'])->name('sales.index');
