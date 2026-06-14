@@ -561,7 +561,7 @@
                     <h3 class="text-xl font-black text-white mb-1">Butuh solusi skala besar?</h3>
                     <p class="text-slate-400 text-sm">Multi-nomor, integrasi custom, SLA tinggi, dan dedicated support.</p>
                 </div>
-                <a href="https://wa.me/6285295955580" target="_blank" class="shrink-0 px-7 py-3 bg-white text-slate-900 font-bold rounded-xl hover:bg-slate-100 transition whitespace-nowrap">
+                <a href="https://wa.me/6289528285349?text=Saya%20mengetahui%20Tera%20AI%20dari%20web,%20saya%20ingin%20tahu%20lebih%20lanjut%20produk%20chatbot%20dan%20CRM." target="_blank" class="shrink-0 px-7 py-3 bg-white text-slate-900 font-bold rounded-xl hover:bg-slate-100 transition whitespace-nowrap">
                     Diskusi Kebutuhan Anda
                 </a>
             </div>
