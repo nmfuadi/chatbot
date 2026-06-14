@@ -600,7 +600,7 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
-                <a href="https://wa.me/6285295955580" target="_blank" class="bg-[#111827] hover:bg-[#1e293b] border border-white/5 p-5 rounded-xl flex items-center gap-4 transition">
+                <a href="https://wa.me/6289528285349?text=Saya%20mengetahui%20Tera%20AI%20dari%20web,%20saya%20ingin%20tahu%20lebih%20lanjut%20produk%20chatbot%20dan%20CRM." target="_blank" class="bg-[#111827] hover:bg-[#1e293b] border border-white/5 p-5 rounded-xl flex items-center gap-4 transition">
                     <div class="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center text-xl shrink-0">📱</div>
                     <div>
                         <div class="font-semibold text-white text-sm">WhatsApp</div>
