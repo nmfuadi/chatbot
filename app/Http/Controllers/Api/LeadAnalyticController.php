@@ -2,13 +2,12 @@
 
 namespace App\Http\Controllers\Api;
 
-
 use App\Http\Controllers\Controller;
 use App\Models\LeadAnalytic;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
-use App\Services\TrackingService; // <-- Jangan lupa import di atas class
+use App\Services\TrackingService;
 
 class LeadAnalyticController extends Controller
 {
@@ -31,7 +30,6 @@ class LeadAnalyticController extends Controller
             ->get();
 
         // 3. Kelompokkan data yang sudah bersih berdasarkan status untuk papan Kanban
-        // (Pastikan key grouping ini sesuai dengan nama kolom status di database Kakak, misal 'status_prospek')
         $leads = $leadsData->groupBy('status_prospek'); 
 
         // 4. Hitung Statistik Berdasarkan Data Ter-filter (Hanya Data Milik User & Status Terbaru)
@@ -90,17 +88,18 @@ class LeadAnalyticController extends Controller
         ]);
     }
 
+    // Menerima POST Request dari Python Engine
     public function store(Request $request)
     {
-        // 1. Validasi data masuk dari n8n
+        // 1. Validasi data masuk dari n8n/Python
         $validator = Validator::make($request->all(), [
-            'phone'          => 'required|string',
-            'instance'       => 'required|string',
-            'status_prospek' => 'required|string|in:baru,prospect,hot_prospek,deal,closing,gagal',
-            'alasan_batal'   => 'nullable|string',
-            'sumber_iklan'   => 'nullable|string',
-            'chat_summary'   => 'nullable|string',
-            'lead_score'     => 'nullable|integer',
+            'phone'           => 'required|string',
+            'instance'        => 'required|string',
+            'status_prospek'  => 'required|string|in:baru,prospect,hot_prospek,deal,closing,gagal',
+            'alasan_batal'    => 'nullable|string',
+            'sumber_iklan'    => 'nullable|string',
+            'chat_summary'    => 'nullable|string',
+            'lead_score'      => 'nullable|integer',
             'buyer_character' => 'nullable|string',
         ]);
 
@@ -115,48 +114,75 @@ class LeadAnalyticController extends Controller
         DB::beginTransaction();
         try {
             // A. CARI ID MASTER (CHAT SESSION) BERDASARKAN NOMOR HP
-            // Bersihkan format nomor dari @s.whatsapp.net untuk pencarian yang lebih akurat
             $cleanPhone = str_replace('@s.whatsapp.net', '', $request->phone);
             
-            // Asumsi model Anda berada di namespace default App\Models
             $masterChat = \App\Models\ChatSession::where('customer_phone', $request->phone)
                                                  ->orWhere('customer_phone', $cleanPhone)
                                                  ->first();
             
-            // Ambil ID-nya jika ketemu, jika tidak maka null
             $chatSessionId = $masterChat ? $masterChat->id : null;
 
+            // ==========================================================
+            // B. GEMBOK HIERARKI (LOGIC LOCK) ANTI-MUNDUR
+            // ==========================================================
+            // Ambil status TERAKHIR dari pelanggan ini di database
+            $latestAnalytic = LeadAnalytic::where('chat_session_id', $chatSessionId)
+                                          ->orderBy('id', 'desc')
+                                          ->first();
+                                          
+            $currentStatus = $latestAnalytic ? $latestAnalytic->status_prospek : 'baru';
+            $newStatusFromAI = $request->status_prospek;
 
-            // B. UPDATE ATAU CREATE DATA DI LEAD ANALYTICS
-            // Menggunakan updateOrCreate agar 1 Nomor HP = 1 Kartu saja
-            // B. BUAT DATA BARU DI LEAD ANALYTICS (SEBAGAI LOG RIWAYAT)
+            $pipelineHierarchy = [
+                'baru'        => 1,
+                'prospect'    => 2,
+                'hot_prospek' => 3,
+                'deal'        => 4,
+                'closing'     => 5,
+                'gagal'       => 6
+            ];
+
+            $finalStatusToSave = $currentStatus; // Default: Tahan di status lama
+
+            // Cek apakah status dari AI sah secara hierarki
+            if (array_key_exists($newStatusFromAI, $pipelineHierarchy) && array_key_exists($currentStatus, $pipelineHierarchy)) {
+                // Syarat: Boleh ganti status JIKA status barunya lebih tinggi (geser ke kanan) 
+                // ATAU statusnya adalah "gagal"
+                if ($pipelineHierarchy[$newStatusFromAI] > $pipelineHierarchy[$currentStatus] || $newStatusFromAI === 'gagal') {
+                    $finalStatusToSave = $newStatusFromAI;
+                }
+            }
+            // ==========================================================
+
+            // C. BUAT DATA BARU DI LEAD ANALYTICS (SEBAGAI LOG RIWAYAT)
             $analytics = LeadAnalytic::create([
                 'chat_session_id' => $chatSessionId,
                 'phone'           => $request->phone,
                 'instance'        => $request->instance,
-                'status_prospek'  => $request->status_prospek,
-                'alasan_batal'    => $request->alasan_batal == 'null' ? null : $request->alasan_batal,
+                'status_prospek'  => $finalStatusToSave, // <-- Menggunakan status yang sudah digembok
+                'alasan_batal'    => $finalStatusToSave === 'gagal' ? ($request->alasan_batal == 'null' ? null : $request->alasan_batal) : null,
                 'sumber_iklan'    => $request->sumber_iklan ?? 'Organik',
                 'chat_summary'    => $request->chat_summary ?? 'Belum ada ringkasan', 
                 'lead_score'      => $request->lead_score ?? 0, 
-                'buyer_character' => $request->buyer_character, // <-- SUNTIKKAN INI
+                'buyer_character' => $request->buyer_character, 
             ]);
 
             DB::commit();
-           // CARI USER BERDASARKAN INSTANCE WA
-        $user = \App\Models\User::where('wablas_device_id', $request->instance)->first();
-    
-           // JIKA USER DITEMUKAN, JALANKAN TRACKING
-        if ($user) {
-            $value = $request->status_prospek === 'closing' ? 100000 : 0; 
-            
-            \App\Services\TrackingService::dispatch(
-                $user->id, 
-                $request->phone, 
-                $request->status_prospek,
-                $value
-            );
-        }
+
+            // CARI USER BERDASARKAN INSTANCE WA
+            $user = \App\Models\User::where('wablas_device_id', $request->instance)->first();
+        
+            // JIKA USER DITEMUKAN, JALANKAN TRACKING
+            if ($user) {
+                $value = $finalStatusToSave === 'closing' ? 100000 : 0; 
+                
+                TrackingService::dispatch(
+                    $user->id, 
+                    $request->phone, 
+                    $finalStatusToSave, // <-- Pastikan tracking juga mengirimkan status yang benar
+                    $value
+                );
+            }
 
             return response()->json([
                 'success' => true,
@@ -174,9 +200,6 @@ class LeadAnalyticController extends Controller
     }
 
 
-    
-
-
     // Fungsi untuk menarik riwayat berdasarkan nomor HP
     public function history($phone)
     {
@@ -190,18 +213,6 @@ class LeadAnalyticController extends Controller
         ]);
     }
 
-    // ====================================================================
-    // --- FITUR AUTO PAUSE & RESUME AI (HUMAN TAKEOVER) ---
-    // ====================================================================
-
-    /**
-     * Mematikan AI secara otomatis saat Owner membalas chat secara manual
-     */
-    
-
-    /**
-     * Menyalakan kembali AI saat Owner mengetik perintah #s
-     */
     // ====================================================================
     // --- FITUR AUTO PAUSE & RESUME AI (FIXED SCHEMA CHAT SESSIONS) ---
     // ====================================================================
@@ -266,7 +277,4 @@ class LeadAnalyticController extends Controller
 
         return response()->json(['success' => false, 'message' => 'Session chat tidak ditemukan.'], 404);
     }
-
-
-    
 }
