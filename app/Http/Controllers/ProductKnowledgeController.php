@@ -49,7 +49,7 @@ class ProductKnowledgeController extends Controller
     }
 
     // ====================================================================
-    // --- FITUR SYNC GOOGLE SHEETS KE DATABASE (DYNAMIC CATALOG) ---
+    // --- FITUR SIMPAN LINK & SYNC GOOGLE SHEETS (DYNAMIC CATALOG) ---
     // ====================================================================
     public function syncGoogleSheet(\Illuminate\Http\Request $request)
     {
@@ -60,57 +60,55 @@ class ProductKnowledgeController extends Controller
         $user = \Illuminate\Support\Facades\Auth::user();
         $originalUrl = $request->google_sheet_url;
 
-        // 1. Simpan URL-nya ke tabel
+        // 1. AMANKAN DAN SIMPAN LINK KE DATABASE TERLEBIH DAHULU
+        // Ini memastikan scheduler/cronjob bisa membaca link ini nanti
         \App\Models\ProductKnowledge::updateOrCreate(
             ['user_id' => $user->id],
             ['google_sheet_url' => $originalUrl]
         );
 
-        // 2. Ubah URL Google Sheet biasa menjadi URL Export CSV
-        // Contoh: https://docs.google.com/spreadsheets/d/1ABC/edit#gid=0
-        // Menjadi: https://docs.google.com/spreadsheets/d/1ABC/export?format=csv&gid=0
+        // 2. BERSIHKAN & UBAH URL KE FORMAT EXPORT CSV PUBLIC GOOGLE
         $csvUrl = preg_replace('/\/edit.*$/', '/export?format=csv', $originalUrl);
         
-        // Jika ada spesifik sheet (gid), tambahkan ke URL CSV-nya
+        // Jika spreadsheet memiliki spesifik sheet/tab (parameter gid)
         if (preg_match('/[#&]gid=([0-9]+)/', $originalUrl, $matches)) {
             $csvUrl .= '&gid=' . $matches[1];
         }
 
         try {
-            // 3. Tarik data CSV dari Google
+            // 3. MULAI DOWNLOAD DATA DARI GOOGLE
             $response = \Illuminate\Support\Facades\Http::timeout(30)->get($csvUrl);
 
             if ($response->successful()) {
                 $csvData = $response->body();
                 
-                // Parse CSV text ke dalam Array PHP
+                // Pecah teks CSV menjadi baris array PHP
                 $rows = array_map('str_getcsv', explode("\n", trim($csvData)));
                 
                 if (count($rows) < 2) {
-                    return back()->with('error', 'Google Sheet kosong atau header tidak ditemukan.');
+                    return back()->with('success', 'Link Google Sheet berhasil disimpan, namun data sheet kosong atau header kolom tidak ditemukan.');
                 }
 
-                $headers = array_shift($rows); // Ambil baris pertama sebagai Header (Nama Kolom)
-                
-                // Bersihkan header (hapus spasi berlebih atau karakter aneh)
-                $headers = array_map('trim', $headers);
+                // Ambil baris pertama sebagai Header Nama Kolom
+                $headers = array_shift($rows); 
+                $headers = array_map('trim', $headers); // Bersihkan spasi kosong di nama kolom
 
-                // 4. Hapus katalog lama milik user ini, karena kita akan Replace Full
+                // 4. BERSIHKAN DATA KATALOG LAMA MILIK USER INI (REPLACE FULL)
                 \App\Models\DynamicCatalog::where('user_id', $user->id)->delete();
 
-                // 5. Masukkan data baru ke database
+                // 5. MASUKKAN DATA BARU HASIL SYNC
                 $insertCount = 0;
                 foreach ($rows as $row) {
-                    // Abaikan baris kosong
+                    // Lewati jika baris benar-benar kosong
                     if (empty(implode('', $row))) continue; 
 
-                    // Gabungkan Header dengan Value baris tersebut
+                    // Petakan nama kolom dengan nilainya masing-masing
                     $rowData = [];
                     foreach ($headers as $index => $headerName) {
                         $rowData[$headerName] = trim($row[$index] ?? '');
                     }
 
-                    // Simpan sebagai JSON ke database
+                    // Simpan objek data ke database dalam format JSON bunglon
                     \App\Models\DynamicCatalog::create([
                         'user_id' => $user->id,
                         'raw_data' => $rowData
@@ -118,13 +116,13 @@ class ProductKnowledgeController extends Controller
                     $insertCount++;
                 }
 
-                return back()->with('success', "Berhasil! $insertCount data produk berhasil ditarik dan diperbarui dari Google Sheets.");
+                return back()->with('success', "Link berhasil disimpan & $insertCount data produk sukses disinkronisasikan ke database!");
             } else {
-                return back()->with('error', 'Gagal membaca Google Sheets. Pastikan akses link diatur ke "Anyone with the link".');
+                return back()->with('error', 'Link gagal disimpan ke sistem. Server Google menolak akses. Pastikan status link Sheets diatur ke "Anyone with the link (Siapa saja yang memiliki link)".');
             }
 
         } catch (\Exception $e) {
-            return back()->with('error', 'Terjadi kesalahan sistem: ' . $e->getMessage());
+            return back()->with('error', 'Link gagal disimpan akibat kesalahan sistem: ' . $e->getMessage());
         }
     }
 
