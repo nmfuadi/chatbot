@@ -193,6 +193,8 @@ Route::middleware(['auth'])->group(function () {
         // Product Knowledge
         Route::get('/member/product-knowledge', [MemberController::class, 'showProductKnowledge'])->name('member.pk');
         Route::post('/member/product-knowledge', [MemberController::class, 'saveProductKnowledge'])->name('member.pk.save');
+        Route::post('/member/sync-sheet', [ProductKnowledgeController::class, 'syncGoogleSheet'])->name('member.sync_sheet');
+        Route::get('/member/catalog', [ProductKnowledgeController::class, 'showDynamicCatalog'])->name('member.catalog');
         Route::post('/product-knowledge/scrape', [ProductKnowledgeController::class, 'scrapeWebsite'])->name('bot.scrape_website');
 
         // Halaman Dashboard Kanban
