@@ -127,4 +127,17 @@ class ProductKnowledgeController extends Controller
             return back()->with('error', 'Terjadi kesalahan sistem: ' . $e->getMessage());
         }
     }
+
+    public function showDynamicCatalog()
+    {
+        $userId = \Illuminate\Support\Facades\Auth::id();
+        
+        // Ambil URL Google Sheet yang pernah di-save
+        $pk = \App\Models\ProductKnowledge::where('user_id', $userId)->first();
+        
+        // Ambil semua data katalog dinamis milik user
+        $catalogs = \App\Models\DynamicCatalog::where('user_id', $userId)->get();
+
+        return view('member.dynamic-catalog', compact('pk', 'catalogs'));
+    }
 }
