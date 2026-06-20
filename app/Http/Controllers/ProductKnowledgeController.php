@@ -60,12 +60,19 @@ class ProductKnowledgeController extends Controller
         $user = \Illuminate\Support\Facades\Auth::user();
         $originalUrl = $request->google_sheet_url;
 
-        // 1. AMANKAN DAN SIMPAN LINK KE DATABASE TERLEBIH DAHULU
-        // Ini memastikan scheduler/cronjob bisa membaca link ini nanti
-        \App\Models\ProductKnowledge::updateOrCreate(
-            ['user_id' => $user->id],
-            ['google_sheet_url' => $originalUrl]
-        );
+        // 1. AMANKAN DAN SIMPAN LINK KE DATABASE (JALUR PAKSA / EXPLICIT SAVE)
+        // Bypass perlindungan Mass Assignment agar URL dijamin 100% masuk ke database
+        $pk = \App\Models\ProductKnowledge::where('user_id', $user->id)->first();
+        
+        if ($pk) {
+            $pk->google_sheet_url = $originalUrl;
+            $pk->save();
+        } else {
+            $newPk = new \App\Models\ProductKnowledge();
+            $newPk->user_id = $user->id;
+            $newPk->google_sheet_url = $originalUrl;
+            $newPk->save();
+        }
 
         // 2. BERSIHKAN & UBAH URL KE FORMAT EXPORT CSV PUBLIC GOOGLE
         $csvUrl = preg_replace('/\/edit.*$/', '/export?format=csv', $originalUrl);
