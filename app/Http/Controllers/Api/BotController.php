@@ -8,23 +8,27 @@ use App\Models\User;
 use App\Models\ProductKnowledge;
 use App\Models\ChatHistory;
 use App\Models\ChatSession;
-use App\Models\Catalog;
+// use App\Models\Catalog; <-- TIDAK DIPAKAI LAGI KARENA DIGANTI DYNAMIC CATALOG
+use App\Models\DynamicCatalog; // <-- MODEL BARU UNTUK GOOGLE SHEETS
 use Illuminate\Support\Facades\Storage;
-// --- TAMBAHAN BARU: Import Model Subscription & PaymentController ---
 use App\Models\Subscription;
 use App\Http\Controllers\PaymentController;
 use App\Models\AiSetting;
-// ------------------------------------------------------------------
 
 class BotController extends Controller {
     
     // ====================================================================
-    // 1. FUNGSI UNTUK MEMBERIKAN KONTEKS & DATA KE N8N / AI
-    // ====================================================================
+    // 1. FUNGSI UNTUK MEMBERIKAN KONTEKS & DATA KE PYTHON / AI
     // ====================================================================
     public function getContext(Request $request) {
+        
+        // --- 1. SISTEM KEAMANAN (API KEY DARI PYTHON) ---
+        $apiKey = $request->header('x-tera-api-key');
+        if ($apiKey !== 'TERA_SECURE_KEY_2026_XYZ') {
+            return response()->json(['error' => 'Akses Ditolak! API Key Tidak Valid.'], 401);
+        }
+
         $request->validate([
-            // 'device_id' sepertinya adalah 'instance' dari Wablas
             'device_id' => 'required', 
             'customer_phone' => 'required',
             'message' => 'nullable|string'
@@ -37,12 +41,10 @@ class BotController extends Controller {
         }
 
         // --- NORMALISASI NOMOR TELEPON ---
-        // Karena di database bisa jadi tersimpan dengan atau tanpa @s.whatsapp.net
         $incomingPhone = $request->customer_phone;
         $cleanPhone = str_replace('@s.whatsapp.net', '', $incomingPhone);
 
         // --- MENGAMBIL ATAU MEMBUAT SESI CHAT ---
-        // Kita cari dulu menggunakan beberapa format, jika tidak ada baru kita create
         $session = ChatSession::where('user_id', $member->id)
             ->where(function($query) use ($incomingPhone, $cleanPhone) {
                 $query->where('customer_phone', $incomingPhone)
@@ -53,18 +55,17 @@ class BotController extends Controller {
         if (!$session) {
             $session = ChatSession::create([
                 'user_id' => $member->id,
-                'customer_phone' => $cleanPhone, // Simpan versi bersihnya
+                'customer_phone' => $cleanPhone,
                 'customer_name' => $request->customer_name ?? 'Customer Baru',
-                'is_ai_active' => true // Default aktif untuk sesi baru
+                'is_ai_active' => true 
             ]);
         }
 
         $pesan = strtolower(trim($request->message));
         
-        // Fitur manual pause/resume via chat (Mungkin ini sisa fitur lama, tapi kita pertahankan)
+        // Fitur manual pause/resume via chat 
         if ($pesan === '#s') {
             $session->update(['is_ai_active' => false]);
-            // Jika pause secara manual, hentikan eksekusi bot di sini
              return response()->json([
                 'success' => true,
                 'is_ai_active' => false,
@@ -75,7 +76,6 @@ class BotController extends Controller {
         }
 
         // --- CEK STATUS AI (TERMASUK DARI AUTO-PAUSE OWNER) ---
-        // Ini SANGAT PENTING untuk mencegah bot membalas saat owner sedang take over
         if ($session->is_ai_active == 0 || $session->is_ai_active == false) {
              return response()->json([
                 'success' => true, 
@@ -94,26 +94,19 @@ class BotController extends Controller {
                         ->first();
 
         if (!$activeSub) {
-            // Jika tidak punya paket aktif, paksa AI mati
             $session->update(['is_ai_active' => false]);
             return response()->json(['error' => 'Langganan tidak aktif'], 403);
         } else {
-            // Ambil limit dari paket (misal 0 atau -1 berarti unlimited)
             $maxMessages = $activeSub->plan->max_messages ?? 0;
             
             if ($maxMessages > 0) {
                 $usageCount = $activeSub->usage_count;
 
                 if ($usageCount >= $maxMessages) {
-                    // Kuota habis! Ubah status langganan menjadi expired
                     $activeSub->update(['status' => 'expired']);
                     $member->update(['subscription_status' => 'expired']);
-                    
-                    // Terbitkan invoice baru secara otomatis
                     PaymentController::generateRenewalInvoice($member);
-                    
                     \Log::info("BotController: Member {$member->id} kehabisan kuota ({$maxMessages} pesan). Langganan di-expired-kan & AI dihentikan.");
-                    
                     $session->update(['is_ai_active' => false]);
                     return response()->json(['error' => 'Kuota pesan habis'], 403);
                 }
@@ -127,37 +120,52 @@ class BotController extends Controller {
 
         if(empty($knowledge)) $knowledge = "Tidak ada SOP khusus.";
 
-        // --- INJEKSI DATA KATALOG ---
-        $catalogs = Catalog::with('images')
-                        ->where('user_id', $member->id)
-                        ->where('is_active', true)
-                        ->get();
 
-        if ($catalogs->isNotEmpty()) {
-            $knowledge .= "\n\n=== DATA KATALOG / KETERSEDIAAN SAAT INI ===\n";
-            $knowledge .= "Berikut adalah data real-time harga, stok, dan link foto produk:\n";
-            
-            foreach ($catalogs as $item) {
-                $hargaRupiah = "Rp " . number_format($item->price, 0, ',', '.');
-                $knowledge .= "- Nama: {$item->item_name} | Harga: {$hargaRupiah} | Stok: {$item->stock}\n";
-                if ($item->description) $knowledge .= "  Deskripsi: {$item->description}\n";
+        // ====================================================================
+        // --- 2. MESIN PENCARI KATALOG PINTAR (RAG LITE DARI GOOGLE SHEETS) ---
+        // ====================================================================
+        $triggerWords = ['stok', 'ada', 'harga', 'jual', 'ukuran', 'warna', 'ready', 'katalog', 'produk', 'pesan', 'beli', 'spesifikasi', 'tipe', 'model'];
+        $isAskingProduct = false;
+        
+        foreach ($triggerWords as $word) {
+            if (stripos($pesan, $word) !== false) {
+                $isAskingProduct = true;
+                break;
+            }
+        }
 
-                if ($item->images->count() > 0) {
-                    $allImages = $item->images->map(function($img) {
-                        return asset('storage/' . $img->image_path);
-                    })->implode(' | ');
-                    
-                    $knowledge .= "  KODE GAMBAR: [GAMBAR: {$allImages}]\n";
-                }
+        if ($isAskingProduct) {
+            // Ambil kata-kata kunci dari pesan user (hilangkan simbol dan kata < 3 huruf)
+            $words = array_filter(explode(' ', preg_replace('/[^A-Za-z0-9 ]/', '', $pesan)), function($w) {
+                return strlen($w) > 3;
+            });
+
+            $query = DynamicCatalog::where('user_id', $member->id);
+
+            // Cari di dalam field JSON 'raw_data'
+            if (!empty($words)) {
+                $query->where(function($q) use ($words) {
+                    foreach($words as $w) {
+                        $q->orWhere('raw_data', 'LIKE', '%' . $w . '%');
+                    }
+                });
             }
 
-            // Aturan gambar tetap dipertahankan
-            $knowledge .= "\n=== ATURAN SISTEM PENGIRIMAN GAMBAR (PENTING) ===\n";
-            $knowledge .= "1. Jika customer meminta foto/gambar, kamu WAJIB menyertakan KODE GAMBAR dari data di atas di paling awal kalimat balasanmu (contoh: [GAMBAR: url1 | url2]).\n";
-            $knowledge .= "2. JANGAN PERNAH meringkas atau mengubah link di dalam KODE GAMBAR. Copy-paste persis apa yang ada di data.\n";
-            $knowledge .= "3. Jika customer TIDAK meminta foto, DILARANG KERAS menyertakan KODE GAMBAR.\n";
-            $knowledge .= "4. Jika customer meminta foto lainnya (minta foto lagi), JANGAN KIRIM KODE GAMBAR LAGI! Katakan saja: 'Aku sudah mengirim semua foto secara detail kak'.\n";
+            // AMBIL MAKSIMAL 5 DATA SAJA AGAR HEMAT TOKEN
+            $results = $query->limit(5)->get();
+
+            if ($results->isNotEmpty()) {
+                $knowledge .= "\n\n[SISTEM INFO: HASIL PENCARIAN DATABASE KATALOG SAAT INI]\n";
+                $knowledge .= "Gunakan data berikut untuk menjawab pertanyaan user (Hanya sebutkan yang ditanya atau relevan):\n";
+                foreach ($results as $item) {
+                    // Merubah format Array/JSON menjadi teks yang mudah dibaca AI
+                    $knowledge .= "- " . json_encode($item->raw_data, JSON_UNESCAPED_UNICODE) . "\n";
+                }
+            } else {
+                $knowledge .= "\n\n[SISTEM INFO: Maaf, barang atau ukuran yang dicari tidak ditemukan di database saat ini.]\n";
+            }
         }
+        // ====================================================================
 
         // ====================================================================
         // --- BATASAN KONTEKS & PERINTAH AUTO-STOP ---
@@ -176,7 +184,7 @@ class BotController extends Controller {
         // ====================================================================
         $pkRules = ProductKnowledge::where('user_id', $member->id)->first();
 
-        // 1. Siapkan Fallback Value (Nilai Standar jika User belum setting di UI)
+        // 1. Siapkan Fallback Value
         $aiName           = $pkRules->ai_name ?? 'Rani';
         $customerCall     = $pkRules->customer_call ?? 'Kakak';
         $gayaBahasaOpt    = $pkRules->gaya_bahasa ?? 'santai';
@@ -294,7 +302,7 @@ class BotController extends Controller {
 
         $aiSetting = AiSetting::where('device_id', $request->device_id)->first();
 
-        // RETURN JSON KE N8N
+        // RETURN JSON KE N8N / PYTHON
         return response()->json([
             'knowledge' => $knowledge,
             'wablas_api_key' => $member->wablas_api_key,
@@ -302,9 +310,8 @@ class BotController extends Controller {
             'history' => $formattedHistory,
             'is_ai_active' => $session->is_ai_active,
             'is_command' => in_array($pesan, ['#s', '#c']),
-            // 👇 Tarik data dari tabel AiSetting baru
-           'ai_provider' => $aiSetting->ai_provider ?? 'gemini', 
-           'ai_model' => $aiSetting->ai_model ?? 'gemini-flash-latest', 
+            'ai_provider' => $aiSetting->ai_provider ?? 'gemini', 
+            'ai_model' => $aiSetting->ai_model ?? 'gemini-flash-latest', 
             'deepinfra_api_key' => $aiSetting->deepinfra_api_key ?? null,
             'project_images' => [] 
         ]);
@@ -314,6 +321,13 @@ class BotController extends Controller {
     // 2. FUNGSI UNTUK MENYIMPAN HISTORY CHAT 
     // ====================================================================
     public function saveHistory(Request $request) {
+        
+        // --- SISTEM KEAMANAN (API KEY DARI PYTHON) ---
+        $apiKey = $request->header('x-tera-api-key');
+        if ($apiKey !== 'TERA_SECURE_KEY_2026_XYZ') {
+            return response()->json(['error' => 'Akses Ditolak! API Key Tidak Valid.'], 401);
+        }
+
         $member = User::where('wablas_device_id', $request->device_id)->first();
         
         if ($member) {
@@ -338,13 +352,13 @@ class BotController extends Controller {
             // --- SIMPAN KE DATABASE SEPERTI BIASA ---
             ChatHistory::create([
                 'user_id' => $member->id,
-                'customer_wa' => $cleanPhone, // Lebih baik simpan yang clean
+                'customer_wa' => $cleanPhone, 
                 'user_message' => $request->user_message ?? $request->message ?? '',
                 'ai_response' => trim($aiResponse),
             ]);
 
             // ==========================================================
-            // --- DIPERBAIKI: TAMBAH +1 KE USAGE COUNT TANPA SYARAT ---
+            // --- TAMBAH +1 KE USAGE COUNT TANPA SYARAT ---
             // ==========================================================
             $activeSub = \App\Models\Subscription::where('user_id', $member->id)
                             ->where('status', 'active')
