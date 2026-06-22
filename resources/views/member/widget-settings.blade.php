@@ -61,6 +61,22 @@
                 </form>
             </div>
 
+            <div class="mt-8 bg-slate-900 rounded-[2.5rem] shadow-xl overflow-hidden p-8 border border-slate-800">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="p-2.5 bg-blue-500/20 text-blue-400 rounded-xl">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-black text-white tracking-tight">Script Instalasi Widget</h3>
+                        <p class="text-xs text-slate-400">Copy kode di bawah dan paste sebelum tag <code class="text-blue-300">&lt;/body&gt;</code> di website Anda.</p>
+                    </div>
+                </div>
+
+                <div class="relative bg-black rounded-xl p-4 font-mono text-sm text-green-400 overflow-x-auto border border-slate-800">
+                    <pre><code id="widgetScript">&lt;script src="{{ url('/tera-widget.js') }}" data-base-url="{{ url('/') }}" data-user-id="{{ Auth::id() }}"&gt;&lt;/script&gt;</code></pre>
+                </div>
+            </div>
+
         </div>
     </div>
 </x-app-layout>

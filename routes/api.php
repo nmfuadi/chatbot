@@ -60,3 +60,11 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 // URL Callback untuk diinput di Dashboard Duitku
 Route::post('/duitku/callback', [PaymentController::class, 'callback']);
+
+// ==========================================================
+// --- ENDPOINT UNTUK WIDGET WEBSITE ---
+// ==========================================================
+Route::get('/widget/{user_id}/settings', [\App\Http\Controllers\Api\WidgetApiController::class, 'settings']);
+Route::post('/widget/start', [\App\Http\Controllers\Api\WidgetApiController::class, 'startSession']);
+Route::get('/widget/{session_id}/messages', [\App\Http\Controllers\Api\WidgetApiController::class, 'getMessages']);
+Route::post('/widget/send', [\App\Http\Controllers\Api\WidgetApiController::class, 'sendMessage']);
