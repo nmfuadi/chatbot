@@ -1,7 +1,10 @@
 @php
-    $isChatAutoActive = request()->routeIs('member.pk', 'catalogs.*', 'customers.index');
-    $isSalesActive = request()->routeIs('sales.index', 'member.ai-rules'); 
+    $isChatAutoActive = request()->routeIs('member.pk', 'catalogs.*', 'customers.index', 'member.catalog', 'member.blacklist.index');
+    $isSalesActive = request()->routeIs('sales.index', 'member.ai-rules', 'member.integrations'); 
     $isMonitorActive = request()->routeIs('wa.monitor', 'server.monitor', 'traffic.monitor', 'admin.monitor.logs');
+    
+    // --- TAMBAHAN BARU: Variabel aktif untuk menu Widget & Live Chat ---
+    $isWidgetActive = request()->routeIs('widget.settings', 'livechat.*');
 @endphp
 
 <div x-show="sidebarOpen" 
@@ -92,7 +95,7 @@
                         <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
                         <span x-show="!sidebarMinimized">AI Chat Auto</span>
                     </div>
-                    <svg x-show="!sidebarMinimized" :class="{'rotate-180': expanded}" class="w-4 h-4 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    <svg x-show="!sidebarMinimized" :class="{'rotate-180': expanded}" class="w-4 h-4 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7-7-7-7"></path></svg>
                 </button>
                 <div x-show="expanded && !sidebarMinimized" x-collapse class="mt-1 space-y-1 bg-slate-950/50 rounded-lg p-2">
                     <a href="{{ route('member.pk') }}" class="block px-10 py-2 text-sm rounded-md transition-colors {{ request()->routeIs('member.pk') ? 'text-blue-400 font-bold' : 'text-slate-400 hover:text-white hover:bg-slate-800' }}">SOP & Product</a>
@@ -103,39 +106,14 @@
                 </div>
             </div>
 
-            <div x-data="{ expanded: {{ $isSalesActive ? 'true' : 'false' }} }" class="mt-2" title="AI Sales Intelligent">
-                <button @click="sidebarMinimized ? sidebarMinimized = false : expanded = !expanded" class="flex items-center w-full py-2.5 rounded-lg font-medium transition-colors {{ $isSalesActive ? 'bg-slate-800 text-white' : 'hover:bg-slate-800 hover:text-white' }}" :class="sidebarMinimized ? 'justify-center px-0' : 'justify-between px-3'">
+            <div x-data="{ expanded: {{ $isWidgetActive ? 'true' : 'false' }} }" class="mt-2" title="Omnichannel & Widget">
+                <button @click="sidebarMinimized ? sidebarMinimized = false : expanded = !expanded" class="flex items-center w-full py-2.5 rounded-lg font-medium transition-colors {{ $isWidgetActive ? 'bg-slate-800 text-white' : 'hover:bg-slate-800 hover:text-white' }}" :class="sidebarMinimized ? 'justify-center px-0' : 'justify-between px-3'">
                     <div class="flex items-center gap-3">
-                        <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
-                        <span x-show="!sidebarMinimized">AI Sales Intelligent</span>
+                        <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+                        <span x-show="!sidebarMinimized">Live Chat & Widget</span>
                     </div>
-                    <svg x-show="!sidebarMinimized" :class="{'rotate-180': expanded}" class="w-4 h-4 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    <svg x-show="!sidebarMinimized" :class="{'rotate-180': expanded}" class="w-4 h-4 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7-7-7-7"></path></svg>
                 </button>
                 <div x-show="expanded && !sidebarMinimized" x-collapse class="mt-1 space-y-1 bg-slate-950/50 rounded-lg p-2">
-                    <a href="{{ route('sales.index') }}" class="block px-10 py-2 text-sm rounded-md transition-colors {{ request()->routeIs('sales.index') ? 'text-blue-400 font-bold' : 'text-slate-400 hover:text-white hover:bg-slate-800' }}">Sales Pipeline</a>
-                    <a href="{{ route('member.ai-rules') }}" class="block px-10 py-2 text-sm rounded-md transition-colors {{ request()->routeIs('member.ai-rules') ? 'text-blue-400 font-bold' : 'text-slate-400 hover:text-white hover:bg-slate-800' }}">Aturan Pipeline AI</a>
-                    <a href="{{ route('member.integrations') }}" class="block px-10 py-2 text-sm rounded-md transition-colors {{ request()->routeIs('member.integrations') ? 'text-blue-400 font-bold' : 'text-slate-400 hover:text-white hover:bg-slate-800' }}">Integrasi & Tracking</a>
-                </div>
-            </div>
-        @endif
-    </nav>
-    
-    <div class="bg-slate-950 border-t border-slate-800 shrink-0">
-        
-        <button @click="sidebarMinimized = !sidebarMinimized" class="hidden lg:flex w-full items-center py-2.5 text-slate-400 hover:text-white hover:bg-slate-900 transition-colors border-b border-slate-800" :class="sidebarMinimized ? 'justify-center' : 'px-4 justify-between'">
-            <span class="text-xs font-bold uppercase tracking-widest text-slate-500" x-show="!sidebarMinimized">Minimize</span>
-            <svg class="w-5 h-5 transition-transform duration-300" :class="sidebarMinimized ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"></path></svg>
-        </button>
-
-        <div class="p-4 flex items-center transition-all duration-300" :class="sidebarMinimized ? 'justify-center px-0' : 'gap-3'">
-            <div class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold shrink-0 shadow-lg">
-                {{ substr(Auth::user()->name, 0, 1) }}
-            </div>
-            <div class="overflow-hidden" x-show="!sidebarMinimized">
-                <p class="text-sm font-medium text-white truncate">{{ Auth::user()->name }}</p>
-                <p class="text-xs text-slate-500 truncate">{{ Auth::user()->email }}</p>
-            </div>
-        </div>
-
-    </div>
-</aside>
+                    <a href="{{ route('livechat.index') }}" class="block px-10 py-2 text-sm rounded-md transition-colors {{ request()->routeIs('livechat.*') ? 'text-blue-400 font-bold' : 'text-slate-400 hover:text-white hover:bg-slate-800' }}">Dashboard Live Chat</a>
+                    <a href="{{ route('widget.settings') }}"

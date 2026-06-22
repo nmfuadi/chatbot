@@ -18,11 +18,31 @@ class OnboardingController extends Controller
     // 2. Proses Simpan Profil & Kirim OTP
     public function submitProfile(Request $request)
     {
+        // ==========================================================
+        // --- NORMALISASI NOMOR TELEPON ---
+        // ==========================================================
+        $phone = $request->whatsapp_number;
+        
+        if ($phone) {
+            // 1. Bersihkan semua karakter selain angka (seperti +, spasi, dan strip)
+            $phone = preg_replace('/[^0-9]/', '', $phone);
+
+            // 2. Jika nomor berawalan 08, ganti 0 pertama dengan 62
+            if (str_starts_with($phone, '08')) {
+                $phone = '62' . substr($phone, 1);
+            }
+
+            // 3. Timpa data whatsapp_number di request dengan nomor yang sudah bersih
+            $request->merge(['whatsapp_number' => $phone]);
+        }
+        // ==========================================================
+
         $request->validate([
             'business_name' => 'required|string|max:255',
             'business_category' => 'required|string',
             'business_address' => 'required|string',
             'business_description' => 'required|string',
+            // Validasi 'unique' sekarang akan mengecek nomor yang sudah dinormalisasi (628...)
             'whatsapp_number' => 'required|numeric|unique:users,whatsapp_number,' . Auth::id(),
         ]);
 
@@ -35,7 +55,7 @@ class OnboardingController extends Controller
             'business_category' => $request->business_category,
             'business_address' => $request->business_address,
             'business_description' => $request->business_description,
-            'whatsapp_number' => $request->whatsapp_number,
+            'whatsapp_number' => $request->whatsapp_number, // Ini sudah pakai nomor format 62
             'otp_code' => $otp,
             'otp_expires_at' => Carbon::now()->addMinutes(5), // Kedaluwarsa dalam 5 menit
         ]);
@@ -55,7 +75,7 @@ class OnboardingController extends Controller
         'apikey' => $globalApiKey,
         'Content-Type' => 'application/json'
     ])->post("{$evolutionUrl}/message/sendText/{$adminInstance}", [
-        'number' => $request->whatsapp_number."@s.whatsapp.net", // Tambahkan .'@s.whatsapp.net' di sini jika API-nya butuh
+        'number' => $request->whatsapp_number."@s.whatsapp.net", // Ini juga otomatis pakai format 62
         'text' => $messageText,
         'delay' => 5000,
         'linkPreview' => true

@@ -1,0 +1,66 @@
+<x-app-layout>
+    <x-slot name="header">
+        <h2 class="font-bold text-2xl text-gray-900 leading-tight">
+            {{ __('Pengaturan Live Chat Widget') }}
+        </h2>
+        <p class="text-sm text-gray-500 mt-1">Kustomisasi tampilan widget chat untuk dipasang di website Anda.</p>
+    </x-slot>
+
+    <div class="py-10 bg-gray-50/50 min-h-screen">
+        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
+            
+            @if(session('success'))
+                <div class="mb-6 bg-green-50 border border-green-100 text-green-700 px-4 py-3 rounded-2xl flex items-center gap-3">
+                    <span class="text-sm font-bold">{{ session('success') }}</span>
+                </div>
+            @endif
+
+            <div class="bg-white rounded-[2.5rem] shadow-sm ring-1 ring-gray-900/5 overflow-hidden p-8">
+                <form action="{{ route('widget.update') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
+                    @csrf
+                    
+                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-2xl">
+                        <div>
+                            <h4 class="font-bold text-gray-900">Status Widget</h4>
+                            <p class="text-xs text-gray-500">Aktifkan untuk menampilkan widget di website Anda.</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" name="is_active" class="sr-only peer" {{ $setting->is_active ? 'checked' : '' }}>
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                        </label>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Warna Utama Widget</label>
+                        <div class="flex items-center gap-3">
+                            <input type="color" name="primary_color" value="{{ $setting->primary_color }}" class="h-10 w-20 rounded cursor-pointer border-gray-300">
+                            <span class="text-xs text-gray-500">Pilih warna yang sesuai dengan branding website Anda.</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Pesan Sambutan (Greeting Text)</label>
+                        <input type="text" name="greeting_text" value="{{ $setting->greeting_text }}" class="w-full border-gray-200 bg-gray-50 rounded-xl p-3.5 focus:ring-indigo-500 text-sm" required>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Logo Widget (Opsional)</label>
+                        @if($setting->logo_path)
+                            <div class="mb-3">
+                                <img src="{{ asset('storage/' . $setting->logo_path) }}" alt="Logo" class="h-16 w-16 object-cover rounded-full border border-gray-200">
+                            </div>
+                        @endif
+                        <input type="file" name="logo" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                    </div>
+
+                    <div class="pt-4 border-t border-gray-100 flex justify-end">
+                        <button type="submit" class="bg-indigo-600 text-white font-black px-6 py-3 rounded-xl shadow-md hover:bg-indigo-700">
+                            Simpan Pengaturan
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</x-app-layout>
