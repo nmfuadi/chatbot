@@ -256,4 +256,30 @@ class MemberController extends Controller
 
         return back()->with('success', 'Aturan Indikator Pipeline AI berhasil diperbarui.');
     }
+
+
+    public function storeBlacklist(\Illuminate\Http\Request $request)
+    {
+        $request->validate([
+            'phone_number' => 'required'
+        ]);
+
+        $phone = $request->phone_number;
+
+        // 1. Bersihkan semua karakter selain angka (spasi, strip, tanda + hilang)
+        $phone = preg_replace('/[^0-9]/', '', $phone);
+
+        // 2. Normalisasi: Jika berawalan 08, ganti 0 dengan 62
+        if (str_starts_with($phone, '08')) {
+            $phone = '62' . substr($phone, 1);
+        }
+
+        // Simpan ke database
+        \App\Models\Blacklist::updateOrCreate([
+            'user_id' => \Illuminate\Support\Facades\Auth::id(),
+            'phone_number' => $phone
+        ]);
+
+        return back()->with('success', "Nomor $phone berhasil dimasukkan ke daftar Blacklist!");
+    }
 }

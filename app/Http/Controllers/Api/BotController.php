@@ -44,6 +44,23 @@ class BotController extends Controller {
         $incomingPhone = $request->customer_phone;
         $cleanPhone = str_replace('@s.whatsapp.net', '', $incomingPhone);
 
+        // ==========================================================
+        // --- CEK BLACKLIST ---
+        // ==========================================================
+        $isBlacklisted = \App\Models\Blacklist::where('user_id', $member->id)
+                            ->where('phone_number', $cleanPhone)
+                            ->exists();
+
+        if ($isBlacklisted) {
+            return response()->json([
+                'success' => true,
+                'is_ai_active' => false,
+                'is_blacklisted' => true, // Kirim sinyal ini ke Python
+                'message' => 'Nomor ini masuk dalam daftar Blacklist.'
+            ]);
+        }
+        // ==========================================================
+
         // --- MENGAMBIL ATAU MEMBUAT SESI CHAT ---
         $session = ChatSession::where('user_id', $member->id)
             ->where(function($query) use ($incomingPhone, $cleanPhone) {

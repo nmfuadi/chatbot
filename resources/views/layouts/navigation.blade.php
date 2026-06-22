@@ -99,6 +99,7 @@
                     <a href="{{ route('catalogs.index') }}" class="block px-10 py-2 text-sm rounded-md transition-colors {{ request()->routeIs('catalogs.*') ? 'text-blue-400 font-bold' : 'text-slate-400 hover:text-white hover:bg-slate-800' }}">Katalog Produk</a>
                     <a href="{{ route('member.catalog') }}" class="block px-10 py-2 text-sm rounded-md transition-colors {{ request()->route('member.catalog') ? 'text-blue-400 font-bold' : 'text-slate-400 hover:text-white hover:bg-slate-800' }}">Katalog Produk Dinamis</a>
                     <a href="{{ route('customers.index') }}" class="block px-10 py-2 text-sm rounded-md transition-colors {{ request()->routeIs('customers.index') ? 'text-blue-400 font-bold' : 'text-slate-400 hover:text-white hover:bg-slate-800' }}">Data Customer</a>
+                    <a href="{{ route('member.blacklist.index') }}" class="block px-10 py-2 text-sm rounded-md transition-colors {{ request()->routeIs('member.blacklist.index') ? 'text-blue-400 font-bold' : 'text-slate-400 hover:text-white hover:bg-slate-800' }}">Block List</a>
                 </div>
             </div>
 

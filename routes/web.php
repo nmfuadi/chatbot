@@ -19,6 +19,7 @@ use App\Http\Controllers\AiMonitoringController;
 use App\Http\Controllers\Admin\MonitoringLogController;
 use App\Http\Controllers\Admin\PlanController; // Untuk resource plans
 
+
 // --- Imports Middleware & Models ---
 use App\Http\Middleware\EnsureWaVerified;
 use App\Http\Middleware\EnsureHasActiveSubscription;
@@ -182,6 +183,12 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/select-plan', [SubscriptionController::class, 'index'])->name('user.plans.index');
         Route::post('/select-plan/{plan}', [SubscriptionController::class, 'subscribe'])->name('user.plans.subscribe');
         Route::post('/cancel-plan', [SubscriptionController::class, 'cancelPlan'])->name('user.plans.cancel');
+
+        // --- ROUTE BLACKLIST NOMOR WA ---
+Route::get('/member/blacklist', [\App\Http\Controllers\BlacklistController::class, 'index'])->name('member.blacklist.index');
+Route::post('/member/blacklist', [\App\Http\Controllers\BlacklistController::class, 'store'])->name('member.blacklist.store');
+Route::put('/member/blacklist/{id}', [\App\Http\Controllers\BlacklistController::class, 'update'])->name('member.blacklist.update');
+Route::delete('/member/blacklist/{id}', [\App\Http\Controllers\BlacklistController::class, 'destroy'])->name('member.blacklist.destroy');
 
         // Tagihan, Invoice & Duitku
         Route::get('/invoices', [PaymentController::class, 'index'])->name('user.invoice.index');
