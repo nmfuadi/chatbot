@@ -192,7 +192,9 @@ Route::delete('/member/blacklist/{id}', [\App\Http\Controllers\BlacklistControll
 
 // --- LIVE CHAT & WIDGET ---
 Route::get('/member/live-chat', [\App\Http\Controllers\LiveChatController::class, 'index'])->name('livechat.index');
-
+// 2. Rute Pengaturan Widget
+Route::get('/member/widget-settings', [\App\Http\Controllers\WidgetSettingController::class, 'index'])->name('widget.settings');
+Route::post('/member/widget-settings', [\App\Http\Controllers\WidgetSettingController::class, 'update'])->name('widget.update');
         // Tagihan, Invoice & Duitku
         Route::get('/invoices', [PaymentController::class, 'index'])->name('user.invoice.index');
         Route::get('/invoice/{invoice}', [InvoiceController::class, 'show'])->name('user.invoice.show');
