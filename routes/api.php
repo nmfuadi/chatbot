@@ -61,10 +61,16 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 // URL Callback untuk diinput di Dashboard Duitku
 Route::post('/duitku/callback', [PaymentController::class, 'callback']);
 
+
+
 // ==========================================================
 // --- ENDPOINT UNTUK WIDGET WEBSITE ---
 // ==========================================================
 Route::get('/widget/{user_id}/settings', [\App\Http\Controllers\Api\WidgetApiController::class, 'settings']);
 Route::post('/widget/start', [\App\Http\Controllers\Api\WidgetApiController::class, 'startSession']);
 Route::get('/widget/{session_id}/messages', [\App\Http\Controllers\Api\WidgetApiController::class, 'getMessages']);
-Route::post('/widget/send', [\App\Http\Controllers\Api\WidgetApiController::class, 'sendMessage']);
+Route::post('/widget/save-customer-message', [\App\Http\Controllers\Api\WidgetApiController::class, 'saveCustomerMessage']);
+
+// Khusus Ditembak oleh Server Python
+Route::post('/widget/context', [\App\Http\Controllers\Api\WidgetApiController::class, 'getContext']);
+Route::post('/widget/save-reply', [\App\Http\Controllers\Api\WidgetApiController::class, 'saveReply']);

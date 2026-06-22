@@ -10,7 +10,6 @@ use App\Models\ChatSession;
 use App\Models\LiveChatMessage;
 use App\Models\ProductKnowledge;
 use App\Models\AiSetting;
-use Illuminate\Support\Facades\Http;
 
 class WidgetApiController extends Controller
 {
@@ -51,71 +50,54 @@ class WidgetApiController extends Controller
         return response()->json($messages);
     }
 
-    // 4. Kirim Pesan & Eksekusi Otak AI (DeepInfra)
-    public function sendMessage(Request $request)
+    // 4. API UNTUK DIPANGGIL PYTHON: Ambil Konteks SOP & History
+    public function getContext(Request $request)
     {
         $session = ChatSession::findOrFail($request->session_id);
+        $member = User::find($session->user_id);
+        
+        $pk = ProductKnowledge::where('user_id', $member->id)->first();
+        $aiSetting = AiSetting::where('user_id', $member->id)->first(); 
+        
+        $knowledge = $pk->content ?? "Kamu adalah asisten CS yang ramah.";
+        
+        // Ambil 10 histori terakhir dari tabel LiveChatMessage
+        $histories = LiveChatMessage::where('chat_session_id', $session->id)->latest()->take(10)->get()->reverse();
+        $formattedHistory = [];
+        foreach ($histories as $h) {
+            $role = ($h->sender_type == 'customer') ? 'user' : 'assistant';
+            $formattedHistory[] = ['role' => $role, 'content' => $h->message];
+        }
 
-        // A. Simpan Pesan Customer
+        return response()->json([
+            'knowledge' => $knowledge,
+            'history' => $formattedHistory,
+            'is_ai_active' => $session->is_ai_active,
+            'ai_model' => $aiSetting->ai_model ?? 'google/gemma-3-4b-it',
+            'deepinfra_api_key' => $aiSetting->deepinfra_api_key ?? null,
+            'is_blacklisted' => false // Widget belum perlu blacklist nomor HP
+        ]);
+    }
+
+    // 5. API UNTUK JS WIDGET: Simpan Pesan Customer Saja
+    public function saveCustomerMessage(Request $request)
+    {
         LiveChatMessage::create([
-            'chat_session_id' => $session->id,
+            'chat_session_id' => $request->session_id,
             'message' => $request->message,
             'sender_type' => 'customer'
         ]);
+        return response()->json(['status' => 'success']);
+    }
 
-        // B. Jika AI Sedang Dimatikan (Diambil alih Admin), langsung return
-        if (!$session->is_ai_active) {
-            return response()->json(['status' => 'success', 'ai_replied' => false]);
-        }
-
-        // C. PROSES AI (MENDUPLIKASI LOGIKA DARI PYTHON)
-        $member = User::find($session->user_id);
-        $pk = ProductKnowledge::where('user_id', $member->id)->first();
-        $aiSetting = AiSetting::where('user_id', $member->id)->first(); // Asumsi relasi user_id ada
-
-        $knowledge = $pk->content ?? "Kamu adalah asisten CS yang ramah.";
-        $systemInstruction = $knowledge . "\n\nWAJIB balas dalam format JSON murni: {\"reply_text\": \"balasanmu\", \"lead_status\": \"prospect\"}";
-
-        // Rakit History untuk Prompt OpenAI
-        $openai_messages = [['role' => 'system', 'content' => $systemInstruction]];
-        $histories = LiveChatMessage::where('chat_session_id', $session->id)->latest()->take(10)->get()->reverse();
-        
-        foreach ($histories as $h) {
-            $role = ($h->sender_type == 'customer') ? 'user' : 'assistant';
-            $openai_messages[] = ['role' => $role, 'content' => $h->message];
-        }
-
-        // Tembak ke DeepInfra
-        $di_api_key = $aiSetting->deepinfra_api_key ?? "bL5jGLz5bSmO0tyGtNdGYoA6u2jMYMTW"; // Gunakan Master Key jika user tidak punya
-        $di_model = $aiSetting->ai_model ?? 'google/gemma-3-4b-it';
-
-        try {
-            $response = Http::timeout(45)->withToken($di_api_key)->post('https://api.deepinfra.com/v1/openai/chat/completions', [
-                'model' => $di_model,
-                'max_tokens' => 2000,
-                'messages' => $openai_messages,
-                'response_format' => ['type' => 'json_object']
-            ]);
-
-            if ($response->successful()) {
-                $data = $response->json();
-                $rawText = $data['choices'][0]['message']['content'];
-                
-                // Ekstrak reply_text dari JSON
-                $parsedAi = json_decode($rawText, true);
-                $finalReply = $parsedAi['reply_text'] ?? "Maaf, aku sedang memproses permintaanmu.";
-
-                // Simpan Balasan AI
-                LiveChatMessage::create([
-                    'chat_session_id' => $session->id,
-                    'message' => $finalReply,
-                    'sender_type' => 'ai'
-                ]);
-            }
-        } catch (\Exception $e) {
-            \Log::error("Widget AI Error: " . $e->getMessage());
-        }
-
+    // 6. API UNTUK PYTHON: Simpan Balasan AI
+    public function saveReply(Request $request)
+    {
+        LiveChatMessage::create([
+            'chat_session_id' => $request->session_id,
+            'message' => $request->message,
+            'sender_type' => 'ai'
+        ]);
         return response()->json(['status' => 'success']);
     }
 }
