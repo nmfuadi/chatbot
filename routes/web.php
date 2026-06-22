@@ -190,6 +190,9 @@ Route::post('/member/blacklist', [\App\Http\Controllers\BlacklistController::cla
 Route::put('/member/blacklist/{id}', [\App\Http\Controllers\BlacklistController::class, 'update'])->name('member.blacklist.update');
 Route::delete('/member/blacklist/{id}', [\App\Http\Controllers\BlacklistController::class, 'destroy'])->name('member.blacklist.destroy');
 
+// --- LIVE CHAT & WIDGET ---
+Route::get('/member/live-chat', [\App\Http\Controllers\LiveChatController::class, 'index'])->name('livechat.index');
+
         // Tagihan, Invoice & Duitku
         Route::get('/invoices', [PaymentController::class, 'index'])->name('user.invoice.index');
         Route::get('/invoice/{invoice}', [InvoiceController::class, 'show'])->name('user.invoice.show');
