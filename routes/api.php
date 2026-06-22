@@ -8,6 +8,7 @@ use App\Http\Controllers\PaymentController;
 use Illuminate\Support\Facades\File;
 use Carbon\Carbon;
 use App\Http\Controllers\Api\LeadAnalyticController;
+use App\Http\Controllers\Api\WidgetApiController;
 
 /*
 |--------------------------------------------------------------------------
@@ -66,11 +67,12 @@ Route::post('/duitku/callback', [PaymentController::class, 'callback']);
 // ==========================================================
 // --- ENDPOINT UNTUK WIDGET WEBSITE ---
 // ==========================================================
-Route::get('/widget/{user_id}/settings', [\App\Http\Controllers\Api\WidgetApiController::class, 'settings']);
-Route::post('/widget/start', [\App\Http\Controllers\Api\WidgetApiController::class, 'startSession']);
-Route::get('/widget/{session_id}/messages', [\App\Http\Controllers\Api\WidgetApiController::class, 'getMessages']);
-Route::post('/widget/save-customer-message', [\App\Http\Controllers\Api\WidgetApiController::class, 'saveCustomerMessage']);
+Route::get('/widget/{user_id}/settings', [WidgetApiController::class, 'settings']);
+Route::post('/widget/start', [WidgetApiController::class, 'startSession']);
+Route::get('/widget/{session_id}/messages', [WidgetApiController::class, 'getMessages']);
+Route::post('/widget/save-customer-message', [WidgetApiController::class, 'saveCustomerMessage']);
 
 // Khusus Ditembak oleh Server Python
-Route::post('/widget/context', [\App\Http\Controllers\Api\WidgetApiController::class, 'getContext']);
-Route::post('/widget/save-reply', [\App\Http\Controllers\Api\WidgetApiController::class, 'saveReply']);
+Route::post('/widget/context', [WidgetApiController::class, 'getContext']);
+Route::post('/widget/save-reply', [WidgetApiController::class, 'saveReply']);
+Route::post('widget/send', [WidgetApiController::class, 'sendMessage']);

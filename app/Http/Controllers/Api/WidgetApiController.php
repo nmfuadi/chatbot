@@ -44,11 +44,23 @@ class WidgetApiController extends Controller
     }
 
     // 3. Tarik Riwayat Pesan (Untuk Sinkronisasi)
-    public function getMessages($session_id)
-    {
-        $messages = LiveChatMessage::where('chat_session_id', $session_id)->orderBy('created_at', 'asc')->get();
-        return response()->json($messages);
+    public function getMessages($sessionId)
+{
+    // 1. Ambil data sesi aktifnya dulu
+    $session = ChatSession::find($sessionId);
+    
+    if (!$session) {
+        return response()->json([]);
     }
+
+    // 2. Cari history di tabel chat_histories berdasarkan nomor wa si customer
+    $messages = LiveChatMessage::where('user_id', $session->user_id)
+        ->where('customer_wa', $session->customer_phone)
+        ->orderBy('created_at', 'asc')
+        ->get();
+
+    return response()->json($messages);
+}
 
     // 4. API UNTUK DIPANGGIL PYTHON: Ambil Konteks SOP & History
     public function getContext(Request $request)
