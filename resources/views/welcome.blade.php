@@ -630,4 +630,6 @@
     </footer>
 
 </body>
+
+<script src="https://chatbotnew.web.id/tera-widget.js" data-base-url="https://chatbotnew.web.id" data-user-id="10"></script>
 </html>
