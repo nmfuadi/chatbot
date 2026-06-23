@@ -45,22 +45,14 @@ class WidgetApiController extends Controller
 
     // 3. Tarik Riwayat Pesan (Untuk Sinkronisasi)
     public function getMessages($sessionId)
-{
-    // 1. Ambil data sesi aktifnya dulu
-    $session = ChatSession::find($sessionId);
+    {
+        // Mengambil riwayat pesan widget berdasarkan chat_session_id
+        $messages = LiveChatMessage::where('chat_session_id', $sessionId)
+            ->orderBy('created_at', 'asc')
+            ->get();
     
-    if (!$session) {
-        return response()->json([]);
+        return response()->json($messages);
     }
-
-    // 2. Cari history di tabel chat_histories berdasarkan nomor wa si customer
-    $messages = LiveChatMessage::where('user_id', $session->user_id)
-        ->where('customer_wa', $session->customer_phone)
-        ->orderBy('created_at', 'asc')
-        ->get();
-
-    return response()->json($messages);
-}
 
     // 4. API UNTUK DIPANGGIL PYTHON: Ambil Konteks SOP & History
     public function getContext(Request $request)
@@ -94,22 +86,43 @@ class WidgetApiController extends Controller
     // 5. API UNTUK JS WIDGET: Simpan Pesan Customer Saja
     public function saveCustomerMessage(Request $request)
     {
-        LiveChatMessage::create([
-            'chat_session_id' => $request->session_id,
-            'message' => $request->message,
-            'sender_type' => 'customer'
+        // UBAH: Validasi menangkap 'session_id' sesuai kiriman JS (bukan chat_session_id)
+        $request->validate([
+            'session_id' => 'required|exists:chat_sessions,id',
+            'message' => 'required|string',
         ]);
-        return response()->json(['status' => 'success']);
+
+        // Simpan pesan dari pengguna widget masuk ke live_chat_messages
+        $message = LiveChatMessage::create([
+            'chat_session_id' => $request->session_id, // UBAH: Ambil dari session_id
+            'message'         => $request->message,
+            'sender_type'     => 'customer', 
+            'is_read'         => 0
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'data'    => $message
+        ]);
     }
 
     // 6. API UNTUK PYTHON: Simpan Balasan AI
     public function saveReply(Request $request)
     {
-        LiveChatMessage::create([
-            'chat_session_id' => $request->session_id,
-            'message' => $request->message,
-            'sender_type' => 'ai'
+        // UBAH: Tambahkan validasi agar aman dan datanya valid
+        $request->validate([
+            'session_id' => 'required|exists:chat_sessions,id',
+            'message' => 'required|string',
         ]);
-        return response()->json(['status' => 'success']);
+
+        // UBAH: Tambahkan is_read agar strukturnya sama dengan tabel
+        $aiMessage = LiveChatMessage::create([
+            'chat_session_id' => $request->session_id,
+            'message'         => $request->message,
+            'sender_type'     => 'ai',
+            'is_read'         => 0
+        ]);
+
+        return response()->json(['status' => 'success', 'data' => $aiMessage]);
     }
 }

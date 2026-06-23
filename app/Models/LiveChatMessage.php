@@ -9,15 +9,19 @@ class LiveChatMessage extends Model
 {
     use HasFactory;
 
-    // Hubungkan model ini secara paksa ke tabel chat_histories milik Kakak
-    protected $table = 'chat_histories';
+    // Hubungkan ke tabel khusus web widget sesuai image_c50ac6.png
+    protected $table = 'live_chat_messages';
 
-    protected $guarded = [];
+    protected $fillable = [
+        'chat_session_id',
+        'message',
+        'sender_type',
+        'is_read'
+    ];
 
-    // Jika di controller mencari berdasarkan nomor WA atau user_id
-    // Kita pastikan relasinya aman ke user pembawa bot
-    public function user()
+    // Relasi balik ke sesi chat
+    public function chatSession()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(ChatSession::class, 'chat_session_id');
     }
 }
