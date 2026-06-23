@@ -12,22 +12,39 @@
     
     var widgetColor = '#4F46E5';
     var greetingText = 'Halo! Ada yang bisa dibantu?';
+    var widgetLogo = ''; // Variabel baru untuk menampung URL Logo
 
     fetch(`${baseUrl}/api/widget/${userId}/settings`)
         .then(res => res.json())
         .then(data => {
             if(data.error) return; 
-            widgetColor = data.primary_color;
-            greetingText = data.greeting_text;
+            if(data.primary_color) widgetColor = data.primary_color;
+            if(data.greeting_text) greetingText = data.greeting_text;
+            
+            // --- LOGIKA MENANGKAP LOGO WIDGET ---
+            if(data.logo) {
+                // Jika URL sudah full HTTP, gunakan langsung. Jika path lokal, tambahkan /storage/
+                widgetLogo = data.logo.startsWith('http') ? data.logo : `${baseUrl}/storage/${data.logo}`;
+            }
+
             renderWidget();
         }).catch(err => console.log('TERA Widget Disabled'));
 
     function renderWidget() {
+        // --- LOGIKA MENGGANTI ISI TOMBOL ---
+        // Jika ada logo, render tag <img>. Jika tidak ada, gunakan ikon chat bawaan.
+        var fabContent = widgetLogo 
+            ? `<img src="${widgetLogo}" alt="Chat" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">` 
+            : `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>`;
+
         var style = document.createElement('style');
         style.innerHTML = `
             #tera-widget-container { position: fixed; bottom: 20px; right: 20px; z-index: 999999; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-            #tera-fab { width: 60px; height: 60px; border-radius: 50%; background: ${widgetColor}; color: white; border: none; cursor: pointer; box-shadow: 0 6px 16px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; font-size: 28px; transition: transform 0.2s ease, box-shadow 0.2s ease;}
+            
+            /* PERUBAHAN PADA FAB: Ditambah padding 0 dan overflow hidden agar gambar logo pas di lingkaran */
+            #tera-fab { width: 60px; height: 60px; border-radius: 50%; background: ${widgetColor}; color: white; border: none; cursor: pointer; box-shadow: 0 6px 16px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; font-size: 28px; transition: transform 0.2s ease, box-shadow 0.2s ease; padding: 0; overflow: hidden; }
             #tera-fab:hover { transform: scale(1.08); box-shadow: 0 8px 20px rgba(0,0,0,0.25); }
+            
             #tera-chat-box { width: 360px; height: 550px; max-height: 80vh; background: #ffffff; border-radius: 20px; box-shadow: 0 15px 40px rgba(0,0,0,0.2); display: none; flex-direction: column; overflow: hidden; position: absolute; bottom: 85px; right: 0; border: 1px solid #f0f0f0; }
             #tera-header { background: ${widgetColor}; color: white; padding: 18px 20px; font-weight: bold; font-size: 16px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 10; }
             #tera-body { flex: 1; padding: 20px; overflow-y: auto; background: #f8f9fa; display: flex; flex-direction: column; gap: 12px; }
@@ -73,7 +90,10 @@
         container.innerHTML = `
             <div id="tera-chat-box">
                 <div id="tera-header">
-                    <div><span style="font-size:18px; margin-right:8px;">👋</span> Customer Service</div>
+                    <div style="display: flex; align-items: center;">
+                        ${widgetLogo ? `<img src="${widgetLogo}" style="width:24px; height:24px; border-radius:50%; margin-right:8px; object-fit:cover; border: 1px solid white;">` : `<span style="font-size:18px; margin-right:8px;">👋</span>`} 
+                        Customer Service
+                    </div>
                     <button id="tera-close" style="background:none; border:none; color:white; cursor:pointer; font-size:20px;">×</button>
                 </div>
                 <div id="tera-body"></div>
@@ -82,7 +102,7 @@
                     <button id="tera-send"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg></button>
                 </div>
             </div>
-            <button id="tera-fab">💬</button>
+            <button id="tera-fab">${fabContent}</button>
         `;
         document.body.appendChild(container);
 
