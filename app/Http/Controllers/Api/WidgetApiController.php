@@ -293,7 +293,7 @@ $aiSetting = AiSetting::where('device_id', $member->wablas_device_id)->first();
         return response()->json(['success' => true, 'data' => $message]);
     }
 
-    // 6. API UNTUK PYTHON: Simpan Balasan AI
+    // 6. API UNTUK PYTHON: Simpan Balasan AI & Potong Kuota
     public function saveReply(Request $request)
     {
         $request->validate([
@@ -301,12 +301,26 @@ $aiSetting = AiSetting::where('device_id', $member->wablas_device_id)->first();
             'message' => 'required|string',
         ]);
 
+        // 1. Simpan balasan AI ke database
         $aiMessage = LiveChatMessage::create([
             'chat_session_id' => $request->session_id,
             'message'         => $request->message,
             'sender_type'     => 'ai',
             'is_read'         => 0
         ]);
+
+        // 2. Tambahkan +1 ke Pemakaian Kuota (Usage Count)
+        $session = ChatSession::find($request->session_id);
+        if ($session) {
+            $activeSub = \App\Models\Subscription::where('user_id', $session->user_id)
+                            ->where('status', 'active')
+                            ->first();
+                            
+            if ($activeSub) {
+                $activeSub->increment('usage_count');
+                \Illuminate\Support\Facades\Log::info("✅ WIDGET USAGE: User ID {$session->user_id} sekarang menggunakan {$activeSub->usage_count} pesan.");
+            }
+        }
 
         return response()->json(['status' => 'success', 'data' => $aiMessage]);
     }
