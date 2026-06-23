@@ -19,6 +19,7 @@ use App\Http\Controllers\AiMonitoringController;
 use App\Http\Controllers\Admin\MonitoringLogController;
 use App\Http\Controllers\Admin\PlanController; // Untuk resource plans
 use App\Http\Controllers\WidgetSettingController;
+use App\Http\Controllers\LiveChatController;
 
 
 // --- Imports Middleware & Models ---
@@ -192,11 +193,18 @@ Route::put('/member/blacklist/{id}', [\App\Http\Controllers\BlacklistController:
 Route::delete('/member/blacklist/{id}', [\App\Http\Controllers\BlacklistController::class, 'destroy'])->name('member.blacklist.destroy');
 
 // --- LIVE CHAT & WIDGET ---
-Route::get('/member/live-chat', [\App\Http\Controllers\LiveChatController::class, 'index'])->name('livechat.index');
+// Rute Live Chat Dashboard
+Route::get('/livechat', [LiveChatController::class, 'index'])->name('livechat.index');
+Route::get('/livechat/sessions', [LiveChatController::class, 'getSessions']);
+Route::get('/livechat/{session}/messages', [LiveChatController::class, 'getMessages']);
+Route::post('/livechat/send', [LiveChatController::class, 'sendMessage']);
+Route::post('/livechat/{session}/toggle-ai', [LiveChatController::class, 'toggleAi']);
+Route::post('/livechat/{session}/end', [LiveChatController::class, 'endSession']);
+
 // 2. Rute Pengaturan Widget
 Route::get('/member/widget-settings', [WidgetSettingController::class, 'index'])->name('widget.settings');
 Route::post('/member/widget-settings', [WidgetSettingController::class, 'update'])->name('widget.update');
-Route::get('/livechat', [LiveChatController::class, 'index'])->name('livechat.index');
+
         // Tagihan, Invoice & Duitku
         Route::get('/invoices', [PaymentController::class, 'index'])->name('user.invoice.index');
         Route::get('/invoice/{invoice}', [InvoiceController::class, 'show'])->name('user.invoice.show');
