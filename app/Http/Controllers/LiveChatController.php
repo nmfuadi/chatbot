@@ -19,31 +19,44 @@ class LiveChatController extends Controller
     public function getSessions()
     {
         $userId = Auth::id();
-        // Ambil sesi chat milik user ini, urutkan dari yang terbaru
+        
+        // Ambil sesi chat dan hitung pesan yang belum dibaca (is_read = 0)
         $sessions = ChatSession::where('user_id', $userId)
             ->orderBy('updated_at', 'desc')
-            ->get();
+            ->get()
+            ->map(function ($session) {
+                // Tambahkan properti unread_count ke setiap sesi
+                $session->unread_count = LiveChatMessage::where('chat_session_id', $session->id)
+                    ->where('sender_type', 'customer')
+                    ->where('is_read', 0)
+                    ->count();
+                return $session;
+            });
 
         return response()->json($sessions);
     }
 
-    // 3. Ambil Riwayat Pesan dari Sesi Tertentu (AJAX)
-    public function getMessages($sessionId)
-    {
-        $userId = Auth::id();
-        
-        // Pastikan sesi ini milik user yang sedang login
-        $session = ChatSession::where('id', $sessionId)->where('user_id', $userId)->firstOrFail();
+   // 3. Ambil Riwayat Pesan dari Sesi Tertentu (AJAX)
+   public function getMessages($sessionId)
+   {
+       $userId = Auth::id();
+       $session = ChatSession::where('id', $sessionId)->where('user_id', $userId)->firstOrFail();
 
-        $messages = LiveChatMessage::where('chat_session_id', $sessionId)
-            ->orderBy('created_at', 'asc')
-            ->get();
+       // TANDAI SUDAH DIBACA: Karena admin sedang membuka chat ini, ubah is_read jadi 1
+       LiveChatMessage::where('chat_session_id', $sessionId)
+           ->where('sender_type', 'customer')
+           ->where('is_read', 0)
+           ->update(['is_read' => 1]);
 
-        return response()->json([
-            'session' => $session,
-            'messages' => $messages
-        ]);
-    }
+       $messages = LiveChatMessage::where('chat_session_id', $sessionId)
+           ->orderBy('created_at', 'asc')
+           ->get();
+
+       return response()->json([
+           'session' => $session,
+           'messages' => $messages
+       ]);
+   }
 
     // 4. Admin Kirim Pesan Manual (AJAX)
     public function sendMessage(Request $request)

@@ -64,25 +64,49 @@
         const csrfToken = '{{ csrf_token() }}';
 
         // 1. Polling Daftar Sesi (Setiap 5 Detik)
+        let previousTotalUnread = 0; // Untuk trigger suara jika ada pesan baru
+
         async function loadSessions() {
             try {
                 const res = await fetch('/livechat/sessions');
                 const sessions = await res.json();
                 
                 let html = '';
+                let currentTotalUnread = 0;
+
                 sessions.forEach(session => {
                     const isActive = session.id === activeSessionId ? 'active' : '';
-                    const aiBadge = session.is_ai_active ? '<span style="color:green;font-size:12px;">🤖 AI Aktif</span>' : '<span style="color:red;font-size:12px;">👤 Manual</span>';
+                    const aiBadge = session.is_ai_active 
+                        ? '<span style="color:green;font-size:12px;">🤖 AI Aktif</span>' 
+                        : '<span style="color:red;font-size:12px;">👤 Manual</span>';
                     
+                    // Buat Badge Notifikasi Merah jika ada pesan belum dibaca
+                    const unreadBadge = session.unread_count > 0 
+                        ? `<span style="background-color: #ef4444; color: white; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: bold; margin-left: 8px;">${session.unread_count} Baru</span>` 
+                        : '';
+                    
+                    currentTotalUnread += session.unread_count;
+
                     html += `
                         <div class="session-item ${isActive}" onclick="openChat(${session.id})">
-                            <strong>${session.customer_name || 'Pelanggan'}</strong><br>
-                            <small>${session.customer_phone}</small><br>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <strong>${session.customer_name || 'Pelanggan'}</strong>
+                                ${unreadBadge}
+                            </div>
+                            <small class="text-gray-500">${session.customer_phone}</small><br>
                             ${aiBadge}
                         </div>
                     `;
                 });
                 document.getElementById('sessionList').innerHTML = html;
+
+                // Opsional: Jika mau ada suara 'ting' saat pesan baru masuk
+                // if (currentTotalUnread > previousTotalUnread) {
+                //     let audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+                //     audio.play().catch(e => console.log("Auto-play diblokir browser"));
+                // }
+                // previousTotalUnread = currentTotalUnread;
+
             } catch (error) {
                 console.error("Gagal memuat sesi", error);
             }
