@@ -7,7 +7,7 @@
     
     // --- KONFIGURASI PYTHON ENGINE ---
     // Ganti dengan IP/Domain server Python FastAPI Kakak (port default biasanya 8000)
-    var pythonEngineUrl = 'http://103.150.196.172:8000/webhook/widget';
+    var pythonEngineUrl = 'https://chatbotnew.web.id/python-api/webhook/widget';
     var teraApiKey = 'TERA_SECURE_KEY_2026_XYZ';
     
     var widgetColor = '#4F46E5';
