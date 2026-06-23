@@ -253,7 +253,8 @@ class WidgetApiController extends Controller
                 $formattedHistory[] = ['role' => $role, 'content' => $h->message];
             }
 
-            $aiSetting = AiSetting::where('user_id', $member->id)->first(); 
+            // Sesuaikan pencarian menggunakan device_id milik member
+$aiSetting = AiSetting::where('device_id', $member->wablas_device_id)->first(); 
 
             return response()->json([
                 'knowledge' => $knowledge,
