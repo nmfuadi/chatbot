@@ -10,14 +10,15 @@ class WidgetSettingController extends Controller
 {
     public function index()
     {
-        // Ambil data setting widget milik user ini, kalau belum ada otomatis dibuatkan default
         $setting = WidgetSetting::firstOrCreate(
             ['user_id' => Auth::id()],
             [
                 'is_active' => false,
-                'primary_color' => '#4F46E5', // Warna Indigo default
+                'primary_color' => '#4F46E5',
                 'greeting_text' => 'Halo! Silakan isi form di bawah untuk memulai obrolan dengan kami.',
-                'widget_position' => 'bottom-right' // <-- TAMBAHAN INI: Default letak widget
+                'widget_position' => 'bottom-right',
+                'widget_shape' => 'circle',
+                'widget_icon' => 'chat'
             ]
         );
 
@@ -30,22 +31,27 @@ class WidgetSettingController extends Controller
             'primary_color' => 'required',
             'greeting_text' => 'required|string|max:255',
             'widget_position' => 'required|string|in:bottom-right,bottom-left,top-right,top-left,center-right,center-left',
-            'logo' => 'nullable|image|max:1024', // Maksimal 1MB
+            'widget_shape' => 'required|string|in:circle,square,pill',
+            'widget_icon' => 'required|string|in:chat,support,whatsapp',
+            'widget_text' => 'nullable|string|max:20', // Max ~2 kata (20 karakter agar UI tidak rusak)
+            'logo' => 'nullable|image|max:1024', 
         ]);
 
         $setting = WidgetSetting::where('user_id', Auth::id())->first();
 
-        // Handle Upload Logo
         if ($request->hasFile('logo')) {
             $path = $request->file('logo')->store('widget-logos', 'public');
             $setting->logo_path = $path;
         }
 
         $setting->update([
-            'is_active' => $request->has('is_active'), // Ceklist toggle
+            'is_active' => $request->has('is_active'),
             'primary_color' => $request->primary_color,
             'greeting_text' => $request->greeting_text,
-            'widget_position' => $request->widget_position, // <-- TAMBAHAN INI: Simpan ke database
+            'widget_position' => $request->widget_position,
+            'widget_shape' => $request->widget_shape,
+            'widget_icon' => $request->widget_icon,
+            'widget_text' => $request->widget_text,
         ]);
 
         return back()->with('success', 'Pengaturan Widget berhasil diperbarui!');

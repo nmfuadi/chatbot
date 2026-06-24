@@ -50,6 +50,31 @@
                         </select>
                     </div>
 
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Bentuk Tombol Widget</label>
+                        <select name="widget_shape" class="w-full border-slate-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            <option value="circle" {{ ($setting->widget_shape ?? 'circle') == 'circle' ? 'selected' : '' }}>Bulat (Default)</option>
+                            <option value="square" {{ ($setting->widget_shape ?? '') == 'square' ? 'selected' : '' }}>Kotak Modern</option>
+                            <option value="pill" {{ ($setting->widget_shape ?? '') == 'pill' ? 'selected' : '' }}>Persegi Panjang (Pill)</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Icon Bawaan</label>
+                        <select name="widget_icon" class="w-full border-slate-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            <option value="chat" {{ ($setting->widget_icon ?? 'chat') == 'chat' ? 'selected' : '' }}>Balon Chat</option>
+                            <option value="support" {{ ($setting->widget_icon ?? '') == 'support' ? 'selected' : '' }}>Headphone / CS</option>
+                            <option value="whatsapp" {{ ($setting->widget_icon ?? '') == 'whatsapp' ? 'selected' : '' }}>Logo WhatsApp</option>
+                        </select>
+                        <p class="text-xs text-slate-500 mt-1">*Icon akan terganti otomatis jika Anda meng-upload Gambar Logo di bawah.</p>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Teks di Tombol (Opsional)</label>
+                        <input type="text" name="widget_text" value="{{ $setting->widget_text ?? '' }}" placeholder="Cth: Chat Kami" maxlength="20" class="w-full border-slate-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        <p class="text-xs text-slate-500 mt-1">*Maksimal 2 kata singkat. Bentuk tombol akan otomatis melebar jika teks diisi.</p>
+                    </div>
+
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">Pesan Sambutan (Greeting Text)</label>
                         <input type="text" name="greeting_text" value="{{ $setting->greeting_text }}" class="w-full border-gray-200 bg-gray-50 rounded-xl p-3.5 focus:ring-indigo-500 text-sm" required>
