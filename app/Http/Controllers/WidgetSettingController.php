@@ -16,7 +16,8 @@ class WidgetSettingController extends Controller
             [
                 'is_active' => false,
                 'primary_color' => '#4F46E5', // Warna Indigo default
-                'greeting_text' => 'Halo! Silakan isi form di bawah untuk memulai obrolan dengan kami.'
+                'greeting_text' => 'Halo! Silakan isi form di bawah untuk memulai obrolan dengan kami.',
+                'widget_position' => 'bottom-right' // <-- TAMBAHAN INI: Default letak widget
             ]
         );
 
@@ -28,6 +29,7 @@ class WidgetSettingController extends Controller
         $request->validate([
             'primary_color' => 'required',
             'greeting_text' => 'required|string|max:255',
+            'widget_position' => 'required|string|in:bottom-right,bottom-left,top-right,top-left', // <-- TAMBAHAN INI: Validasi posisi
             'logo' => 'nullable|image|max:1024', // Maksimal 1MB
         ]);
 
@@ -43,6 +45,7 @@ class WidgetSettingController extends Controller
             'is_active' => $request->has('is_active'), // Ceklist toggle
             'primary_color' => $request->primary_color,
             'greeting_text' => $request->greeting_text,
+            'widget_position' => $request->widget_position, // <-- TAMBAHAN INI: Simpan ke database
         ]);
 
         return back()->with('success', 'Pengaturan Widget berhasil diperbarui!');

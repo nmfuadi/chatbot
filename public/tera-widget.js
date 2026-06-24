@@ -6,13 +6,13 @@
     var customerName = localStorage.getItem('tera_customer_name_' + userId) || "Customer Web";
     
     // --- KONFIGURASI PYTHON ENGINE ---
-    // Ganti dengan IP/Domain server Python FastAPI Kakak (port default biasanya 8000)
     var pythonEngineUrl = 'https://chatbotnew.web.id/python-api/webhook/widget';
     var teraApiKey = 'TERA_SECURE_KEY_2026_XYZ';
     
     var widgetColor = '#4F46E5';
     var greetingText = 'Halo! Ada yang bisa dibantu?';
-    var widgetLogo = ''; // Variabel baru untuk menampung URL Logo
+    var widgetLogo = ''; 
+    var widgetPosition = 'bottom-right'; // Default letak widget
 
     fetch(`${baseUrl}/api/widget/${userId}/settings`)
         .then(res => res.json())
@@ -20,10 +20,9 @@
             if(data.error) return; 
             if(data.primary_color) widgetColor = data.primary_color;
             if(data.greeting_text) greetingText = data.greeting_text;
+            if(data.widget_position) widgetPosition = data.widget_position; // Tangkap posisi dari database
             
-            // --- LOGIKA MENANGKAP LOGO WIDGET ---
             if(data.logo) {
-                // Jika URL sudah full HTTP, gunakan langsung. Jika path lokal, tambahkan /storage/
                 widgetLogo = data.logo.startsWith('http') ? data.logo : `${baseUrl}/storage/${data.logo}`;
             }
 
@@ -31,26 +30,39 @@
         }).catch(err => console.log('TERA Widget Disabled'));
 
     function renderWidget() {
-        // --- LOGIKA MENGGANTI ISI TOMBOL ---
-        // Jika ada logo, render tag <img>. Jika tidak ada, gunakan ikon chat bawaan.
         var fabContent = widgetLogo 
             ? `<img src="${widgetLogo}" alt="Chat" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">` 
             : `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>`;
 
+        // --- LOGIKA POSISI DINAMIS ---
+        var containerPos = '';
+        var chatBoxPos = '';
+
+        if(widgetPosition === 'bottom-right') {
+            containerPos = 'bottom: 20px; right: 20px;';
+            chatBoxPos = 'bottom: 85px; right: 0;';
+        } else if(widgetPosition === 'bottom-left') {
+            containerPos = 'bottom: 20px; left: 20px;';
+            chatBoxPos = 'bottom: 85px; left: 0;';
+        } else if(widgetPosition === 'top-right') {
+            containerPos = 'top: 20px; right: 20px;';
+            chatBoxPos = 'top: 85px; right: 0; flex-direction: column-reverse;'; // Jika di atas, chatbox buka ke bawah
+        } else if(widgetPosition === 'top-left') {
+            containerPos = 'top: 20px; left: 20px;';
+            chatBoxPos = 'top: 85px; left: 0; flex-direction: column-reverse;';
+        }
+
         var style = document.createElement('style');
         style.innerHTML = `
-            #tera-widget-container { position: fixed; bottom: 20px; right: 20px; z-index: 999999; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-            
-            /* PERUBAHAN PADA FAB: Ditambah padding 0 dan overflow hidden agar gambar logo pas di lingkaran */
+            #tera-widget-container { position: fixed; ${containerPos} z-index: 999999; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
             #tera-fab { width: 60px; height: 60px; border-radius: 50%; background: ${widgetColor}; color: white; border: none; cursor: pointer; box-shadow: 0 6px 16px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; font-size: 28px; transition: transform 0.2s ease, box-shadow 0.2s ease; padding: 0; overflow: hidden; }
             #tera-fab:hover { transform: scale(1.08); box-shadow: 0 8px 20px rgba(0,0,0,0.25); }
             
-            #tera-chat-box { width: 360px; height: 550px; max-height: 80vh; background: #ffffff; border-radius: 20px; box-shadow: 0 15px 40px rgba(0,0,0,0.2); display: none; flex-direction: column; overflow: hidden; position: absolute; bottom: 85px; right: 0; border: 1px solid #f0f0f0; }
+            #tera-chat-box { width: 360px; height: 550px; max-height: 80vh; background: #ffffff; border-radius: 20px; box-shadow: 0 15px 40px rgba(0,0,0,0.2); display: none; flex-direction: column; overflow: hidden; position: absolute; ${chatBoxPos} border: 1px solid #f0f0f0; }
             #tera-header { background: ${widgetColor}; color: white; padding: 18px 20px; font-weight: bold; font-size: 16px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 10; }
             #tera-body { flex: 1; padding: 20px; overflow-y: auto; background: #f8f9fa; display: flex; flex-direction: column; gap: 12px; }
             #tera-footer { border-top: 1px solid #eaeaea; padding: 12px 16px; background: white; display: flex; align-items: center; }
             
-            /* -- FORCE WARNA TEKS JADI HITAM / GELAP -- */
             #tera-input { flex: 1; border: 1px solid #d1d5db; border-radius: 24px; padding: 12px 16px; outline: none; font-size: 14px; background: #f9fafb; color: #111827 !important; transition: border-color 0.2s; }
             #tera-input::placeholder { color: #9ca3af !important; }
             #tera-input:focus { border-color: ${widgetColor}; background: white; }
@@ -66,16 +78,10 @@
             .tera-greeting { background: white; padding: 16px; border-radius: 12px; text-align: center; font-size: 14px; color: #4b5563 !important; border: 1px solid #e5e7eb; box-shadow: 0 2px 4px rgba(0,0,0,0.02); margin-bottom: 20px; line-height: 1.5; }
             .tera-form-group { margin-bottom: 14px; text-align: left; }
             .tera-form-label { display: block; font-size: 12px; font-weight: bold; color: #6b7280 !important; margin-bottom: 6px; }
-            
-            /* -- FORCE WARNA FORM INPUT JADI HITAM -- */
             .tera-form-input { width: 100%; padding: 12px 14px; border: 1px solid #d1d5db; border-radius: 10px; box-sizing: border-box; font-size: 14px; color: #111827 !important; background: white; outline: none; transition: border-color 0.2s; }
-            .tera-form-input::placeholder { color: #9ca3af !important; }
-            .tera-form-input:focus { border-color: ${widgetColor}; box-shadow: 0 0 0 3px rgba(0,0,0,0.05); }
-            
             .tera-btn { width: 100%; padding: 14px; background: ${widgetColor}; color: white !important; border: none; border-radius: 10px; font-weight: bold; font-size: 15px; cursor: pointer; transition: opacity 0.2s; margin-top: 5px; }
             .tera-btn:hover { opacity: 0.9; }
             
-            /* Typing Indicator */
             .typing-indicator { display: flex; gap: 4px; align-items: center; padding: 12px 16px; background: white; border: 1px solid #f0f0f0; border-radius: 18px 18px 18px 4px; align-self: flex-start; width: fit-content;}
             .typing-dot { width: 6px; height: 6px; background: #cbd5e1; border-radius: 50%; animation: typing 1.4s infinite ease-in-out; }
             .typing-dot:nth-child(1) { animation-delay: 0s; }
@@ -145,37 +151,21 @@
                     var p = document.getElementById('t-phone').value;
                     customerName = n;
                     
-                    teraBody.innerHTML = `
-                        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; color:#6b7280;">
-                            <svg class="animate-spin" style="width:30px; height:30px; margin-bottom:10px; animation: spin 1s linear infinite;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="${widgetColor}" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                            <span>Menghubungkan...</span>
-                        </div><style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>
-                    `;
+                    teraBody.innerHTML = `<div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; color:#6b7280;"><svg class="animate-spin" style="width:30px; height:30px; margin-bottom:10px; animation: spin 1s linear infinite;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="${widgetColor}" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span>Menghubungkan...</span></div><style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>`;
                     
-                    // 1. Tembak Laravel untuk membuat sesi obrolan (Generate session_id)
                     fetch(`${baseUrl}/api/widget/start`, {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json'
-                        },
+                        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
                         body: JSON.stringify({user_id: userId, name: n, phone: p})
-                    })
-                    .then(res => {
-                        if(!res.ok) throw new Error('API Error ' + res.status);
-                        return res.json();
-                    })
-                    .then(d => {
+                    }).then(res => res.json()).then(d => {
                         sessionId = d.session_id;
                         localStorage.setItem('tera_session_id_' + userId, sessionId);
                         localStorage.setItem('tera_customer_name_' + userId, n);
                         teraFooter.style.display = 'flex';
                         loadMessages();
-                        setInterval(loadMessages, 5000); // Polling pesan tiap 5 detik
-                    })
-                    .catch(err => {
-                        console.error('Widget Error:', err);
-                        teraBody.innerHTML = `<div style="text-align:center; padding:20px;"><div style="color:#ef4444; font-size:40px; margin-bottom:10px;">⚠️</div><h4 style="color:#111827 !important; font-weight:bold; margin-bottom:5px;">Koneksi Gagal</h4><p style="color:#6b7280 !important; font-size:12px; line-height:1.5;">Server tidak merespons. Silakan *Refresh* halaman web ini (F5) dan coba lagi.</p></div>`;
+                        setInterval(loadMessages, 5000);
+                    }).catch(err => {
+                        teraBody.innerHTML = `<div style="text-align:center; padding:20px;"><div style="color:#ef4444; font-size:40px; margin-bottom:10px;">⚠️</div><h4 style="color:#111827 !important; font-weight:bold; margin-bottom:5px;">Koneksi Gagal</h4><p style="color:#6b7280 !important; font-size:12px;">Server tidak merespons. Silakan Refresh.</p></div>`;
                     });
                 };
             } else {
@@ -186,11 +176,9 @@
         }
 
         function loadMessages() {
-            // Fetch histori chat dari Laravel (karena database ada di Laravel)
             fetch(`${baseUrl}/api/widget/${sessionId}/messages`)
                 .then(res => res.json())
                 .then(msgs => {
-                    // Cek apakah ada div typing indicator
                     var typingDiv = document.getElementById('tera-typing');
                     var isTyping = typingDiv !== null;
                     
@@ -207,11 +195,7 @@
                         teraBody.appendChild(div);
                     });
                     
-                    // Kembalikan typing indicator jika sebelumnya ada
-                    if(isTyping) {
-                        teraBody.appendChild(typingDiv);
-                    }
-                    
+                    if(isTyping) teraBody.appendChild(typingDiv);
                     teraBody.scrollTop = teraBody.scrollHeight;
                 });
         }
@@ -227,19 +211,16 @@
             teraInput.disabled = true;
             sendBtn.disabled = true;
             
-            // 1. Simpan pesan customer ke DB Laravel dulu
             fetch(`${baseUrl}/api/widget/save-customer-message`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({session_id: sessionId, message: txt})
             }).then(() => {
-                // Render teks customer ke UI
                 var div = document.createElement('div');
                 div.className = 'tera-msg customer';
                 div.innerText = txt;
                 teraBody.appendChild(div);
                 
-                // Munculkan animasi typing AI
                 var typingHtml = document.createElement('div');
                 typingHtml.id = 'tera-typing';
                 typingHtml.className = 'typing-indicator';
@@ -247,18 +228,10 @@
                 teraBody.appendChild(typingHtml);
                 teraBody.scrollTop = teraBody.scrollHeight;
     
-                // 2. Tembak AI Python Engine (Bukan ke Laravel lagi)
                 return fetch(pythonEngineUrl, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'x-tera-api-key': teraApiKey
-                    },
-                    body: JSON.stringify({
-                        session_id: sessionId, 
-                        message: txt,
-                        customer_name: customerName
-                    })
+                    headers: { 'Content-Type': 'application/json', 'x-tera-api-key': teraApiKey },
+                    body: JSON.stringify({ session_id: sessionId, message: txt, customer_name: customerName })
                 });
             })
             .then(res => res.json())
@@ -271,16 +244,13 @@
                 if(typingDiv) typingDiv.remove();
                 
                 if(data.status === 'success') {
-                    // Render balasan AI langsung ke UI (Database sudah disimpan oleh Python via API Laravel)
                     var divAi = document.createElement('div');
                     divAi.className = 'tera-msg ai';
                     divAi.innerText = data.reply_text;
                     teraBody.appendChild(divAi);
                     teraBody.scrollTop = teraBody.scrollHeight;
                 }
-            })
-            .catch(err => {
-                console.error("Gagal terhubung ke Python AI Engine", err);
+            }).catch(err => {
                 teraInput.disabled = false;
                 sendBtn.disabled = false;
                 var typingDiv = document.getElementById('tera-typing');

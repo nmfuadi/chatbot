@@ -38,6 +38,16 @@
                         </div>
                     </div>
 
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Tata Letak Widget</label>
+                        <select name="widget_position" class="w-full border-slate-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            <option value="bottom-right" {{ ($setting->widget_position ?? 'bottom-right') == 'bottom-right' ? 'selected' : '' }}>Kanan Bawah (Default)</option>
+                            <option value="bottom-left" {{ ($setting->widget_position ?? '') == 'bottom-left' ? 'selected' : '' }}>Kiri Bawah</option>
+                            <option value="top-right" {{ ($setting->widget_position ?? '') == 'top-right' ? 'selected' : '' }}>Kanan Atas</option>
+                            <option value="top-left" {{ ($setting->widget_position ?? '') == 'top-left' ? 'selected' : '' }}>Kiri Atas</option>
+                        </select>
+                    </div>
+
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">Pesan Sambutan (Greeting Text)</label>
                         <input type="text" name="greeting_text" value="{{ $setting->greeting_text }}" class="w-full border-gray-200 bg-gray-50 rounded-xl p-3.5 focus:ring-indigo-500 text-sm" required>
