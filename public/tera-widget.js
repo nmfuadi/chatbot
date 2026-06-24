@@ -52,11 +52,11 @@
             : selectedSvg;
 
         // --- 2. LOGIKA BENTUK DAN SUSUNAN TEKS (FAB CONTENT & SHAPE) ---
-        var fabContent = mediaHtml;
+        var fabContent = '';
         var fabCssShape = '';
 
         if (widgetShape === 'square') {
-            // Jika KOTAK: Icon di atas, Teks di bawah (Persis seperti gambar referensi)
+            // Jika KOTAK MODERN
             if (widgetText !== '') {
                 fabContent = `<div style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px;">
                                 ${mediaHtml}
@@ -64,11 +64,13 @@
                               </div>`;
                 fabCssShape = 'width: 80px; height: 75px; border-radius: 14px; padding: 8px;';
             } else {
+                fabContent = mediaHtml;
                 fabCssShape = 'width: 60px; height: 60px; border-radius: 14px; padding: 0;';
             }
         } 
         else if (widgetShape === 'pill') {
-            // Jika PERSEGI PANJANG: Icon di Kiri, Teks di Kanan
+            // Jika PERSEGI PANJANG (PILL)
+            // Selalu paksa bentuk memanjang (lebar), ada teks atau tidak ada teks.
             if (widgetText !== '') {
                 fabContent = `<div style="display:flex; flex-direction:row; align-items:center; justify-content:center; gap:8px;">
                                 ${mediaHtml}
@@ -76,32 +78,37 @@
                               </div>`;
                 fabCssShape = 'height: 56px; border-radius: 28px; padding: 0 20px; width: auto; min-width: 120px;';
             } else {
-                fabCssShape = 'width: 60px; height: 56px; border-radius: 28px; padding: 0;';
+                // Jika user pilih Pill tapi Teks KOSONG, buat pil kecil melebar (seperti kapsul obat)
+                fabContent = `<div style="display:flex; flex-direction:row; align-items:center; justify-content:center;">
+                                ${mediaHtml}
+                              </div>`;
+                fabCssShape = 'width: 80px; height: 50px; border-radius: 25px; padding: 0;'; 
             }
         } 
         else {
-            // Jika BULAT (Default)
+            // Jika BULAT (CIRCLE)
+            // Selalu paksa bentuk membulat ke bawah (jika ada teks, ditaruh di bawah seperti square agar tidak memanjang jadi pill)
             if (widgetText !== '') {
-                // Mencegah desain hancur: Jika user pilih bulat tapi ngisi teks, kita jadikan horizontal
-                fabContent = `<div style="display:flex; flex-direction:row; align-items:center; justify-content:center; gap:8px;">
+                fabContent = `<div style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px;">
                                 ${mediaHtml}
-                                <span style="font-size:15px; font-weight:600; font-family:sans-serif; white-space:nowrap;">${widgetText}</span>
+                                <span style="font-size:12px; font-weight:500; font-family:sans-serif; white-space:nowrap;">${widgetText}</span>
                               </div>`;
-                fabCssShape = 'height: 56px; border-radius: 28px; padding: 0 20px; width: auto; min-width: 120px;';
+                fabCssShape = 'width: 80px; height: 80px; border-radius: 50%; padding: 8px;'; // Bulat membesar
             } else {
-                fabCssShape = 'width: 60px; height: 60px; border-radius: 50%; padding: 0;';
+                fabContent = mediaHtml;
+                fabCssShape = 'width: 60px; height: 60px; border-radius: 50%; padding: 0;'; // Bulat standar
             }
         }
 
         // --- 3. LOGIKA POSISI WIDGET DI LAYAR ---
         var containerPos = '';
         var chatBoxPos = '';
-        if(widgetPosition === 'bottom-right') { containerPos = 'bottom: 20px; right: 20px;'; chatBoxPos = 'bottom: 85px; right: 0;'; } 
-        else if(widgetPosition === 'bottom-left') { containerPos = 'bottom: 20px; left: 20px;'; chatBoxPos = 'bottom: 85px; left: 0;'; } 
-        else if(widgetPosition === 'top-right') { containerPos = 'top: 20px; right: 20px;'; chatBoxPos = 'top: 85px; right: 0; flex-direction: column-reverse;'; } 
-        else if(widgetPosition === 'top-left') { containerPos = 'top: 20px; left: 20px;'; chatBoxPos = 'top: 85px; left: 0; flex-direction: column-reverse;'; } 
-        else if(widgetPosition === 'center-right') { containerPos = 'top: 50%; right: 20px; transform: translateY(-50%);'; chatBoxPos = 'top: 50%; right: 90px; transform: translateY(-50%);'; } 
-        else if(widgetPosition === 'center-left') { containerPos = 'top: 50%; left: 20px; transform: translateY(-50%);'; chatBoxPos = 'top: 50%; left: 90px; transform: translateY(-50%);'; }
+        if(widgetPosition === 'bottom-right') { containerPos = 'bottom: 20px; right: 20px;'; chatBoxPos = 'bottom: 95px; right: 0;'; } 
+        else if(widgetPosition === 'bottom-left') { containerPos = 'bottom: 20px; left: 20px;'; chatBoxPos = 'bottom: 95px; left: 0;'; } 
+        else if(widgetPosition === 'top-right') { containerPos = 'top: 20px; right: 20px;'; chatBoxPos = 'top: 95px; right: 0; flex-direction: column-reverse;'; } 
+        else if(widgetPosition === 'top-left') { containerPos = 'top: 20px; left: 20px;'; chatBoxPos = 'top: 95px; left: 0; flex-direction: column-reverse;'; } 
+        else if(widgetPosition === 'center-right') { containerPos = 'top: 50%; right: 20px; transform: translateY(-50%);'; chatBoxPos = 'top: 50%; right: 100px; transform: translateY(-50%);'; } 
+        else if(widgetPosition === 'center-left') { containerPos = 'top: 50%; left: 20px; transform: translateY(-50%);'; chatBoxPos = 'top: 50%; left: 100px; transform: translateY(-50%);'; }
 
         var style = document.createElement('style');
         style.innerHTML = `
