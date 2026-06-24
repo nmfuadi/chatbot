@@ -46,10 +46,18 @@
             chatBoxPos = 'bottom: 85px; left: 0;';
         } else if(widgetPosition === 'top-right') {
             containerPos = 'top: 20px; right: 20px;';
-            chatBoxPos = 'top: 85px; right: 0; flex-direction: column-reverse;'; // Jika di atas, chatbox buka ke bawah
+            chatBoxPos = 'top: 85px; right: 0; flex-direction: column-reverse;'; 
         } else if(widgetPosition === 'top-left') {
             containerPos = 'top: 20px; left: 20px;';
             chatBoxPos = 'top: 85px; left: 0; flex-direction: column-reverse;';
+        } else if(widgetPosition === 'center-right') {
+            // Ditengah Kanan: Chatbox muncul di sebelah kiri tombol
+            containerPos = 'top: 50%; right: 20px; transform: translateY(-50%);';
+            chatBoxPos = 'top: 50%; right: 80px; transform: translateY(-50%);';
+        } else if(widgetPosition === 'center-left') {
+            // Ditengah Kiri: Chatbox muncul di sebelah kanan tombol
+            containerPos = 'top: 50%; left: 20px; transform: translateY(-50%);';
+            chatBoxPos = 'top: 50%; left: 80px; transform: translateY(-50%);';
         }
 
         var style = document.createElement('style');

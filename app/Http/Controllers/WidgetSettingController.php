@@ -29,7 +29,7 @@ class WidgetSettingController extends Controller
         $request->validate([
             'primary_color' => 'required',
             'greeting_text' => 'required|string|max:255',
-            'widget_position' => 'required|string|in:bottom-right,bottom-left,top-right,top-left', // <-- TAMBAHAN INI: Validasi posisi
+            'widget_position' => 'required|string|in:bottom-right,bottom-left,top-right,top-left,center-right,center-left',
             'logo' => 'nullable|image|max:1024', // Maksimal 1MB
         ]);
 

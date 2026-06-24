@@ -45,6 +45,8 @@
                             <option value="bottom-left" {{ ($setting->widget_position ?? '') == 'bottom-left' ? 'selected' : '' }}>Kiri Bawah</option>
                             <option value="top-right" {{ ($setting->widget_position ?? '') == 'top-right' ? 'selected' : '' }}>Kanan Atas</option>
                             <option value="top-left" {{ ($setting->widget_position ?? '') == 'top-left' ? 'selected' : '' }}>Kiri Atas</option>
+                            <option value="center-right" {{ ($setting->widget_position ?? '') == 'center-right' ? 'selected' : '' }}>Kanan Tengah</option>
+                            <option value="center-left" {{ ($setting->widget_position ?? '') == 'center-left' ? 'selected' : '' }}>Kiri Tengah</option>
                         </select>
                     </div>
 
