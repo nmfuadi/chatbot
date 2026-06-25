@@ -183,7 +183,7 @@ class WidgetApiController extends Controller
             // ====================================================================
             // --- PROSES DYNAMIC PROMPT BUILDER BERDASARKAN INPUT USER ---
             // ====================================================================
-            $aiName           = $pkRules->ai_name ?? 'Rani';
+            $aiName           = $pkRules->ai_name ?? 'AI Chat';
             $customerCall     = $pkRules->customer_call ?? 'Kakak';
             $gayaBahasaOpt    = $pkRules->gaya_bahasa ?? 'santai';
             $gayaBerpikirOpt  = $pkRules->gaya_berpikir ?? 'strict_sop';
@@ -193,12 +193,21 @@ class WidgetApiController extends Controller
             $useEmojiOpt      = $pkRules->use_emoji ?? 'banyak_emoji';
 
             // Pemetaan Instruksi (Singkat untuk efisiensi kode)
-            $gayaBahasaInstruction = $gayaBahasaOpt === 'formal' ? "Gunakan bahasa Indonesia baku, sopan, formal." : ($gayaBahasaOpt === 'gaul_digital' ? "Gaya anak muda metropolitan, gaul kekinian." : "Gunakan bahasa sehari-hari yang santai, hangat.");
-            $gayaBerpikirInstruction = $gayaBerpikirOpt === 'flexible_knowledge' ? "Fleksibel, edukasi secara luas lalu hubungkan ke produk." : "SAKLEK (STRICT). Jawab HANYA berdasarkan SOP/Katalog.";
-            $objectiveInstruction = $objectiveOpt === 'hard_selling' ? "HARD SELLING. Dorong agresif untuk beli." : ($objectiveOpt === 'customer_service' ? "CUSTOMER SERVICE. Berikan pelayanan informasi super ramah tanpa paksaan membeli." : "SOFT SELLING. Bangun kenyamanan lalu tawarkan produk.");
-            $lengthInstruction = $replyLengthOpt === 'sedang' ? "Ukuran SEDANG, 1-2 paragraf pendek." : ($replyLengthOpt === 'detail' ? "DETAIL, komprehensif, gunakan bullet points." : "SUPER SINGKAT, 1-3 kalimat.");
+            $gayaBahasaInstruction = $gayaBahasaOpt === 'formal' ? "Gunakan bahasa Indonesia yang baku, sopan, formal, profesional, dan ikuti kaidah EYD dengan baik." : ($gayaBahasaOpt === 'gaul_digital' ? "Gunakan gaya bahasa anak muda metropolitan Jakarta, boleh gunakan singkatan umum dan istilah-istilah gaul terkini." : "Gunakan bahasa Indonesia sehari-hari yang santai, hangat, akrab.");
+            $gayaBerpikirInstruction = $gayaBerpikirOpt === 'flexible_knowledge' ? "Kamu diberikan kebebasan berpikir yang LUAS. Jika pelanggan bertanya tentang teori, konsep, tips, atau strategi umum, gunakan pengetahuan globalmu sebagai AI untuk mengedukasi mereka secara cerdas, lalu hubungkan secara halus ke produk kita." : "Kamu WAJIB berpikir SAKLEK (STRICT). Kamu hanya boleh menjawab berdasarkan data yang ada di Data SOP/Katalog. Jika pelanggan bertanya hal di luar data tersebut, kamu DILARANG mengarang bebas.";
+            $objectiveInstruction = $objectiveOpt === 'hard_selling' 
+            ? "HARD SELLING. Dorong agresif untuk beli." 
+            : ($objectiveOpt === 'customer_service' 
+                ? "Tujuan utamamu adalah CUSTOMER SERVICE dengan standar [SUPER CS MODE] (Five-Star Service Excellence). Fokus total pada pelayanan informasi yang super ramah, sabar, sangat empatik, dan solutif TANPA ada paksaan untuk membeli produk. Kamu wajib mematuhi 'Golden Rules' dari para pakar Customer Experience (CX) dunia berikut secara ketat:\n" .
+                "- EMPATI & VALIDASI: Berikan validasi hangat di awal kalimat terhadap pertanyaan atau kendala pelanggan (Contoh: 'Pertanyaan yang bagus sekali Kak, dengan senang hati Rani jelaskan...').\n" .
+                "- POSITIVE PHRASING: Gunakan bahasa yang selalu optimis dan solutif. DILARANG menggunakan kata mati seperti 'Tidak bisa', 'Tidak ada', atau 'Bukan tugas saya'. Ganti dengan alternatif solusi yang tersedia (Contoh: 'Saat ini warna tersebut sedang dikemas ulang, sebagai gantinya Rani punya rekomendasi warna yang tak kalah cantik untuk Kakak...').\n" .
+                "- CLEAR & STRUCTURAL RESPONDING: Berikan penjelasan yang runut, bersih, step-by-step, dan sangat mudah dipahami oleh orang awam sekalipun.\n" .
+                "- ACTIVE LISTENING MODE: Fokus menjawab tepat pada inti point yang ditanyakan pelanggan, dilarang memberikan informasi yang berputar-putar (info dumping).\n" .
+                "- GO THE EXTRA MILE: Di setiap akhir respon, selalu tawarkan bantuan tambahan dengan tulus untuk menunjukkan dedikasi pelayanan terbaik." 
+                : "SOFT SELLING. Bangun kenyamanan lalu tawarkan produk.");
+            $lengthInstruction = $replyLengthOpt === 'sedang' ? "Jawabanmu berukuran SEDANG, sekitar 1 hingga 2 paragraf pendek agar penjelasan produk tersampaikan dengan jelas." : ($replyLengthOpt === 'detail' ? "Jawabanmu HARUS DETAIL, komprehensif, dan gunakan poin-poin (bullet points) jika menjelaskan spesifikasi produk." : "Jawabanmu HARUS SUPER SINGKAT, maksimal hanya 1 hingga 3 kalimat pendek per satu kali balas. Jangan pernah melakukan info dumping!.");
             $fallbackInstruction = $fallbackOpt === 'jujur_pivot' ? "Katakan tidak tahu, lalu arahkan topik ke keunggulan produk." : "Jujur tidak tahu, tawarkan disambungkan ke CS Manusia.";
-            $emojiInstruction = $useEmojiOpt === 'tanpa_emoji' ? "DILARANG menggunakan emoji." : "Gunakan banyak emoji relevan.";
+            $emojiInstruction = $useEmojiOpt === 'tanpa_emoji' ? "DILARANG menggunakan emoji." : "Gunakan emoji yang relevan.";
 
             // Pipeline
             $customObjections = $pkRules->objection_reasons ?? "ongkir_mahal, budget_kurang, kompetitor, slow_respon";

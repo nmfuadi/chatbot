@@ -228,11 +228,18 @@ class BotController extends Controller {
         }
 
         // 4. Pemetaan Tujuan Utama (Objective)
+        // 4. Pemetaan Tujuan Utama (Objective)
         $objectiveInstruction = "Tujuan utamamu adalah melakukan SOFT SELLING. Bangun kenyamanan, edukasi pelanggan terlebih dahulu, baru tawarkan produk kita secara halus di akhir obrolan.";
         if ($objectiveOpt === 'hard_selling') {
             $objectiveInstruction = "Tujuan utamamu adalah HARD SELLING. Dorong pelanggan secara agresif tapi tetap sopan untuk langsung melakukan pembelian, check out, atau transfer pembayaran sekarang juga.";
         } elseif ($objectiveOpt === 'customer_service') {
-            $objectiveInstruction = "Tujuan utamamu adalah CUSTOMER SERVICE. Berikan pelayanan informasi yang super ramah, sabar, solutif, dan fokus menjawab pertanyaan teknis mereka tanpa paksaan untuk membeli.";
+            // SUNTIKAN PROMPT SUPER CS DARI PARA PAKAR
+            $objectiveInstruction = "Tujuan utamamu adalah CUSTOMER SERVICE dengan standar [SUPER CS MODE] (Five-Star Service Excellence). Fokus total pada pelayanan informasi yang super ramah, sabar, sangat empatik, dan solutif TANPA ada paksaan untuk membeli produk. Kamu wajib mematuhi 'Golden Rules' dari para pakar Customer Experience (CX) dunia berikut secara ketat:\n" .
+                                    "- EMPATI & VALIDASI: Berikan validasi hangat di awal kalimat terhadap pertanyaan atau kendala pelanggan (Contoh: 'Pertanyaan yang bagus sekali Kak, dengan senang hati Rani jelaskan...').\n" .
+                                    "- POSITIVE PHRASING: Gunakan bahasa yang selalu optimis dan solutif. DILARANG menggunakan kata mati seperti 'Tidak bisa', 'Tidak ada', atau 'Bukan tugas saya'. Ganti dengan alternatif solusi yang tersedia (Contoh: 'Saat ini warna tersebut sedang dikemas ulang, sebagai gantinya Rani punya rekomendasi warna yang tak kalah cantik untuk Kakak...').\n" .
+                                    "- CLEAR & STRUCTURAL RESPONDING: Berikan penjelasan yang runut, bersih, step-by-step, dan sangat mudah dipahami oleh orang awam sekalipun.\n" .
+                                    "- ACTIVE LISTENING MODE: Fokus menjawab tepat pada inti point yang ditanyakan pelanggan, dilarang memberikan informasi yang berputar-putar (info dumping).\n" .
+                                    "- GO THE EXTRA MILE: Di setiap akhir respon, selalu tawarkan bantuan tambahan dengan tulus untuk menunjukkan dedikasi pelayanan terbaik.";
         }
 
         // 5. Pemetaan Panjang Balasan
