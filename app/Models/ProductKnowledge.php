@@ -30,7 +30,8 @@ class ProductKnowledge extends Model
         'primary_objective',
         'reply_length',
         'fallback_behavior',
-        'use_emoji'
+        'use_emoji',
+        'catalog_trigger_words' // <-- TAMBAHANNYA DI SINI KAK
     ];
 
     // Relasi ke User

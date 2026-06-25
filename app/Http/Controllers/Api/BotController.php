@@ -141,7 +141,9 @@ class BotController extends Controller {
         // ====================================================================
         // --- 2. MESIN PENCARI KATALOG PINTAR (RAG LITE DARI GOOGLE SHEETS) ---
         // ====================================================================
-        $triggerWords = ['stok', 'ada', 'harga', 'jual', 'ukuran', 'warna', 'ready', 'katalog', 'produk', 'pesan', 'beli', 'spesifikasi', 'tipe', 'model'];
+        $defaultTriggers = "stok, ada, harga, jual, ukuran, warna, ready, katalog, produk, pesan, beli, spesifikasi, tipe, model";
+        $savedTriggers = $pkRules->catalog_trigger_words ?? $defaultTriggers;
+        $triggerWords = array_filter(array_map('trim', explode(',', $savedTriggers)));
         $isAskingProduct = false;
         
         foreach ($triggerWords as $word) {

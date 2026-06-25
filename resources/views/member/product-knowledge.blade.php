@@ -103,7 +103,7 @@
                                     <label class="block text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-3">Dokumentasi Bisnis / SOP</label>
                                     <textarea
                                         name="content"
-                                        rows="15"
+                                        rows="12"
                                         class="w-full border-gray-100 bg-gray-50 rounded-[1.5rem] shadow-inner focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-700 leading-relaxed placeholder-gray-400 p-6 transition-all"
                                         placeholder="Contoh:
 - Jam buka: 08:00 - 20:00
@@ -112,6 +112,17 @@
 - Harga ongkir: Flat Rp 10.000"
                                     >{{ old('content', $pk->content ?? '') }}</textarea>
                                     <p class="mt-3 text-[10px] text-gray-400 italic">** Semakin detail informasi yang Anda berikan, semakin cerdas AI dalam menjawab.</p>
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-3">Kata Kunci Pemicu Katalog (Trigger Words)</label>
+                                    <textarea
+                                        name="catalog_trigger_words"
+                                        rows="3"
+                                        class="w-full border-gray-100 bg-gray-50 rounded-[1.5rem] shadow-inner focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-700 leading-relaxed placeholder-gray-400 p-6 transition-all"
+                                        placeholder="Contoh: stok, ada, harga, jual, ukuran, warna, ready, katalog"
+                                    >{{ old('catalog_trigger_words', $pk->catalog_trigger_words ?? 'stok, ada, harga, jual, ukuran, warna, ready, katalog, produk, pesan, beli, spesifikasi, tipe, model') }}</textarea>
+                                    <p class="mt-3 text-[10px] text-gray-400 italic">** Pisahkan setiap kata dengan tanda koma (,). AI akan menarik data dari Database Pelanggan & Katalog hanya jika mendeteksi kata-kata ini.</p>
                                 </div>
                                 
                                 <button type="submit" class="w-full flex justify-center items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-black py-4 px-6 rounded-2xl shadow-lg shadow-indigo-200 transition-all active:scale-[0.98]">

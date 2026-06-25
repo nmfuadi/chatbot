@@ -118,6 +118,7 @@ class MemberController extends Controller
             'reply_length'      => 'nullable|string',
             'fallback_behavior' => 'nullable|string',
             'use_emoji'         => 'nullable|string',
+            'catalog_trigger_words' => 'nullable|string',
         ]);
 
         // 2. Coba Simpan ke Database (Pakai Try-Catch)
@@ -134,6 +135,7 @@ class MemberController extends Controller
                     'reply_length'      => $request->reply_length,
                     'fallback_behavior' => $request->fallback_behavior,
                     'use_emoji'         => $request->use_emoji,
+                    'catalog_trigger_words' => $request->catalog_trigger_words,
                 ]
             );
 
