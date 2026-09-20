@@ -43,9 +43,15 @@
             </button>
         </form>
 
-        <p class="mt-8 text-sm text-gray-500">
-            Tidak menerima kode? <a href="{{ route('onboarding.profile.form') }}" class="text-blue-600 font-semibold hover:underline">Kirim ulang</a>
-        </p>
+        <div class="mt-4">
+    <p class="text-sm text-gray-600">Belum menerima kode?</p>
+    <form action="{{ route('onboarding.otp.resend') }}" method="POST">
+        @csrf
+        <button type="submit" class="text-blue-600 hover:underline text-sm font-semibold">
+            Kirim Ulang OTP
+        </button>
+    </form>
+</div>
     </div>
 </body>
 </html>

@@ -111,4 +111,47 @@ class OnboardingController extends Controller
 
         return back()->with('error', 'Kode OTP salah atau sudah kedaluwarsa. Silakan minta ulang.');
     }
+
+    // 5. Kirim Ulang OTP tanpa isi form
+    public function resendOtp()
+    {
+        $user = Auth::user();
+
+        // Pastikan user sudah pernah menyimpan nomor WhatsApp
+        if (!$user->whatsapp_number) {
+            return redirect()->route('onboarding.profile.form')
+                ->with('error', 'Silakan lengkapi profil Anda terlebih dahulu.');
+        }
+
+        // Generate OTP Baru
+        $otp = rand(100000, 999999);
+
+        // Update OTP dan waktu kedaluwarsa di database
+        $user->update([
+            'otp_code' => $otp,
+            'otp_expires_at' => Carbon::now()->addMinutes(5),
+        ]);
+
+        // Kredensial Evolution API
+        $evolutionUrl = env('EVOLUTION_URL', 'http://103.150.196.172:8080');
+        $globalApiKey = env('EVOLUTION_API_KEY', 'terabot123');
+        $adminInstance = env('EVOLUTION_ADMIN_INSTANCE', 'terabot_admin'); 
+
+        // Pesan OTP
+        $messageText = "*terabot.AI*\n\nKode OTP Verifikasi BARU Anda adalah: *$otp*.\nKode ini akan kedaluwarsa dalam 5 menit. JANGAN berikan kode ini kepada siapapun.";
+
+        // Kirim OTP via Evolution API
+        Http::withHeaders([
+            'apikey' => $globalApiKey,
+            'Content-Type' => 'application/json'
+        ])->post("{$evolutionUrl}/message/sendText/{$adminInstance}", [
+            'number' => $user->whatsapp_number."@s.whatsapp.net",
+            'text' => $messageText,
+            'delay' => 5000,
+            'linkPreview' => true
+        ]);
+
+        return redirect()->route('onboarding.otp.form')
+            ->with('success', 'Kode OTP baru telah dikirim ke WhatsApp Anda!');
+    }
 }

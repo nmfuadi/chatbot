@@ -111,7 +111,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/onboarding/profile', [OnboardingController::class, 'submitProfile'])->name('onboarding.profile.submit');
     Route::get('/onboarding/otp', [OnboardingController::class, 'otpForm'])->name('onboarding.otp.form');
     Route::post('/onboarding/otp', [OnboardingController::class, 'verifyOtp'])->name('onboarding.otp.verify');
-
+    Route::post('/onboarding/otp/resend', [OnboardingController::class, 'resendOtp'])->name('onboarding.otp.resend');
     // --- GERBANG 2: WAJIB VERIFIKASI WHATSAPP ---
     Route::middleware([EnsureWaVerified::class])->group(function () {
 
@@ -200,6 +200,8 @@ Route::get('/livechat/{session}/messages', [LiveChatController::class, 'getMessa
 Route::post('/livechat/send', [LiveChatController::class, 'sendMessage']);
 Route::post('/livechat/{session}/toggle-ai', [LiveChatController::class, 'toggleAi']);
 Route::post('/livechat/{session}/end', [LiveChatController::class, 'endSession']);
+
+
 
 // 2. Rute Pengaturan Widget
 Route::get('/member/widget-settings', [WidgetSettingController::class, 'index'])->name('widget.settings');
