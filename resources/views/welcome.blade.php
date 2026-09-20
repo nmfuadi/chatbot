@@ -6,6 +6,7 @@
     <title>Tera.AI – CS Otomatis 24 Jam + CRM Cerdas via WhatsApp</title>
     <meta name="description" content="Tera.AI: Chatbot AI WhatsApp yang menjawab pelanggan 24 jam, memfilter prospek panas, dan update CRM secara otomatis. Tanpa tambah karyawan.">
     <link rel="preconnect" href="https://fonts.bunny.net">
+    <link rel="icon" type="image/x-icon" href="{{ asset('logo.ico') }}">
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800,900&display=swap" rel="stylesheet" />
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
