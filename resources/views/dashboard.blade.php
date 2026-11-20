@@ -123,13 +123,25 @@
                         <h4 class="font-bold text-xl text-gray-800 mb-1">Testing Chatbot Anda</h4>
                         <p class="text-gray-600 text-sm">Gunakan nomor WhatsApp lain milik Anda, lalu cobalah chat ke nomor bisnis yang sudah terhubung tadi. Pura-puralah menjadi pelanggan yang bertanya tentang produk Anda untuk melihat kecerdasan bot-nya!</p>
                     </div>
+                    
+                    <!-- BAGIAN INI YANG DIUBAH -->
                     <div class="flex-shrink-0 w-full md:w-auto mt-4 md:mt-0">
-                        @if($progress == 100)
-                            <button disabled class="px-6 py-3 rounded-xl font-bold bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed">Siap Dites!</button>
+                        @if($step4_done)
+                            <button disabled class="px-6 py-3 rounded-xl font-bold bg-green-100 text-green-700 border border-green-200 cursor-not-allowed">
+                                Setup Selesai!
+                            </button>
+                        @elseif($progress >= 75)
+                            <button disabled class="px-6 py-3 rounded-xl font-bold bg-indigo-100 text-indigo-700 border border-indigo-200 cursor-not-allowed animate-pulse">
+                                Menunggu Chat Masuk...
+                            </button>
                         @else
-                            <button disabled class="px-6 py-3 rounded-xl font-bold bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed">Selesaikan Step 1-3 Dulu</button>
+                            <button disabled class="px-6 py-3 rounded-xl font-bold bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed">
+                                Selesaikan Step 1-3 Dulu
+                            </button>
                         @endif
                     </div>
+                    <!-- AKHIR BAGIAN YANG DIUBAH -->
+
                 </div>
             </div>
         </div>
