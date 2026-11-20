@@ -10,11 +10,11 @@ class ServerMonitoringController extends Controller
 {
     public function index()
     {
-        // Tarik data dari kedua server secara bersamaan
+        // Hanya tarik data dari Server 1 saja (IP 172)
         $server1 = $this->getServerStats(env('SERVER1_NAME'), env('SERVER1_IP'), env('SERVER1_USER'), env('SERVER1_PASS'));
-        $server2 = $this->getServerStats(env('SERVER2_NAME'), env('SERVER2_IP'), env('SERVER2_USER'), env('SERVER2_PASS'));
 
-        return view('admin.server-monitoring', compact('server1', 'server2'));
+        // Return hanya server1 ke view
+        return view('admin.server-monitoring', compact('server1'));
     }
 
     private function getServerStats($name, $ip, $user, $pass)
@@ -27,6 +27,11 @@ class ServerMonitoringController extends Controller
             'disk_used' => 0, 'disk_total' => 0, 'disk_percent' => 0,
             'uptime' => '-', 'docker' => []
         ];
+
+        // Jika IP tidak disetel di .env, langsung return offline untuk menghindari error
+        if (empty($ip)) {
+            return $data;
+        }
 
         try {
             $ssh = new SSH2($ip);
